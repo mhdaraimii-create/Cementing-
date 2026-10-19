@@ -110,7 +110,7 @@
   .add .rw { display:flex; gap:7px; align-items:center; margin-top:7px; }
   .add .rw .in { flex:1; text-align:left; padding:10px; }
   .add .rw .chip { flex:1; max-width:none; font-size:15px; padding-right:26px; }
-  .add .amt { flex:1.1; text-align:right; font-weight:700; font-size:15px; }
+  .add .amt { flex:1.1; text-align:right; font-weight:700; font-size:15px; white-space:nowrap; }
 
   table.t { width:100%; border-collapse:collapse; font-size:14px; }
   table.t th { text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--sub); font-weight:600; padding:8px 4px; border-bottom:1px solid var(--line); }
@@ -155,6 +155,19 @@
   .dlg .bt button { flex:1; background:none; border:none; padding:14px; font-size:17px; color:#0a64d6; cursor:pointer; }
   .dlg .bt button + button { border-left:1px solid var(--line); font-weight:600; }
   .dlg .bt button.dg { color:var(--danger); }
+
+  .ccrow { display:flex; gap:8px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .grp > .ccrow:last-child { border-bottom:none; }
+  .cc { flex:1; min-width:0; display:block; border:1.5px solid var(--line); border-radius:12px; padding:9px 11px 6px; background:var(--bg); }
+  .cc .ct { display:flex; gap:6px; font-size:13px; color:var(--sub); }
+  .cc .ct b { margin-left:auto; font-weight:600; color:var(--faint); font-size:12px; }
+  .cc input { width:100%; border:none; background:none; font-size:20px; font-weight:600; padding:6px 0 2px; }
+  .cc input:focus { outline:none; }
+  .cc input::placeholder { color:var(--ink); opacity:.55; }
+  .cc.ed { border-color:var(--good); background:#fff; } .cc.ed .ct b { color:var(--good); }
+  .pchips { display:flex; flex-wrap:wrap; gap:7px; padding:10px 0 4px; }
+  .pchip { border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:8px 13px; font-size:14px; font-weight:600; cursor:pointer; }
+  .pchip:active { background:var(--accent-bg); }
 
   /* Printable worksheet */
   #sheet { display:none; background:#fff; color:#141a17; min-height:100vh; }
@@ -242,6 +255,12 @@ var HOLES = [36, 26, 24, 22, 17.5, 16, 14.75, 12.25, 10.625, 9.875, 8.75, 8.5, 8
 function csg(id) { for (var i = 0; i < CASING.length; i++) if (CASING[i].id === id) return CASING[i]; return null; }
 function pipe(id) { for (var i = 0; i < PIPE.length; i++) if (PIPE[i].id === id) return PIPE[i]; return null; }
 function hole(id) { var d = P(id); return d ? { d: d, label: frac(d) } : null; }
+// Most common weight per size, picked when only the size changes.
+var USUAL = { 30: 310, 20: 94, 18.625: 87.5, 16: 75, 13.375: 68, 11.75: 54, 10.75: 45.5, 9.625: 47, 7.625: 29.7, 7: 26, 5.5: 17, 5: 18, 4.5: 11.6 };
+function csgFor(od) {
+  var all = CASING.filter(function (c) { return c.od === od; });
+  return all.filter(function (c) { return c.w === USUAL[od]; })[0] || all[0];
+}
 
 /* ───────────────────────── view helpers ───────────────────────── */
 function grp(title, body, right) {
@@ -254,6 +273,20 @@ function num(label, k, s, unit, ph) {
 function sel(label, k, s, opts, re) {
   return '<label class="r"><span class="l">' + label + '</span><select class="chip" data-k="' + k + '"' + (re ? " data-re" : "") + ">" +
     opts.map(function (o) { return '<option value="' + esc(o.id) + '"' + (String(s[k]) === String(o.id) ? " selected" : "") + ">" + esc(o.label) + "</option>"; }).join("") + "</select></label>";
+}
+// Casing as two choices: size (OD), then weight lb/ft, which sets the wall and so the ID.
+function csgRows(label, k, s) {
+  var c = csg(s[k]) || csgFor(9.625), ods = [];
+  CASING.forEach(function (x) { if (ods.indexOf(x.od) < 0) ods.push(x.od); });
+  return '<label class="r"><span class="l">' + label + '</span><select class="chip" data-csz="' + k + '">' +
+    ods.map(function (od) { return '<option value="' + od + '"' + (od === c.od ? " selected" : "") + ">" + frac(od) + "</option>"; }).join("") + "</select></label>" +
+    '<label class="r"><span class="l">Weight <i>· lb/ft · ID ' + c.idIn.toFixed(3) + '″</i></span><select class="chip" data-k="' + k + '" data-re>' +
+    CASING.filter(function (x) { return x.od === c.od; }).map(function (x) { return '<option value="' + x.id + '"' + (x.id === c.id ? " selected" : "") + ">" + x.w + "#</option>"; }).join("") + "</select></label>";
+}
+function capCard(label, k, s, computed) {
+  var ed = s[k] !== "" && s[k] != null;
+  return '<label class="cc' + (ed ? " ed" : "") + '" data-cc="' + k + '"><span class="ct">' + label + " · L/m<b>" + (ed ? "edited" : "auto") + "</b></span>" +
+    '<input inputmode="decimal" autocomplete="off" data-k="' + k + '" value="' + esc(ed ? s[k] : "") + '" placeholder="' + fx(computed) + '"></label>';
 }
 function seg(k, s, opts) {
   return '<div class="seg">' + opts.map(function (o) {
@@ -315,6 +348,8 @@ function when(t) { var d = new Date(t); return d.toLocaleDateString(undefined, {
 // (segments, flagged selects, buttons) redraw the whole page.
 function bind(root, st, persist, draw, outs, acts) {
   root.addEventListener("input", function (e) {
+    var z = e.target.getAttribute("data-csz");
+    if (z) { var c = csgFor(+e.target.value); if (c) { st[z] = c.id; persist(); draw(); } return; }
     var k = e.target.getAttribute("data-k"); if (!k) return;
     setPath(st, k, e.target.value); persist();
     if (e.target.hasAttribute("data-re")) draw(); else outs();
@@ -551,6 +586,26 @@ function schematic(m, light) {
 function txt(label, k, s, ph) {
   return '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="' + k + '" value="' + esc(s[k] || "") + '" placeholder="' + esc(ph || "") + '"></label>';
 }
+var PRESETS = [{ name: "WSW", u: "L" }, { name: "CDF-1", u: "L" }, { name: "CX-1", u: "kg" }, { name: "Bentonite", u: "kg" }, { name: "FL-45", u: "L" }, { name: "CSS-1", u: "kg" }];
+// Remembers every additive you type (name, factor, unit) so it comes back as a one-tap chip.
+function learnAdds(j) {
+  var lib = load("addLib", {}), ch = false;
+  [["leadAdd", ""], ["tailAdd", ""], ["spacerAdd", "S:"]].forEach(function (g) {
+    (j[g[0]] || []).forEach(function (r) {
+      var n = (r.name || "").trim(); if (!n) return;
+      var v = { u: r.u, f: r.f, on: r.on }; if (JSON.stringify(lib[g[1] + n]) !== JSON.stringify(v)) { lib[g[1] + n] = v; ch = true; }
+    });
+  });
+  if (ch) save("addLib", lib);
+}
+function chipList(key, rows) {
+  var sp = key === "spacerAdd", lib = load("addLib", {}), have = {}, out = [];
+  rows.forEach(function (r) { have[(r.name || "").trim().toLowerCase()] = 1; });
+  var push = function (n, d) { if (!have[n.toLowerCase()]) { have[n.toLowerCase()] = 1; out.push({ name: n, d: d }); } };
+  Object.keys(lib).forEach(function (k) { if ((k.indexOf("S:") === 0) === sp) push(sp ? k.slice(2) : k, lib[k]); });
+  if (!sp) PRESETS.forEach(function (p) { push(p.name, { u: p.u, f: "", on: "dry" }); });
+  return out;
+}
 function addRows(key, rows, color, isSpacer) {
   var units = [{ id: "kg", label: "kg" }, { id: "L", label: "L" }];
   var ons = [{ id: "dry", label: "/MT dry" }, { id: "eq", label: "/MT eq" }];
@@ -565,6 +620,8 @@ function addRows(key, rows, color, isSpacer) {
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
       '<button class="x" data-act="delAdd" data-i="' + key + "." + i + '">✕</button></div></div>';
   });
+  var chips = chipList(key, rows);
+  if (chips.length) h += '<div class="pchips">' + chips.map(function (c) { return '<button class="pchip" data-act="addPre" data-i="' + esc(key + "|" + c.name) + '">+ ' + esc(c.name) + "</button>"; }).join("") + "</div>";
   return h + '<p class="note">' + (isSpacer ? "Factor is kg or L per m³ of spacer mix." : "Factor is kg or L per MT — of dry cement, or of equivalent dry (the mix fluid you prepare, dead volume included).") + "</p>" +
     '<button class="btn ghost" data-act="addAdd" data-i="' + key + '">+ additive</button>';
 }
@@ -586,6 +643,8 @@ function stagesFromJob(j) {
 
 function CementJob(root, w, s) {
   function persist() { touch(w); }
+  // Learn additives once a field is left (change), not on every keystroke.
+  root.addEventListener("change", function () { learnAdds(s); });
   function capPh(k) {
     var c = csg(s.csgSize), h = hole(s.holeSize), pc = csg(s.prevSize);
     if (k === "int") return c && cap(c.idIn); if (k === "oh") return c && h && ann(h.d, c.od);
@@ -599,21 +658,21 @@ function CementJob(root, w, s) {
     h += grp("Job", txt("Job name", "title", s, "e.g. Surface, Intermediate") + '<div class="pad" style="padding-top:0">' +
       seg("jobType", s, [["casing", "Casing · surface"], ["liner", "Liner · hung"]]) + seg("slurry", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
     h += grp("Previous casing", prevOn ?
-      sel("Size", "prevSize", s, CASING, true) + num("Shoe depth", "prevShoe", s, "m") + num("Csg-Csg annulus", "capCC", s, "L/m", fx(capPh("cc"))) :
+      csgRows("Size", "prevSize", s) + num("Shoe depth", "prevShoe", s, "m") + '<div class="ccrow">' + capCard("Csg-Csg annulus", "capCC", s, capPh("cc")) + "</div>" :
       '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add one if the TOC lands inside a previous casing.</p>',
       liner ? '<span class="pill on">required</span>' : '<button class="pill' + (prevOn ? " on" : "") + '" data-act="prev">' + (prevOn ? "present ✓" : "none") + "</button>");
     h += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
-      sel("Size", "csgSize", s, CASING, true) + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
+      csgRows("Size", "csgSize", s) + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
       (liner ? num("Liner top", "linerTop", s, "m") + sel("Running string", "dpSize", s, PIPE, true) : "") +
-      num("Internal cap", "capInt", s, "L/m", fx(capPh("int"))) + num("OH annulus", "capOH", s, "L/m", fx(capPh("oh"))));
-    h += '<p class="note" style="padding:0 16px">Capacities left blank use the computed value (shown grey). Type one to override, e.g. from a caliper log.</p>';
-    h += grp("Open hole", sel("Size", "holeSize", s, HOLES, true) + num("TD", "td", s, "m") + num("Full bore cap", "capFull", s, "L/m", fx(capPh("full"))));
+      '<div class="ccrow">' + capCard("Internal", "capInt", s, capPh("int")) + capCard("OH annulus", "capOH", s, capPh("oh")) + "</div>");
+    h += '<p class="note" style="padding:0 16px">Capacities fill in from the sizes (auto). Type over one to use your own — e.g. from a caliper — and it turns green. Clear it to go back to auto.</p>';
+    h += grp("Open hole", sel("Size", "holeSize", s, HOLES, true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, capPh("full")) + "</div>");
     h += grp("Cement program",
       num(lt ? "TOC · lead" : "TOC", "toc", s, "m") + (lt ? num("Top of tail", "tailTop", s, "m") : "") +
       (lt ? '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLOH", s, "%") + num("Lead cased", "exLC", s, "%") : "") +
       '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTOH", s, "%") + num(lt ? "Tail cased" : "Cased", "exTC", s, "%") +
       '<p class="note" style="padding-bottom:12px">Rathole takes the ' + (lt ? "tail " : "") + "open-hole excess. The shoe track has no excess.</p>");
-    h += grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale");
+    h += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
     h += grp("Cement volumes", '<div id="o-vol"></div>');
     h += grp("Displacement", '<div id="o-disp"></div>' + num("Pump output", "pumpOut", s, "L/stk") + num("Pump rate", "rate", s, "m³/min") + '<div id="o-stk"></div>');
     if (lt) h += grp("Lead slurry", '<div class="pad" id="o-leadv" style="padding-bottom:0"></div>' + num("Density", "leadSG", s, "SG") + num("Slurry yield", "leadYield", s, "m³/MT") +
@@ -643,7 +702,13 @@ function CementJob(root, w, s) {
     var m = jobModel(s), sl = slurries(s, m), $ = function (id) { return root.querySelector("#" + id); };
     $("o-title").textContent = jobLabel(s);
     $("errBox").innerHTML = m.err && m.err.length ? '<div class="warn">⚠ ' + m.err.map(esc).join("<br>⚠ ") + "</div>" : "";
-    $("o-sch").innerHTML = m.items ? schematic(m, true) : '<div class="empty">Enter shoe, float collar, TD and TOC to draw the well.</div>';
+    // The drawing shows up once the well is complete and valid.
+    $("schSec").style.display = m.items ? "" : "none";
+    if (m.items) $("o-sch").innerHTML = schematic(m, true);
+    root.querySelectorAll("[data-cc]").forEach(function (el) {
+      var ed = s[el.getAttribute("data-cc")] !== "" && s[el.getAttribute("data-cc")] != null;
+      el.classList.toggle("ed", ed); el.querySelector("b").textContent = ed ? "edited" : "auto";
+    });
     var col = { lead: "var(--lead)", tail: "var(--tail)", shoetrack: "var(--track)", rathole: "var(--rat)" };
     if (m.items) {
       var grpV = function (title, color, filt, tot) {
@@ -728,7 +793,13 @@ function CementJob(root, w, s) {
   }
   bind(root, s, persist, draw, outs, {
     prev: function () { s.prevOn = !s.prevOn; persist(); draw(); },
-    addAdd: function (k) { s[k].push({ name: "", f: "", u: k === "spacerAdd" ? "kg" : "L", on: "eq" }); persist(); draw(); },
+    addPre: function (v) {
+      var i = v.indexOf("|"), k = v.slice(0, i), n = v.slice(i + 1);
+      var c = chipList(k, s[k]).filter(function (x) { return x.name === n; })[0]; if (!c) return;
+      s[k].push({ name: n, f: c.d.f || "", u: c.d.u || "kg", on: c.d.on || "dry" }); persist(); draw();
+      var el = root.querySelector('[data-k="' + k + "." + (s[k].length - 1) + '.f"]'); if (el) el.focus();
+    },
+    addAdd: function (k) { s[k].push({ name: "", f: "", u: k === "spacerAdd" ? "kg" : "L", on: "dry" }); persist(); draw(); },
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
     addStage: function () { s.stages.push({ name: "", vol: "", rate: "", extra: "" }); persist(); draw(); },
     delStage: function (i) { s.stages.splice(+i, 1); persist(); draw(); },
@@ -986,7 +1057,7 @@ function PlugTool(root, w, s) {
     var h = '<h1 class="title">Balanced plug</h1><p class="lede">' + esc(w.name) + "</p>";
     h += '<div class="bar2"><button class="btn danger" data-act="del">Delete plug</button></div>';
     h += grp("Plug", txt("Name", "title", s, "e.g. Kick-off plug") + '<div class="pad" style="padding-top:0">' + seg("where", s, [["oh", "Open hole"], ["cased", "Inside casing"]]) + "</div>" +
-      (s.where === "oh" ? sel("Hole", "holeSize", s, HOLES, true) + num("Excess", "ex", s, "%") : sel("Casing", "csgSize", s, CASING, true)) +
+      (s.where === "oh" ? sel("Hole", "holeSize", s, HOLES, true) + num("Excess", "ex", s, "%") : csgRows("Casing", "csgSize", s)) +
       num("Plug bottom", "bottom", s, "m") + num("Plug length", "len", s, "m") + sel("Work string", "pipe", s, PIPE, true) +
       num("Spacer ahead", "spAhead", s, "m³") + num("Under-displace", "under", s, "m³", "0"));
     h += grp("Result", '<div id="o-p"></div>');
@@ -1063,9 +1134,9 @@ function CapTool(root) {
   function draw() {
     var h = '<h1 class="title">Capacities</h1>';
     h += grp("Outside", '<div class="pad" style="padding-bottom:0">' + seg("outer", s, [["hole", "Hole"], ["csg", "Casing ID"], ["man", "Manual"]]) + "</div>" +
-      (s.outer === "hole" ? sel("Hole", "oHole", s, HOLES, true) : s.outer === "csg" ? sel("Casing", "oCsg", s, CASING, true) : num("Diameter", "oMan", s, "in")));
+      (s.outer === "hole" ? sel("Hole", "oHole", s, HOLES, true) : s.outer === "csg" ? csgRows("Casing", "oCsg", s) : num("Diameter", "oMan", s, "in")));
     h += grp("Inside", '<div class="pad" style="padding-bottom:0">' + seg("inner", s, [["none", "Empty"], ["csg", "Casing"], ["pipe", "DP/Tbg"], ["man", "Manual"]]) + "</div>" +
-      (s.inner === "csg" ? sel("Casing OD", "iCsg", s, CASING, true) : s.inner === "pipe" ? sel("String", "iPipe", s, PIPE, true) : s.inner === "man" ? num("Diameter", "iMan", s, "in") : ""));
+      (s.inner === "csg" ? csgRows("Casing", "iCsg", s) : s.inner === "pipe" ? sel("String", "iPipe", s, PIPE, true) : s.inner === "man" ? num("Diameter", "iMan", s, "in") : ""));
     h += grp("Result", num("Length", "len", s, "m") + '<div id="o-c"></div>');
     h += grp("Casing table", '<div class="pad"><table class="t"><tr><th>Size</th><th class="n">ID in</th><th class="n">L/m</th></tr>' +
       CASING.map(function (c) { return "<tr><td>" + c.label + '</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + fx(cap(c.idIn)) + "</td></tr>"; }).join("") + "</table></div>");
