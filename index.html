@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Cementing" />
+<meta name="apple-mobile-web-app-title" content="Cement Job" />
 <meta name="theme-color" content="#f2f2f7" />
-<title>Cementing Toolkit</title>
+<title>Cement Job</title>
 <link rel="apple-touch-icon" href="icon-180.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -169,6 +169,13 @@
   .pchip { border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:8px 13px; font-size:14px; font-weight:600; cursor:pointer; }
   .pchip:active { background:var(--accent-bg); }
 
+  .tag.plain::before { display:none; }
+  .brand { display:flex; align-items:center; gap:12px; margin-top:6px; }
+  .brand img { height:46px; width:auto; }
+  .kicker { font-size:12px; font-weight:700; letter-spacing:.2em; color:var(--accent); }
+  .foot2 { text-align:center; margin-top:40px; font-size:12.5px; color:var(--sub); line-height:1.6; }
+  .foot2 a { color:var(--sub); text-decoration:none; letter-spacing:.04em; }
+
   /* Printable worksheet */
   #sheet { display:none; background:#fff; color:#141a17; min-height:100vh; }
   body.sheet #root { display:none; }
@@ -208,59 +215,136 @@
 (function () {
 "use strict";
 
-/* ───────────────────────── storage ───────────────────────── */
+/* ───────────────────────── storage & numbers ───────────────────────── */
 // Everything lives on the phone. Every access is guarded: a private
-// window or a locked-down browser must still run the calculators.
-var NS = "cmt2.";
+// window or a locked-down browser must still run the calculator.
+var NS = "cmt3.";
 function load(k, d) { try { var v = localStorage.getItem(NS + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function save(k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); return true; } catch (e) { return false; } }
-
-/* ───────────────────────── numbers ───────────────────────── */
-var K = 0.506707;               // L/m per in² of diameter²  (π/4 · 0.0254² · 1000)
-var G = 0.0980665;              // bar per m per SG
-var PSI = 14.5038;              // psi per bar
-var BBL = 6.28981;              // bbl per m³
 function P(v) { if (v === "" || v == null) return null; var n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : null; }
-function cap(d) { return d > 0 ? d * d * K : null; }
-function ann(D, d) { return D > 0 && d >= 0 && D > d ? (D * D - d * d) * K : null; }
 function fx(v, n) { return v == null || !isFinite(v) ? "—" : Number(v).toFixed(n == null ? 2 : n); }
 function fi(v) { return v == null || !isFinite(v) ? "—" : Math.round(v).toLocaleString("en-US"); }
+function de(v) { return v == null ? "—" : Number.isInteger(v) ? String(v) : v.toFixed(1); }
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-function hhmm(min) { if (min == null || !isFinite(min)) return "—"; var m = Math.round(min); return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0"); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-
-/* ───────────────────────── tubulars ───────────────────────── */
 function frac(od) {
   var w = Math.floor(od + 1e-9), r = od - w, map = { 0: "", 0.125: "⅛", 0.25: "¼", 0.375: "⅜", 0.5: "½", 0.625: "⅝", 0.75: "¾", 0.875: "⅞" };
   var key = Math.round(r * 8) / 8; return w + (map[key] != null ? map[key] : r.toFixed(3).slice(1)) + "″";
 }
-// OD in, nominal weight lb/ft, ID in (API 5CT)
-var CASING = [
-  [30, 310, 28.000], [20, 94, 19.124], [20, 133, 18.730], [18.625, 87.5, 17.755], [16, 65, 15.250], [16, 75, 15.124], [16, 84, 15.010],
-  [13.375, 54.5, 12.615], [13.375, 61, 12.515], [13.375, 68, 12.415], [13.375, 72, 12.347],
-  [11.75, 54, 10.880], [11.75, 60, 10.772], [10.75, 45.5, 9.950], [10.75, 51, 9.850], [10.75, 55.5, 9.760],
-  [9.625, 36, 8.921], [9.625, 40, 8.835], [9.625, 43.5, 8.755], [9.625, 47, 8.681], [9.625, 53.5, 8.535],
-  [7.625, 26.4, 6.969], [7.625, 29.7, 6.875], [7.625, 33.7, 6.765],
-  [7, 23, 6.366], [7, 26, 6.276], [7, 29, 6.184], [7, 32, 6.094], [7, 35, 6.004],
-  [5.5, 15.5, 4.950], [5.5, 17, 4.892], [5.5, 20, 4.778], [5.5, 23, 4.670],
-  [5, 15, 4.408], [5, 18, 4.276], [4.5, 11.6, 4.000], [4.5, 13.5, 3.920]
-].map(function (c) { return { id: c[0] + "-" + c[1], od: c[0], w: c[1], idIn: c[2], label: frac(c[0]) + " " + c[1] + "#" }; });
-var PIPE = [
-  ["DP 5½″ 21.9#", 5.5, 4.778], ["DP 5″ 19.5#", 5, 4.276], ["DP 4½″ 16.6#", 4.5, 3.826], ["DP 4″ 14#", 4, 3.340],
-  ["DP 3½″ 13.3#", 3.5, 2.764], ["DP 2⅞″ 10.4#", 2.875, 2.151], ["Tbg 4½″ 12.6#", 4.5, 3.958], ["Tbg 3½″ 9.3#", 3.5, 2.992],
-  ["Tbg 2⅞″ 6.5#", 2.875, 2.441], ["Tbg 2⅜″ 4.7#", 2.375, 1.995]
-].map(function (p) { return { id: p[0], label: p[0], od: p[1], idIn: p[2] }; });
-var HOLES = [36, 26, 24, 22, 17.5, 16, 14.75, 12.25, 10.625, 9.875, 8.75, 8.5, 8.375, 6.5, 6.125, 6, 5.875, 4.75]
-  .map(function (d) { return { id: String(d), d: d, label: frac(d) + " hole" }; });
-function csg(id) { for (var i = 0; i < CASING.length; i++) if (CASING[i].id === id) return CASING[i]; return null; }
-function pipe(id) { for (var i = 0; i < PIPE.length; i++) if (PIPE[i].id === id) return PIPE[i]; return null; }
-function hole(id) { var d = P(id); return d ? { d: d, label: frac(d) } : null; }
-// Most common weight per size, picked when only the size changes.
-var USUAL = { 30: 310, 20: 94, 18.625: 87.5, 16: 75, 13.375: 68, 11.75: 54, 10.75: 45.5, 9.625: 47, 7.625: 29.7, 7: 26, 5.5: 17, 5: 18, 4.5: 11.6 };
-function csgFor(od) {
-  var all = CASING.filter(function (c) { return c.od === od; });
-  return all.filter(function (c) { return c.w === USUAL[od]; })[0] || all[0];
+
+/* ───────────────────────── rig spec-sheet capacities (L/m) ───────────────────────── */
+// Same tables as the field cement sheet: capacities come from the spec
+// sheet first; anything not in a table falls back to 0.5067 × (D² − d²).
+var CSG = [
+  { id: "c1338", label: "13⅜″", od: 13.375, idIn: 12.615, cap: 80.63 },
+  { id: "c958", label: "9⅝″", od: 9.625, idIn: 8.681, cap: 39.55 },
+  { id: "c7_23", label: "7″ · 23", od: 7, idIn: 6.366, cap: 20.53 },
+  { id: "c7_29", label: "7″ · 29", od: 7, idIn: 6.184, cap: 19.4 },
+  { id: "c412", label: "4½″", od: 4.5, idIn: 4, cap: 8.11 }
+];
+var HOLE = [
+  { id: "h16", label: "16″", d: 16, cap: 129.7 },
+  { id: "h1712", label: "17½″", d: 17.5, cap: 155.2 },
+  { id: "h1214", label: "12¼″", d: 12.25, cap: 76.04 },
+  { id: "h812", label: "8½″", d: 8.5, cap: 36.61 },
+  { id: "h618", label: "6⅛″", d: 6.125, cap: 19 }
+];
+var DP = [
+  { id: "dc814", label: "8¼″ DC", cap: 4 }, { id: "dc612", label: "6½″ DC", cap: 4 },
+  { id: "dp5n", label: "5″ DP (New)", cap: 9 }, { id: "dp5p", label: "5″ DP (Premium)", cap: 9.2 }, { id: "hwdp5", label: "5″ HWDP", cap: 4.6 },
+  { id: "dc434", label: "4¾″ DC", cap: 2.6 }, { id: "dp4n", label: "4″ DP (New)", cap: 5.2 }, { id: "dp4p", label: "4″ DP (Premium)", cap: 5.3 }, { id: "hwdp4", label: "4″ HWDP", cap: 3.3 }
+];
+var OH_ANN = { h16: { c1338: 39.1 }, h1214: { c958: 28.94 }, h812: { c7_23: 11.71, c7_29: 11.71 }, h618: { c412: 8.7 } };
+var CC_ANN = { c1338: { c958: 33.53 }, c958: { c7_23: 14.65, c7_29: 14.65 }, c7_23: { c412: 10.23 }, c7_29: { c412: 9.12 } };
+function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0] || null; }
+function ohAnn(hId, cId) {
+  if (OH_ANN[hId] && OH_ANN[hId][cId] != null) return { v: OH_ANN[hId][cId], src: "table" };
+  var h = byId(HOLE, hId), c = byId(CSG, cId); if (!h || !c) return null;
+  var v = 0.5067 * (h.d * h.d - c.od * c.od); return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
 }
+function ccAnn(pId, cId) {
+  if (CC_ANN[pId] && CC_ANN[pId][cId] != null) return { v: CC_ANN[pId][cId], src: "table" };
+  var p = byId(CSG, pId), c = byId(CSG, cId); if (!p || !c) return null;
+  var v = 0.5067 * (p.idIn * p.idIn - c.od * c.od); return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
+}
+
+/* ───────────────────────── the job model ───────────────────────── */
+function newJob(name) {
+  return {
+    id: uid(), name: name, created: Date.now(), updated: Date.now(),
+    jobType: "casing", scheme: "single", holeId: "h1214", td: "", csgId: "c958", shoe: "", fc: "", top: "",
+    prevOn: false, prevId: "c1338", prevShoe: "", toc: "", tailTop: "",
+    exLeadOH: "", exLeadCsg: "", exTailOH: "", exTailCsg: "", dpTub: "dp5p", outStk: "",
+    capInt: "", capFull: "", capOH: "", capCC: "",
+    leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
+    leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: []
+  };
+}
+function caps(s) {
+  var oh = ohAnn(s.holeId, s.csgId), cc = s.prevOn ? ccAnn(s.prevId, s.csgId) : null;
+  var auto = { int: (byId(CSG, s.csgId) || {}).cap, full: (byId(HOLE, s.holeId) || {}).cap, oh: oh && oh.v, cc: cc && cc.v };
+  var pick = function (k, a) { var o = P(s[k]); return o != null ? o : a; };
+  return { auto: auto, ohSrc: oh && oh.src, ccSrc: cc && cc.src, ohBad: !!(oh && oh.bad), ccBad: !!(cc && cc.bad),
+    int: pick("capInt", auto.int), full: pick("capFull", auto.full), oh: pick("capOH", auto.oh), cc: pick("capCC", auto.cc),
+    dp: (byId(DP, s.dpTub) || {}).cap };
+}
+function model(s) {
+  var k = caps(s), TD = P(s.td), SH = P(s.shoe), FC = P(s.fc), TOC = P(s.toc);
+  var TOP = s.jobType === "liner" ? (P(s.top) || 0) : 0, lt = s.scheme === "leadtail", tTop = lt ? P(s.tailTop) : null;
+  var PS = s.prevOn ? P(s.prevShoe) : null;
+  if ([TD, SH, FC, TOC].some(function (v) { return v == null; }) || (lt && tTop == null)) return null;
+  var ex = function (key) { return (P(s[key]) || 0) / 100; };
+  var geo = [];
+  if (PS != null && PS > 0 && k.cc != null) { var q = Math.max(TOC, TOP), g = Math.min(PS, SH); if (g > q) geo.push({ name: "Csg-Csg", kind: "csg", top: q, bot: g, cap: k.cc }); }
+  if (k.oh != null) { var q2 = Math.max(TOC, PS || 0, TOP); if (SH > q2) geo.push({ name: "OH-Csg", kind: "oh", top: q2, bot: SH, cap: k.oh }); }
+  var bands = lt ? [{ key: "lead", label: "Lead", from: TOC, to: tTop }, { key: "tail", label: "Tail", from: tTop, to: SH }] : [{ key: "tail", label: "Slurry", from: TOC, to: SH }];
+  var items = [], n = 1;
+  bands.forEach(function (b) {
+    geo.forEach(function (g) {
+      var a = Math.max(b.from, g.top), z = Math.min(b.to, g.bot);
+      if (z > a) {
+        var e = b.key === "lead" ? ex(g.kind === "oh" ? "exLeadOH" : "exLeadCsg") : ex(g.kind === "oh" ? "exTailOH" : "exTailCsg");
+        items.push({ n: n++, slurry: b.key, label: b.label + " · " + g.name, dTop: a, dBot: z, cap: g.cap, ex: e, vol: (z - a) * g.cap * (1 + e) });
+      }
+    });
+  });
+  var c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
+  if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int });
+  if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")) });
+  var dispL = null, parts = [];
+  if (s.jobType === "casing") { if (k.int != null && FC > 0) { dispL = FC * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC), v: dispL }]; } }
+  else if (k.dp != null && k.int != null && FC > TOP) {
+    var a1 = TOP * k.dp, a2 = (FC - TOP) * k.int; dispL = a1 + a2;
+    parts = [{ t: "DP · 0→" + de(TOP), v: a1 }, { t: c.label + " · " + de(TOP) + "→" + de(FC), v: a2 }];
+  }
+  var leadV = 0, tailV = 0; items.forEach(function (z) { if (z.slurry === "lead") leadV += z.vol; else tailV += z.vol; });
+  var warn = [];
+  if (FC >= SH) warn.push("Float collar should be above the shoe.");
+  if (SH > TD) warn.push("Shoe is deeper than TD.");
+  if (TOC >= SH) warn.push("TOC should be above the shoe.");
+  if (lt && (tTop <= TOC || tTop >= SH)) warn.push("Top of tail should sit between TOC and the shoe.");
+  if (s.jobType === "liner" && !TOP) warn.push("Enter the liner top.");
+  return { items: items, total: leadV + tailV, leadVol: leadV, tailVol: tailV, dispL: dispL, parts: parts, TD: TD, SH: SH, FC: FC, TOC: TOC,
+    LT: TOP > 0 ? TOP : null, tTop: tTop, PS: PS, hasLead: lt, c: c, h: h, warn: warn };
+}
+// Lead additives go on equivalent dry, tail additives on dry cement, spacer on mix volume.
+function slurry(volL, y, conc, dead) {
+  var V = volL / 1000, yy = P(y), cc = P(conc), dd = P(dead) || 0;
+  if (yy == null || yy <= 0) return null;
+  var dry = V / yy, mix = cc != null ? dry * cc : null, eq = mix != null && cc > 0 ? (mix + dd) / cc : null;
+  return { V: V, dry: dry, mix: mix, equiv: eq, dead: dd };
+}
+function slurries(s, m) {
+  if (!m) return null;
+  var sp = P(s.spacerVol), spd = P(s.spacerDead) || 0;
+  return { lead: m.hasLead ? slurry(m.leadVol, s.leadYield, s.leadConc, s.leadDead) : null, tail: slurry(m.tailVol, s.tailYield, s.tailConc, s.tailDead), spMix: sp != null ? sp + spd : null };
+}
+function addVal(r, base) {
+  var f = P(r.factor); if (f == null || base == null) return null;
+  var raw = base * f; return r.unit === "MT" || r.unit === "m3" ? raw / 1000 : raw;
+}
+function addFmt(v, u) { return v == null ? "—" : v.toFixed(u === "MT" || u === "m3" ? 3 : 2); }
+function unitLabel(u) { return u === "m3" ? "m³" : u; }
 
 /* ───────────────────────── view helpers ───────────────────────── */
 function grp(title, body, right) {
@@ -273,15 +357,6 @@ function num(label, k, s, unit, ph) {
 function sel(label, k, s, opts, re) {
   return '<label class="r"><span class="l">' + label + '</span><select class="chip" data-k="' + k + '"' + (re ? " data-re" : "") + ">" +
     opts.map(function (o) { return '<option value="' + esc(o.id) + '"' + (String(s[k]) === String(o.id) ? " selected" : "") + ">" + esc(o.label) + "</option>"; }).join("") + "</select></label>";
-}
-// Casing as two choices: size (OD), then weight lb/ft, which sets the wall and so the ID.
-function csgRows(label, k, s) {
-  var c = csg(s[k]) || csgFor(9.625), ods = [];
-  CASING.forEach(function (x) { if (ods.indexOf(x.od) < 0) ods.push(x.od); });
-  return '<label class="r"><span class="l">' + label + '</span><select class="chip" data-csz="' + k + '">' +
-    ods.map(function (od) { return '<option value="' + od + '"' + (od === c.od ? " selected" : "") + ">" + frac(od) + "</option>"; }).join("") + "</select></label>" +
-    '<label class="r"><span class="l">Weight <i>· lb/ft · ID ' + c.idIn.toFixed(3) + '″</i></span><select class="chip" data-k="' + k + '" data-re>' +
-    CASING.filter(function (x) { return x.od === c.od; }).map(function (x) { return '<option value="' + x.id + '"' + (x.id === c.id ? " selected" : "") + ">" + x.w + "#</option>"; }).join("") + "</select></label>";
 }
 function capCard(label, k, s, computed) {
   var ed = s[k] !== "" && s[k] != null;
@@ -348,8 +423,6 @@ function when(t) { var d = new Date(t); return d.toLocaleDateString(undefined, {
 // (segments, flagged selects, buttons) redraw the whole page.
 function bind(root, st, persist, draw, outs, acts) {
   root.addEventListener("input", function (e) {
-    var z = e.target.getAttribute("data-csz");
-    if (z) { var c = csgFor(+e.target.value); if (c) { st[z] = c.id; persist(); draw(); } return; }
     var k = e.target.getAttribute("data-k"); if (!k) return;
     setPath(st, k, e.target.value); persist();
     if (e.target.hasAttribute("data-re")) draw(); else outs();
@@ -359,155 +432,6 @@ function bind(root, st, persist, draw, outs, acts) {
     if (b.hasAttribute("data-seg")) { st[b.getAttribute("data-seg")] = b.getAttribute("data-v"); persist(); draw(); return; }
     var a = acts[b.getAttribute("data-act")]; if (a) a(b.getAttribute("data-i"), b);
   });
-}
-
-/* ───────────────────────── wells & jobs ───────────────────────── */
-// One record per well; each well holds its cement jobs (one per string),
-// its balanced plugs and a slurry recipe. Everything stays on the phone.
-function newJob() {
-  return {
-    id: uid(), created: Date.now(), title: "",
-    jobType: "casing", slurry: "single",
-    prevOn: false, prevSize: "13.375-68", prevShoe: "",
-    csgSize: "9.625-47", shoe: "", fc: "", linerTop: "", dpSize: "DP 5″ 19.5#",
-    holeSize: "12.25", td: "", toc: "", tailTop: "",
-    exLOH: "25", exLC: "0", exTOH: "25", exTC: "0",
-    capInt: "", capOH: "", capCC: "", capFull: "",
-    pumpOut: "", rate: "",
-    leadYield: "", leadConc: "", leadDead: "", leadSG: "",
-    tailYield: "", tailConc: "", tailDead: "", tailSG: "",
-    spacerVol: "", spacerDead: "", spacerSG: "",
-    mudSG: "", dispSG: "", fracSG: "", bumpOver: "35",
-    leadAdd: [], tailAdd: [], spacerAdd: [],
-    stages: [], leadTT: "", tailTT: "", margin: "60"
-  };
-}
-function newPlug() {
-  return { id: uid(), created: Date.now(), title: "", where: "oh", holeSize: "8.5", csgSize: "9.625-47", ex: "20", bottom: "", len: "",
-    pipe: "DP 3½″ 13.3#", spAhead: "", under: "", pumpOut: "", yield: "", conc: "" };
-}
-function newRecipe() {
-  return { cemSG: "3.15", water: "44", sack: "50", adds: [] };
-}
-var db = load("db", null) || { wells: [] };
-function saveDb() { if (!save("db", db)) toast("Could not save on this device."); }
-function wellById(id) { return db.wells.filter(function (w) { return w.id === id; })[0] || null; }
-function curWell() { return wellById(load("cur", null)); }
-function touch(w) { w.updated = Date.now(); saveDb(); }
-function jobLabel(j) {
-  var c = csg(j.csgSize);
-  return (j.title ? j.title + " · " : "") + (c ? c.label : "") + (j.jobType === "liner" ? " liner" : " casing");
-}
-function jobSummary(j) {
-  var m = jobModel(j);
-  return m.items ? fx(m.total / 1000, 1) + " m³ cement · " + fx(m.dispL / 1000, 1) + " m³ disp" : m.err && m.err.length ? "Check the inputs" : "Not filled in yet";
-}
-
-// Build the well model: every interval that gets slurry, and the displacement path.
-function jobModel(s) {
-  var c = csg(s.csgSize), pc = s.prevOn || s.jobType === "liner" ? csg(s.prevSize) : null, h = hole(s.holeSize), dp = pipe(s.dpSize);
-  var TD = P(s.td), SH = P(s.shoe), FC = P(s.fc), TOC = P(s.toc), PS = pc ? P(s.prevShoe) : null;
-  var LT = s.jobType === "liner" ? P(s.linerTop) : null, lt = s.slurry === "leadtail";
-  var tTop = lt ? P(s.tailTop) : null;
-  var err = [];
-  if (!c || !h || TD == null || SH == null || FC == null || TOC == null) return { err: err, empty: true };
-  if (c.od >= h.d) err.push("Casing OD " + frac(c.od) + " does not fit a " + frac(h.d) + " hole.");
-  if (pc && c.od >= pc.idIn) err.push("Casing OD " + frac(c.od) + " is larger than the previous casing ID (" + pc.idIn + "″).");
-  if (SH > TD) err.push("Shoe is deeper than TD.");
-  if (FC >= SH) err.push("Float collar must be above the shoe.");
-  if (TOC >= SH) err.push("TOC must be above the shoe.");
-  if (PS != null && PS >= SH) err.push("Previous shoe must be above this shoe.");
-  if (s.jobType === "liner") {
-    if (LT == null) err.push("Enter the liner top.");
-    else if (LT >= FC) err.push("Liner top must be above the float collar.");
-    if (!pc) err.push("A liner hangs in a previous casing — pick its size.");
-    else if (LT != null && PS != null && LT >= PS) err.push("Liner top should be inside the previous casing (above its shoe).");
-  }
-  if (lt && (tTop == null || tTop <= TOC || tTop >= SH)) err.push("Top of tail must sit between TOC and the shoe.");
-  if (err.length) return { err: err };
-
-  var capInt = P(s.capInt) || cap(c.idIn), capOH = P(s.capOH) || ann(h.d, c.od), capFull = P(s.capFull) || cap(h.d);
-  var capCC = pc ? (P(s.capCC) || ann(pc.idIn, c.od)) : null;
-  var capAL = pc && dp ? ann(pc.idIn, dp.od) : null;   // above a liner top, around the running string
-  var ex = function (k) { return (P(s[k]) || 0) / 100; };
-
-  var cuts = [TOC, SH]; [LT, PS, tTop].forEach(function (d) { if (d != null && d > TOC && d < SH) cuts.push(d); });
-  cuts = cuts.filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
-  var items = [];
-  for (var i = 0; i < cuts.length - 1; i++) {
-    var a = cuts[i], b = cuts[i + 1], geo, cp, cased;
-    if (LT != null && b <= LT) { geo = "Above liner top (" + frac(pc.od) + "×" + (dp ? frac(dp.od) : "DP") + ")"; cp = capAL; cased = true; }
-    else if (PS != null && b <= PS) { geo = "Csg-Csg (" + frac(pc.od) + "×" + frac(c.od) + ")"; cp = capCC; cased = true; }
-    else { geo = "Open hole (" + frac(h.d) + "×" + frac(c.od) + ")"; cp = capOH; cased = false; }
-    var sl = lt && b <= tTop ? "lead" : "tail";
-    var e = sl === "lead" ? ex(cased ? "exLC" : "exLOH") : ex(cased ? "exTC" : "exTOH");
-    items.push({ slurry: sl, label: geo, dTop: a, dBot: b, cap: cp, ex: e, vol: (b - a) * cp * (1 + e) });
-  }
-  items.push({ slurry: "shoetrack", label: "Shoe track (inside " + frac(c.od) + ")", dTop: FC, dBot: SH, cap: capInt, ex: 0, vol: (SH - FC) * capInt });
-  if (TD > SH) items.push({ slurry: "rathole", label: "Rathole (" + frac(h.d) + " full bore)", dTop: SH, dBot: TD, cap: capFull, ex: ex("exTOH"), vol: (TD - SH) * capFull * (1 + ex("exTOH")) });
-  items.forEach(function (z, i) { z.n = i + 1; });
-
-  var leadL = 0, tailL = 0;
-  items.forEach(function (z) { if (z.slurry === "lead") leadL += z.vol; else tailL += z.vol; });
-  var parts = [];
-  if (LT != null) {
-    var dpCap = dp ? cap(dp.idIn) : null;
-    parts.push({ t: (dp ? dp.label : "Running string") + "  0–" + LT + " m × " + fx(dpCap, 3), v: LT * dpCap });
-    parts.push({ t: "Liner  " + LT + "–" + FC + " m × " + fx(capInt, 3), v: (FC - LT) * capInt });
-  } else parts.push({ t: "Casing  0–" + FC + " m × " + fx(capInt, 3), v: FC * capInt });
-  var dispL = parts.reduce(function (a, p) { return a + p.v; }, 0);
-
-  // Annular cap right at TOC, no excess: for how tall the spacer stands above the cement.
-  var capTOC = items[0] ? items[0].cap : capOH;
-  return {
-    c: c, pc: pc, h: h, dp: dp, TD: TD, SH: SH, FC: FC, TOC: TOC, PS: PS, LT: LT, tTop: tTop, hasLead: lt,
-    capInt: capInt, capOH: capOH, capCC: capCC, capFull: capFull, capTOC: capTOC,
-    items: items, leadVol: leadL, tailVol: tailL, total: leadL + tailL, parts: parts, dispL: dispL, err: []
-  };
-}
-
-function slurryOf(V, y, conc, dead) {
-  if (V == null || !y) return null;
-  var dry = V / y, mix = conc != null ? dry * conc : null, tot = mix != null ? mix + (dead || 0) : null;
-  return { V: V, dry: dry, mix: mix, fluid: tot, equiv: tot != null && conc ? tot / conc : null };
-}
-function slurries(s, m) {
-  if (!m || !m.items) return null;
-  return {
-    lead: m.hasLead ? slurryOf(m.leadVol / 1000, P(s.leadYield), P(s.leadConc), P(s.leadDead)) : null,
-    tail: slurryOf(m.tailVol / 1000, P(s.tailYield), P(s.tailConc), P(s.tailDead)),
-    spMix: P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null
-  };
-}
-function addAmt(r, sl, spMix) {
-  var f = P(r.f); if (f == null) return null;
-  var base = spMix != null ? spMix : r.on === "eq" ? sl && sl.equiv : sl && sl.dry;
-  return base != null ? base * f : null;
-}
-// Hydrostatics at the end of displacement: plug on the float collar.
-function pressures(s, m) {
-  if (!m || !m.items) return null;
-  var mud = P(s.mudSG), sp = P(s.spacerSG), ld = P(s.leadSG), tl = P(s.tailSG), dsp = P(s.dispSG);
-  if (mud == null || tl == null || dsp == null || (m.hasLead && ld == null)) return null;
-  var tt = m.hasLead ? m.tTop : m.TOC;
-  var hSp = P(s.spacerVol) && sp != null && m.capTOC ? Math.min(m.TOC, P(s.spacerVol) * 1000 / m.capTOC) : 0;
-  var cols = [];
-  cols.push({ n: "Mud", sg: mud, h: m.TOC - hSp });
-  if (hSp > 0) cols.push({ n: "Spacer", sg: sp, h: hSp });
-  if (m.hasLead) cols.push({ n: "Lead", sg: ld, h: tt - m.TOC });
-  cols.push({ n: m.hasLead ? "Tail" : "Cement", sg: tl, h: m.SH - tt });
-  var annAt = function (d) { // annulus pressure at depth d (≤ shoe)
-    var p = 0, top = 0; cols.forEach(function (c) { var b = top + c.h, hh = Math.max(0, Math.min(b, d) - top); p += G * c.sg * hh; top = b; }); return p;
-  };
-  var pAnn = annAt(m.SH), pIn = G * (dsp * m.FC + tl * (m.SH - m.FC));
-  var pTD = pAnn + G * tl * (m.TD - m.SH);
-  var diff = pAnn - pIn, over = P(s.bumpOver) || 0;
-  var emw = function (p, d) { return d > 0 ? p / (G * d) : null; };
-  return {
-    cols: cols, pAnn: pAnn, pIn: pIn, pTD: pTD, diff: diff, bump: diff + over, over: over,
-    emwShoe: emw(pAnn, m.SH), emwTD: emw(pTD, m.TD), emwPS: m.PS ? emw(annAt(m.PS), m.PS) : null,
-    pMudShoe: G * mud * m.SH, frac: P(s.fracSG)
-  };
 }
 
 function schematic(m, light) {
@@ -582,18 +506,27 @@ function schematic(m, light) {
   return o + "</svg>";
 }
 
-/* ═════════════════════════ CEMENT JOB (all on one page) ═════════════════════════ */
-function txt(label, k, s, ph) {
-  return '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="' + k + '" value="' + esc(s[k] || "") + '" placeholder="' + esc(ph || "") + '"></label>';
+/* ───────────────────────── records ───────────────────────── */
+// One record per well number; it holds that well's cement job.
+var db = load("db", null) || { jobs: [] };
+function saveDb() { if (!save("db", db)) toast("Could not save on this device."); }
+function jobById(id) { return db.jobs.filter(function (j) { return j.id === id; })[0] || null; }
+function touch(j) { j.updated = Date.now(); saveDb(); }
+function summary(j) {
+  var m = model(j), c = byId(CSG, j.csgId);
+  return (c ? c.label + (j.jobType === "liner" ? " liner" : " casing") : "") + (m && m.items.length ? " · " + fx(m.total / 1000, 2) + " m³ cement" : " · not filled in yet");
 }
-var PRESETS = [{ name: "WSW", u: "L" }, { name: "CDF-1", u: "L" }, { name: "CX-1", u: "kg" }, { name: "Bentonite", u: "kg" }, { name: "FL-45", u: "L" }, { name: "CSS-1", u: "kg" }];
-// Remembers every additive you type (name, factor, unit) so it comes back as a one-tap chip.
+
+/* ───────────────────────── additives ───────────────────────── */
+var PRESETS = [{ name: "WSW", unit: "L" }, { name: "CDF-1", unit: "L" }, { name: "CX-1", unit: "kg" }, { name: "Bentonite", unit: "kg" }, { name: "FL-45", unit: "L" }, { name: "CSS-1", unit: "kg" }];
+// Remembers every additive typed (name, factor, unit) so it comes back as a one-tap chip.
 function learnAdds(j) {
   var lib = load("addLib", {}), ch = false;
   [["leadAdd", ""], ["tailAdd", ""], ["spacerAdd", "S:"]].forEach(function (g) {
     (j[g[0]] || []).forEach(function (r) {
-      var n = (r.name || "").trim(); if (!n) return;
-      var v = { u: r.u, f: r.f, on: r.on }; if (JSON.stringify(lib[g[1] + n]) !== JSON.stringify(v)) { lib[g[1] + n] = v; ch = true; }
+      var nm = (r.name || "").trim(); if (!nm) return;
+      var v = { unit: r.unit, factor: r.factor };
+      if (JSON.stringify(lib[g[1] + nm]) !== JSON.stringify(v)) { lib[g[1] + nm] = v; ch = true; }
     });
   });
   if (ch) save("addLib", lib);
@@ -601,285 +534,177 @@ function learnAdds(j) {
 function chipList(key, rows) {
   var sp = key === "spacerAdd", lib = load("addLib", {}), have = {}, out = [];
   rows.forEach(function (r) { have[(r.name || "").trim().toLowerCase()] = 1; });
-  var push = function (n, d) { if (!have[n.toLowerCase()]) { have[n.toLowerCase()] = 1; out.push({ name: n, d: d }); } };
+  var push = function (nm, d) { if (!have[nm.toLowerCase()]) { have[nm.toLowerCase()] = 1; out.push({ name: nm, d: d }); } };
   Object.keys(lib).forEach(function (k) { if ((k.indexOf("S:") === 0) === sp) push(sp ? k.slice(2) : k, lib[k]); });
-  if (!sp) PRESETS.forEach(function (p) { push(p.name, { u: p.u, f: "", on: "dry" }); });
+  if (!sp) PRESETS.forEach(function (p) { push(p.name, { unit: p.unit, factor: "" }); });
   return out;
 }
-function addRows(key, rows, color, isSpacer) {
-  var units = [{ id: "kg", label: "kg" }, { id: "L", label: "L" }];
-  var ons = [{ id: "dry", label: "/MT dry" }, { id: "eq", label: "/MT eq" }];
-  var opt = function (list, v) { return list.map(function (u) { return '<option value="' + u.id + '"' + (v === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join(""); };
-  var h = "";
+function addRows(title, key, rows, baseLabel, color) {
+  var units = [["kg", "kg"], ["L", "L"], ["m3", "m³"], ["MT", "MT"]];
+  var h = '<div class="tag plain" style="color:var(--ink)">' + title + ' <span style="font-weight:500;color:var(--sub)" data-base="' + key + '">· × ' + baseLabel + "</span></div>";
+  var chips = chipList(key, rows);
+  if (chips.length) h += '<div class="pchips">' + chips.map(function (c) { return '<button class="pchip" data-act="addPre" data-i="' + esc(key + "|" + c.name) + '">+ ' + esc(c.name) + "</button>"; }).join("") + "</div>";
+  h += '<p class="note">Factor is kg or L per ' + baseLabel + ". Picking m³ or MT only divides the answer by 1,000.</p>";
   rows.forEach(function (r, i) {
     var p = key + "." + i + ".";
-    h += '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="Additive name">' +
-      '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'f" value="' + esc(r.f) + '" placeholder="factor">' +
-      '<select class="chip" data-k="' + p + 'u">' + opt(units, r.u) + "</select>" +
-      (isSpacer ? "" : '<select class="chip" data-k="' + p + 'on">' + opt(ons, r.on) + "</select>") +
+    h += '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
+      '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'factor" value="' + esc(r.factor) + '" placeholder="factor">' +
+      '<select class="chip" data-k="' + p + 'unit">' + units.map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
       '<button class="x" data-act="delAdd" data-i="' + key + "." + i + '">✕</button></div></div>';
   });
-  var chips = chipList(key, rows);
-  if (chips.length) h += '<div class="pchips">' + chips.map(function (c) { return '<button class="pchip" data-act="addPre" data-i="' + esc(key + "|" + c.name) + '">+ ' + esc(c.name) + "</button>"; }).join("") + "</div>";
-  return h + '<p class="note">' + (isSpacer ? "Factor is kg or L per m³ of spacer mix." : "Factor is kg or L per MT — of dry cement, or of equivalent dry (the mix fluid you prepare, dead volume included).") + "</p>" +
-    '<button class="btn ghost" data-act="addAdd" data-i="' + key + '">+ additive</button>';
-}
-function stagesFromJob(j) {
-  var m = jobModel(j), r = P(j.rate) || 1;
-  var st = [{ name: "Pressure test lines", vol: "", rate: "", extra: "10" }];
-  if (P(j.spacerVol)) st.push({ name: "Spacer", vol: String(j.spacerVol), rate: String(r), extra: "" });
-  st.push({ name: "Drop bottom plug", vol: "", rate: "", extra: "5" });
-  if (m.items) {
-    if (m.hasLead) st.push({ name: "Lead slurry", vol: fx(m.leadVol / 1000), rate: String(r), extra: "" });
-    st.push({ name: m.hasLead ? "Tail slurry" : "Cement slurry", vol: fx(m.tailVol / 1000), rate: String(r), extra: "" });
-    st.push({ name: "Drop top plug", vol: "", rate: "", extra: "5" });
-    var d = m.dispL / 1000, slow = Math.min(3, d * 0.1);
-    st.push({ name: "Displacement", vol: fx(d - slow), rate: String(r), extra: "" });
-    st.push({ name: "Slow down to bump", vol: fx(slow), rate: String(Math.round(r * 0.4 * 10) / 10 || 0.5), extra: "" });
-  }
-  return st;
+  return h + '<button class="btn ghost" data-act="addAdd" data-i="' + key + '">+ additive</button>';
 }
 
-function CementJob(root, w, s) {
-  function persist() { touch(w); }
-  // Learn additives once a field is left (change), not on every keystroke.
+/* ───────────────────────── cement page ───────────────────────── */
+function CementPage(root, s) {
+  function persist() { touch(s); }
   root.addEventListener("change", function () { learnAdds(s); });
-  function capPh(k) {
-    var c = csg(s.csgSize), h = hole(s.holeSize), pc = csg(s.prevSize);
-    if (k === "int") return c && cap(c.idIn); if (k === "oh") return c && h && ann(h.d, c.od);
-    if (k === "full") return h && cap(h.d); if (k === "cc") return c && pc && ann(pc.idIn, c.od);
-  }
+  function opt(list) { return list.map(function (x) { return { id: x.id, label: x.label }; }); }
   function draw() {
-    var lt = s.slurry === "leadtail", liner = s.jobType === "liner", prevOn = s.prevOn || liner;
-    var h = '<h1 class="title" id="o-title">' + esc(jobLabel(s)) + '</h1><p class="lede">' + esc(w.name) + " · cement job</p>";
-    h += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn sec2" data-act="dup">Duplicate</button><button class="btn danger" data-act="delJob">Delete</button></div>';
-    h += '<div id="errBox"></div>';
-    h += grp("Job", txt("Job name", "title", s, "e.g. Surface, Intermediate") + '<div class="pad" style="padding-top:0">' +
-      seg("jobType", s, [["casing", "Casing · surface"], ["liner", "Liner · hung"]]) + seg("slurry", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
-    h += grp("Previous casing", prevOn ?
-      csgRows("Size", "prevSize", s) + num("Shoe depth", "prevShoe", s, "m") + '<div class="ccrow">' + capCard("Csg-Csg annulus", "capCC", s, capPh("cc")) + "</div>" :
-      '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add one if the TOC lands inside a previous casing.</p>',
-      liner ? '<span class="pill on">required</span>' : '<button class="pill' + (prevOn ? " on" : "") + '" data-act="prev">' + (prevOn ? "present ✓" : "none") + "</button>");
-    h += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
-      csgRows("Size", "csgSize", s) + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
-      (liner ? num("Liner top", "linerTop", s, "m") + sel("Running string", "dpSize", s, PIPE, true) : "") +
-      '<div class="ccrow">' + capCard("Internal", "capInt", s, capPh("int")) + capCard("OH annulus", "capOH", s, capPh("oh")) + "</div>");
-    h += '<p class="note" style="padding:0 16px">Capacities fill in from the sizes (auto). Type over one to use your own — e.g. from a caliper — and it turns green. Clear it to go back to auto.</p>';
-    h += grp("Open hole", sel("Size", "holeSize", s, HOLES, true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, capPh("full")) + "</div>");
-    h += grp("Cement program",
-      num(lt ? "TOC · lead" : "TOC", "toc", s, "m") + (lt ? num("Top of tail", "tailTop", s, "m") : "") +
-      (lt ? '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLOH", s, "%") + num("Lead cased", "exLC", s, "%") : "") +
-      '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTOH", s, "%") + num(lt ? "Tail cased" : "Cased", "exTC", s, "%") +
-      '<p class="note" style="padding-bottom:12px">Rathole takes the ' + (lt ? "tail " : "") + "open-hole excess. The shoe track has no excess.</p>");
-    h += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
-    h += grp("Cement volumes", '<div id="o-vol"></div>');
-    h += grp("Displacement", '<div id="o-disp"></div>' + num("Pump output", "pumpOut", s, "L/stk") + num("Pump rate", "rate", s, "m³/min") + '<div id="o-stk"></div>');
-    if (lt) h += grp("Lead slurry", '<div class="pad" id="o-leadv" style="padding-bottom:0"></div>' + num("Density", "leadSG", s, "SG") + num("Slurry yield", "leadYield", s, "m³/MT") +
-      num("Mix fluid", "leadConc", s, "m³/MT") + num("Dead volume", "leadDead", s, "m³") + '<div id="o-lead"></div>' + addRows("leadAdd", s.leadAdd, "var(--lead)"));
-    h += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" id="o-tailv" style="padding-bottom:0"></div>' + num("Density", "tailSG", s, "SG") + num("Slurry yield", "tailYield", s, "m³/MT") +
-      num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") + '<div id="o-tail"></div>' + addRows("tailAdd", s.tailAdd, "var(--tail)"));
-    h += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + num("Density", "spacerSG", s, "SG") +
-      '<div id="o-sp"></div>' + addRows("spacerAdd", s.spacerAdd, "var(--tail)", true));
-    h += grp("Pressures", num("Mud", "mudSG", s, "SG") + num("Displace with", "dispSG", s, "SG") + num("Frac gradient", "fracSG", s, "SG EMW", "optional") +
-      num("Bump over", "bumpOver", s, "bar") + '<div id="o-pr"></div>', "plug on float collar");
-    var st = s.stages.map(function (x, i) {
-      var p = "stages." + i + ".";
-      return '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(x.name) + '" placeholder="Stage">' +
-        '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'vol" value="' + esc(x.vol) + '" placeholder="m³">' +
-        '<input class="in" inputmode="decimal" data-k="' + p + 'rate" value="' + esc(x.rate) + '" placeholder="m³/min">' +
-        '<input class="in" inputmode="decimal" data-k="' + p + 'extra" value="' + esc(x.extra) + '" placeholder="+ min">' +
-        '<button class="x" data-act="delStage" data-i="' + i + '">✕</button></div></div>';
-    }).join("");
-    h += grp("Pump schedule", (st ? '<p class="note" style="padding-top:10px;margin:0">Each stage: volume m³ · rate m³/min · fixed minutes (plug drops, tests).</p>' + st : '<div class="empty">No stages yet.</div>') +
-      '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-act="addStage">+ stage</button><button class="btn" data-act="build">' + (st ? "Rebuild from job" : "Build from job") + "</button></div>" +
-      num("Lead thickening time", "leadTT", s, "min") + num("Tail thickening time", "tailTT", s, "min") + num("Safety margin", "margin", s, "min") +
-      '<div id="o-sch2"></div>');
-    root.innerHTML = '<div class="page">' + h + "</div>";
+    var lt = s.scheme === "leadtail", liner = s.jobType === "liner", k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
+    var o = '<h1 class="title" id="o-title">' + esc(s.name) + '</h1><p class="lede">Cement job · ' + when(s.created) + "</p>";
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn sec2" data-act="dup">Duplicate</button><button class="btn danger" data-act="del">Delete</button></div>';
+    o += '<div id="warnBox"></div>';
+    o += grp("Job type", '<div class="pad" style="padding-top:0">' + seg("jobType", s, [["casing", "Casing · surface"], ["liner", "Liner · hung"]]) + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
+    o += grp("Previous casing", s.prevOn ?
+      sel("Size", "prevId", s, opt(CSG), true) + num("Shoe depth", "prevShoe", s, "m") +
+      '<div class="ccrow">' + capCard("Csg-Csg ann (" + pc.label + "×" + c.label + ")", "capCC", s, k.auto.cc) + "</div>" :
+      '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add if TOC lands inside a previous casing.</p>',
+      '<button class="pill' + (s.prevOn ? " on" : "") + '" data-act="prev">' + (s.prevOn ? "present ✓" : "none") + "</button>");
+    o += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
+      sel("Size", "csgId", s, opt(CSG), true) + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
+      (liner ? sel("Running string", "dpTub", s, opt(DP), true) : "") +
+      '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + capCard("OH ann (" + h.label + "×" + c.label + ")", "capOH", s, k.auto.oh) + "</div>");
+    if (k.ohBad || k.ccBad) o += '<div class="warn">⚠ Impossible geometry: the casing OD (' + c.label + ") is larger than the " + (k.ohBad ? "hole (" + h.label + ")" : "previous casing (" + pc.label + ")") + ". Pick a bigger hole/casing — e.g. 9⅝″ needs a 12¼″ hole, 7″ needs 8½″.</div>";
+    o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore (" + h.label + ")", "capFull", s, k.auto.full) + "</div>");
+    o += grp("Cement program", num(lt ? "TOC — Lead" : "TOC", "toc", s, "m") + (lt ? num("Top of Tail", "tailTop", s, "m") : "") +
+      '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLeadOH", s, "%", "25") + num("Lead Cased", "exLeadCsg", s, "%", "10") +
+      '<div class="tag" style="color:var(--tail)">Tail excess</div>' + num("Tail OH", "exTailOH", s, "%", "25") + num("Tail Cased", "exTailCsg", s, "%", "0") +
+      '<p class="note" style="padding-bottom:12px">Matches proposal: Lead/Tail × OH/Cased. Pocket follows Tail OH. Shoe track has no excess.</p>');
+    o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
+    o += grp("Cement volumes", '<div id="o-vol"></div>');
+    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>');
+    if (lt) o += grp("Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") +
+      '<div id="o-lead"></div>' + addRows("Lead additives", "leadAdd", s.leadAdd, "Equiv dry", "var(--lead)"));
+    o += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
+      '<div id="o-tail"></div>' + addRows(lt ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
+    o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
+    root.innerHTML = '<div class="page">' + o + "</div>";
     outs();
   }
   function outs() {
-    var m = jobModel(s), sl = slurries(s, m), $ = function (id) { return root.querySelector("#" + id); };
-    $("o-title").textContent = jobLabel(s);
-    $("errBox").innerHTML = m.err && m.err.length ? '<div class="warn">⚠ ' + m.err.map(esc).join("<br>⚠ ") + "</div>" : "";
-    // The drawing shows up once the well is complete and valid.
-    $("schSec").style.display = m.items ? "" : "none";
-    if (m.items) $("o-sch").innerHTML = schematic(m, true);
+    var m = model(s), sl = slurries(s, m), $ = function (id) { return root.querySelector("#" + id); };
+    $("o-title").textContent = s.name;
+    $("warnBox").innerHTML = m && m.warn.length ? '<div class="warn">⚠ ' + m.warn.map(esc).join("<br>⚠ ") + "</div>" : "";
     root.querySelectorAll("[data-cc]").forEach(function (el) {
-      var ed = s[el.getAttribute("data-cc")] !== "" && s[el.getAttribute("data-cc")] != null;
-      el.classList.toggle("ed", ed); el.querySelector("b").textContent = ed ? "edited" : "auto";
+      var ed = P(s[el.getAttribute("data-cc")]) != null; el.classList.toggle("ed", ed); el.querySelector("b").textContent = ed ? "edited" : "auto";
     });
+    // The drawing shows up once the well is filled in.
+    var ok = m && m.items.length;
+    $("schSec").style.display = ok ? "" : "none";
+    if (ok) $("o-sch").innerHTML = schematic(m, true);
     var col = { lead: "var(--lead)", tail: "var(--tail)", shoetrack: "var(--track)", rathole: "var(--rat)" };
-    if (m.items) {
-      var grpV = function (title, color, filt, tot) {
+    if (ok) {
+      var block = function (title, color, filt, tot) {
         var g = '<div class="tag" style="color:' + color + '">' + title + "</div>";
         m.items.filter(filt).forEach(function (z) {
           g += '<div class="line"><span class="k"><span class="num" style="background:' + col[z.slurry] + '">' + z.n + "</span><span>" + esc(z.label) +
             "<small>" + fx(z.dBot - z.dTop, 1) + " m × " + fx(z.cap) + " L/m" + (z.ex > 0 ? " +" + fi(z.ex * 100) + "%" : "") + '</small></span></span><span class="v">' + fx(z.vol / 1000) + " m³</span></div>";
         });
-        return g + '<div class="sum"><span>' + title + ' volume</span><span>' + fx(tot / 1000) + " m³</span></div>";
+        return g + '<div class="sum" style="color:' + color + '"><span>' + (title === "Slurry" ? "Slurry" : title) + ' volume</span><span>' + fx(tot / 1000) + " m³</span></div>";
       };
       var v = "";
-      if (m.hasLead) v += grpV("Lead", "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol);
-      v += grpV(m.hasLead ? "Tail" : "Slurry", "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
-      $("o-vol").innerHTML = v + big("Total cement", fx(m.total / 1000), " m³");
-      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), fx(p.v / 1000) + " m³"); }).join("") +
-        big("Displacement volume", fx(m.dispL / 1000), " m³", "blue") + '<p class="note" style="margin-top:-4px;padding-bottom:6px">' + fx(m.dispL / 1000 * BBL, 1) + " bbl · to the float collar</p>";
-      var po = P(s.pumpOut), rt = P(s.rate);
-      $("o-stk").innerHTML = '<div class="tiles" style="margin-bottom:14px">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") +
-        tile("Time", rt ? hhmm(m.dispL / 1000 / rt) : "—", "h:mm") + tile("Rate", rt ? fx(rt * BBL, 1) : "—", "bpm") + "</div>";
-    } else {
-      $("o-vol").innerHTML = '<div class="empty">Enter the data above</div>'; $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = "";
-    }
-    var slOut = function (o) {
-      if (!o) return '<p class="note" style="padding-bottom:10px">Enter the yield to get cement and mix fluid.</p>';
-      return '<div class="tiles">' + tile("Dry cement", fx(o.dry), "MT") + tile("Mix fluid", fx(o.mix), "m³") + tile("Equiv dry", fx(o.equiv), "MT") + "</div>" +
-        '<p class="note" style="padding-bottom:6px">Prepare ' + fx(o.fluid) + " m³ mix fluid (with dead volume) · " + fi(o.dry * 1000 / 50) + " × 50 kg sacks</p>";
+      if (m.hasLead) v += block("Lead", "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol);
+      v += block(m.hasLead ? "Tail" : "Slurry", "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
+      $("o-vol").innerHTML = v + big("Total Cement", fx(m.total / 1000), " m³");
+    } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
+    if (m && m.dispL != null) {
+      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), fx(p.v / 1000) + " m³"); }).join("") + big("Displacement volume", fx(m.dispL / 1000), " m³", "blue");
+      var po = P(s.outStk);
+      $("o-stk").innerHTML = '<div class="tiles" style="margin-bottom:14px">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") + tile("Volume", fx(m.dispL / 1000 * 6.28981, 1), "bbl") + "</div>";
+    } else { $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = ""; }
+    var vol = function (V) { return '<span style="color:var(--sub);font-size:14px">Volume ' + fx(V) + " m³</span>"; };
+    var tiles = function (o) {
+      return '<div class="tiles">' + tile("Dry cement", o ? fx(o.dry) : "—", "MT") + tile("Mix fluid", o ? fx(o.mix) : "—", "m³") + tile("Equiv dry", o ? fx(o.equiv) : "—", "MT") + "</div>";
     };
-    var amts = function (key, rows, o, spm) {
-      rows.forEach(function (r, i) {
-        var el = root.querySelector('[data-out="' + key + "." + i + '"]'); if (!el) return;
-        var a = addAmt(r, o, spm); el.textContent = a != null ? fx(a, a >= 100 ? 0 : 1) + " " + r.u : "—";
-      });
+    var amts = function (key, rows, base) {
+      rows.forEach(function (r, i) { var el = root.querySelector('[data-out="' + key + "." + i + '"]'); if (el) { var a = addVal(r, base); el.textContent = a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—"; } });
+      var b = root.querySelector('[data-base="' + key + '"]'); if (b) b.textContent = "· × " + { leadAdd: "Equiv dry", tailAdd: "Dry cement", spacerAdd: "Mix vol" }[key] + (base != null ? " (" + fx(base) + ")" : "");
     };
-    var vol = function (o) { return '<span style="color:var(--sub);font-size:14px">Volume ' + (o ? fx(o.V) : "—") + " m³</span>"; };
-    if ($("o-lead")) { $("o-leadv").innerHTML = vol(m.items && { V: m.leadVol / 1000 }); $("o-lead").innerHTML = slOut(sl && sl.lead); amts("leadAdd", s.leadAdd, sl && sl.lead, null); }
-    $("o-tailv").innerHTML = vol(m.items && { V: m.tailVol / 1000 });
-    $("o-tail").innerHTML = slOut(sl && sl.tail); amts("tailAdd", s.tailAdd, sl && sl.tail, null);
-    var spm = P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null;
-    $("o-sp").innerHTML = '<p class="note" style="padding:10px 0 2px;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead' +
-      (m.items && P(s.spacerVol) ? " · " + fi(P(s.spacerVol) * 1000 / m.capTOC) + " m of annulus" : "") + ")</span></p>";
-    amts("spacerAdd", s.spacerAdd, null, spm);
-    var pr = pressures(s, m);
-    if (!pr) $("o-pr").innerHTML = '<p class="note" style="padding-bottom:12px">Enter mud, slurry and displacement densities to get the pressures.</p>';
-    else {
-      var ph = function (b) { return fx(b, 1) + ' bar <span style="color:var(--sub);font-weight:500">· ' + fi(b * PSI) + " psi</span>"; };
-      var t = '<div class="pad"><table class="t"><tr><th>Annulus column</th><th class="n">Height m</th><th class="n">SG</th></tr>' +
-        pr.cols.map(function (c) { return "<tr><td>" + c.n + '</td><td class="n">' + fi(c.h) + '</td><td class="n">' + fx(c.sg) + "</td></tr>"; }).join("") + "</table></div>";
-      t += line("Annulus at shoe", ph(pr.pAnn)) + line("Inside at shoe", ph(pr.pIn), "displacement fluid + shoe track") +
-        line("Differential (lift)", ph(pr.diff), "to hold at end of displacement", "var(--accent)") +
-        line("Bump pressure", ph(pr.bump), "differential + " + fx(pr.over, 0) + " bar", "var(--danger)");
-      var emwRow = function (n, e) { var bad = pr.frac && e > pr.frac; return line(n, fx(e) + " SG" + (bad ? " ⚠" : ""), null, bad ? "var(--danger)" : null); };
-      if (pr.emwPS != null) t += emwRow("EMW at previous shoe", pr.emwPS);
-      t += emwRow("EMW at shoe", pr.emwShoe) + emwRow("EMW at TD", pr.emwTD);
-      if (pr.frac) {
-        var worst = Math.max(pr.emwShoe, pr.emwTD, pr.emwPS || 0);
-        t += worst > pr.frac ? '<div class="warn">⚠ Static EMW ' + fx(worst) + " SG is above the frac gradient " + fx(pr.frac) + " SG. Consider a lighter lead, lower TOC or a two-stage job.</div>"
-          : '<div class="ok">✓ Static EMW stays below the frac gradient (margin ' + fx(pr.frac - worst) + " SG).</div>";
-      }
-      $("o-pr").innerHTML = t + '<p class="note" style="padding-bottom:12px">Static, vertical well (TVD = MD), no friction — circulating pressure will be higher.</p>';
-    }
-    // pump schedule
-    var po2 = P(s.pumpOut), T = 0, V = 0, rows = [];
-    s.stages.forEach(function (x) {
-      var vv = P(x.vol) || 0, rr = P(x.rate), dt = (vv && rr ? vv / rr : 0) + (P(x.extra) || 0);
-      rows.push({ x: x, rt: rr, t0: T, dt: dt, cumV: V + vv, cumT: T + dt, stk: po2 && vv ? vv * 1000 / po2 : null }); T += dt; V += vv;
-    });
-    if (!rows.length) { $("o-sch2").innerHTML = ""; return; }
-    var o = '<div class="pad"><table class="t"><tr><th>Stage</th><th class="n">bpm</th><th class="n">Min</th><th class="n">Cum m³</th><th class="n">Clock</th></tr>' +
-      rows.map(function (r) {
-        return "<tr><td>" + esc(r.x.name) + (r.stk ? '<div style="font-size:12px;color:var(--sub)">' + fi(r.stk) + " stk</div>" : "") + '</td><td class="n">' + (r.rt ? fx(r.rt * BBL, 1) : "—") +
-          '</td><td class="n">' + fx(r.dt, 0) + '</td><td class="n">' + fx(r.cumV, 1) + '</td><td class="n">' + hhmm(r.cumT) + "</td></tr>";
-      }).join("") + "</table></div>" + big("Total job time", hhmm(T), " h:mm", "blue");
-    var find = function (re) { for (var i = 0; i < rows.length; i++) if (re.test(rows[i].x.name)) return rows[i]; return null; };
-    var mg = P(s.margin) || 0;
-    [[find(/lead/i), P(s.leadTT), "Lead"], [find(/tail|cement slurry/i), P(s.tailTT), "Tail"]].forEach(function (q) {
-      if (!q[0] || !q[1]) return;
-      var exp = T - q[0].t0, spare = q[1] - exp;
-      o += line(q[2] + " exposure", hhmm(exp) + " of " + hhmm(q[1]), "from start of " + q[2].toLowerCase() + " to bump", spare < mg ? "var(--danger)" : "var(--good)");
-      if (spare < mg) o += '<div class="warn">⚠ ' + q[2] + " has only " + fx(spare, 0) + " min of thickening time left (want ≥ " + mg + ").</div>";
-    });
-    $("o-sch2").innerHTML = o + '<div style="height:12px"></div>';
+    if ($("o-lead")) { $("o-lv").innerHTML = vol(m ? m.leadVol / 1000 : null); $("o-lead").innerHTML = tiles(sl && sl.lead); amts("leadAdd", s.leadAdd, sl && sl.lead ? sl.lead.equiv : null); }
+    $("o-tv").innerHTML = vol(m ? m.tailVol / 1000 : null); $("o-tail").innerHTML = tiles(sl && sl.tail); amts("tailAdd", s.tailAdd, sl && sl.tail ? sl.tail.dry : null);
+    var spm = sl ? sl.spMix : (P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null);
+    $("o-sp").innerHTML = '<p style="padding:12px 0 0;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead)</span></p>';
+    amts("spacerAdd", s.spacerAdd, spm);
   }
   bind(root, s, persist, draw, outs, {
     prev: function () { s.prevOn = !s.prevOn; persist(); draw(); },
+    addAdd: function (key) { s[key].push({ name: "", factor: "", unit: "kg" }); persist(); draw(); },
     addPre: function (v) {
-      var i = v.indexOf("|"), k = v.slice(0, i), n = v.slice(i + 1);
-      var c = chipList(k, s[k]).filter(function (x) { return x.name === n; })[0]; if (!c) return;
-      s[k].push({ name: n, f: c.d.f || "", u: c.d.u || "kg", on: c.d.on || "dry" }); persist(); draw();
-      var el = root.querySelector('[data-k="' + k + "." + (s[k].length - 1) + '.f"]'); if (el) el.focus();
+      var i = v.indexOf("|"), key = v.slice(0, i), nm = v.slice(i + 1);
+      var c = chipList(key, s[key]).filter(function (x) { return x.name === nm; })[0]; if (!c) return;
+      s[key].push({ name: nm, factor: c.d.factor || "", unit: c.d.unit || "kg" }); persist(); draw();
+      var el = root.querySelector('[data-k="' + key + "." + (s[key].length - 1) + '.factor"]'); if (el && !el.value) el.focus();
     },
-    addAdd: function (k) { s[k].push({ name: "", f: "", u: k === "spacerAdd" ? "kg" : "L", on: "dry" }); persist(); draw(); },
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
-    addStage: function () { s.stages.push({ name: "", vol: "", rate: "", extra: "" }); persist(); draw(); },
-    delStage: function (i) { s.stages.splice(+i, 1); persist(); draw(); },
-    build: function () {
-      var go = function () { s.stages = stagesFromJob(s); persist(); draw(); };
-      if (s.stages.length) ask("Rebuild schedule?", "Replace the stages with ones built from this job.", "Rebuild", false, go); else go();
-    },
-    pdf: function () { var m = jobModel(s); if (!m.items) { toast(m.err && m.err.length ? "Fix the flagged rows first." : "Enter the job data first."); return; } showSheet(w, s, m); },
-    dup: function () { var c = dupJob(w, s); location.hash = "job/" + w.id + "/" + c.id; toast("Duplicated"); },
-    delJob: function () { delJob(w, s, function () { location.hash = "well/" + w.id; }); }
+    pdf: function () { var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; } showSheet(s, m); },
+    dup: function () { var c = dupJob(s); location.hash = "job/" + c.id; toast("Duplicated"); },
+    del: function () { delJob(s, function () { location.hash = "home"; }); }
   });
   draw();
 }
+function dupJob(s) {
+  var c = JSON.parse(JSON.stringify(s)); c.id = uid(); c.created = c.updated = Date.now();
+  c.name = s.name.replace(/\s*\(copy\)$/, "") + " (copy)";
+  db.jobs.push(c); saveDb(); return c;
+}
+function delJob(s, after) {
+  ask("Delete " + s.name + "?", "This record will be removed. This cannot be undone.", "Delete", true, function () {
+    db.jobs = db.jobs.filter(function (x) { return x.id !== s.id; }); saveDb(); toast(s.name + " deleted"); after();
+  });
+}
 
-function dupJob(w, s) {
-  var c = JSON.parse(JSON.stringify(s)); c.id = uid(); c.created = Date.now();
-  c.title = (s.title || "").replace(/\s*\(copy\)$/, "") + " (copy)"; c.title = c.title.trim();
-  w.jobs.splice(w.jobs.indexOf(s) + 1, 0, c); touch(w); return c;
-}
-function delJob(w, s, after) {
-  ask("Delete this job?", jobLabel(s) + " will be removed from " + w.name + ".", "Delete", true, function () {
-    w.jobs = w.jobs.filter(function (x) { return x.id !== s.id; }); touch(w); toast("Job deleted"); after();
-  });
-}
-function delWell(w, after) {
-  ask("Delete " + w.name + "?", "The well and all its jobs and plugs will be removed. This cannot be undone.", "Delete", true, function () {
-    db.wells = db.wells.filter(function (x) { return x.id !== w.id; }); saveDb(); toast(w.name + " deleted"); after();
-  });
-}
-function renameWell(w, after) {
-  form("Edit well", [{ label: "Well number", value: w.name }, { label: "Rig (optional)", value: w.rig }, { label: "Field (optional)", value: w.field }], "Save", function (v) {
-    if (!v[0]) { toast("Well number can't be empty"); return; }
-    w.name = v[0]; w.rig = v[1]; w.field = v[2]; touch(w); after();
-  });
-}
-function showSheet(w, s, m) {
-  var sl = slurries(s, m), pr = pressures(s, m), me = load("me", {});
+/* ───────────────────────── PDF worksheet ───────────────────────── */
+function showSheet(s, m) {
+  var sl = slurries(s, m);
   var colr = { lead: "#b45309", tail: "#0d7a6f", shoetrack: "#6d28d9", rathole: "#be185d" };
   var items = m.items.map(function (z) {
-    return '<tr><td style="color:' + colr[z.slurry] + ';font-weight:700">' + z.n + "</td><td>" + esc(z.label) + '</td><td class="f">(' + z.dBot + "−" + z.dTop + ")×" + fx(z.cap, 3) + "÷1000" +
+    return '<tr><td style="color:' + colr[z.slurry] + ';font-weight:700">' + z.n + "</td><td>" + esc(z.label) + '</td><td class="f">(' + de(z.dBot) + "−" + de(z.dTop) + ")×" + fx(z.cap) + "÷1000" +
       (z.ex > 0 ? "×" + (1 + z.ex).toFixed(2) : "") + '</td><td class="r">' + fx(z.vol / 1000, 3) + "</td></tr>";
   }).join("");
-  var addT = function (rows, o, spm) {
+  var addT = function (rows, base) {
     return (rows || []).filter(function (r) { return r.name; }).map(function (r) {
-      var a = addAmt(r, o, spm); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + esc(r.f || "—") + " " + r.u + (spm != null ? "/m³" : r.on === "eq" ? "/MT eq" : "/MT dry") + '</td><td class="r">' + (a != null ? fx(a, 1) + " " + r.u : "—") + "</td></tr>";
+      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + "×" + esc(r.factor || "—") + '</td><td class="r">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
     }).join("");
   };
-  var slT = function (name, o, rows, color, sg) {
+  var slT = function (name, o, rows, color, basis) {
     if (!o) return "";
-    return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³" + (sg ? " · " + esc(sg) + " SG" : "") + "</td></tr>" +
+    return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³</td></tr>" +
       '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="r">' + fx(o.dry) + " MT</td></tr>" +
       '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="r">' + fx(o.mix) + " m³</td></tr>" +
-      '<tr><td>Mix fluid to prepare</td><td class="f">+ dead vol</td><td class="r">' + fx(o.fluid) + " m³</td></tr>" +
-      '<tr><td>Equiv dry</td><td class="f">' + fx(o.fluid) + '÷conc</td><td class="r">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, o);
+      '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="r">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
   };
-  var po = P(s.pumpOut);
-  var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(w.name) + (w.rig ? " · " + esc(w.rig) : "") + " · " + esc(jobLabel(s)) + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
-    '<div class="meta">' + esc(m.c.label) + " · Hole " + frac(m.h.d) + "<br>TD " + m.TD + " m · Shoe " + m.SH + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
+  var po = P(s.outStk);
+  var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(s.name) + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
+    '<div class="meta">' + m.c.label + " casing · Hole " + m.h.label + "<br>TD " + de(m.TD) + " m · Shoe " + de(m.SH) + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
     '<div class="cols"><div class="left">' + schematic(m, true) +
-    '<table style="margin-top:6px"><tr><td>TOC</td><td class="r">' + m.TOC + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="r">' + m.tTop + " m</td></tr>" : "") +
-    (m.LT != null ? '<tr><td>Liner top</td><td class="r">' + m.LT + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="r">' + m.FC + " m</td></tr>" +
-    (m.PS ? '<tr><td>Prev shoe</td><td class="r">' + m.PS + " m</td></tr>" : "") +
-    (m.hasLead ? '<tr><td>Excess lead OH/Cs</td><td class="r">' + esc(s.exLOH || 0) + "/" + esc(s.exLC || 0) + "%</td></tr>" : "") +
-    '<tr><td>Excess ' + (m.hasLead ? "tail " : "") + 'OH/Cs</td><td class="r">' + esc(s.exTOH || 0) + "/" + esc(s.exTC || 0) + "%</td></tr></table></div>" +
+    '<table style="margin-top:6px"><tr><td>TOC</td><td class="r">' + de(m.TOC) + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="r">' + de(m.tTop) + " m</td></tr>" : "") +
+    (m.LT != null ? '<tr><td>Liner top</td><td class="r">' + de(m.LT) + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="r">' + de(m.FC) + " m</td></tr>" +
+    (m.PS ? '<tr><td>Prev shoe</td><td class="r">' + de(m.PS) + " m</td></tr>" : "") +
+    '<tr><td>Excess L OH/Cs</td><td class="r">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" +
+    '<tr><td>Excess T OH/Cs</td><td class="r">' + esc(s.exTailOH || 0) + "/" + esc(s.exTailCsg || 0) + "%</td></tr></table></div>" +
     '<div class="right"><h2>Volume Calculations <span class="sub" style="font-size:8.5px">(B−T)×cap÷1000×(1+ex)</span></h2><table><tr><th>#</th><th>Section</th><th>Working</th><th>m³</th></tr>' + items +
     (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">Lead total</td><td class="r" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
     '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="r" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
-    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="r">' + fx(m.total / 1000, 2) + " m³</td></tr></table>" +
-    '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="r">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
-    '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="r">' + fx(m.dispL / 1000) + " m³</td></tr></table>" +
-    "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", s.leadSG) + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", s.tailSG) + "</table>" +
-    (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³" + (s.spacerSG ? " · " + esc(s.spacerSG) + " SG" : "") + "</span></h2><table>" + addT(s.spacerAdd, null, sl.spMix) + "</table>" : "") +
-    (pr ? '<h2>Pressures <span class="sub" style="font-size:8.5px">static, plug on float collar</span></h2><table>' +
-      '<tr><td>Annulus at shoe</td><td class="r">' + fx(pr.pAnn, 1) + " bar / " + fi(pr.pAnn * PSI) + " psi</td></tr>" +
-      '<tr><td>Inside at shoe</td><td class="r">' + fx(pr.pIn, 1) + " bar / " + fi(pr.pIn * PSI) + " psi</td></tr>" +
-      '<tr><td>Differential (lift)</td><td class="r">' + fx(pr.diff, 1) + " bar / " + fi(pr.diff * PSI) + " psi</td></tr>" +
-      "<tr><td>Bump (+" + fx(pr.over, 0) + ' bar)</td><td class="r">' + fx(pr.bump, 1) + " bar / " + fi(pr.bump * PSI) + " psi</td></tr>" +
-      '<tr><td>EMW shoe / TD</td><td class="r">' + fx(pr.emwShoe) + " / " + fx(pr.emwTD) + " SG</td></tr></table>" : "") +
+    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="r">' + fx(m.total / 1000) + " m³</td></tr></table>" +
+    (m.dispL != null ? '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="r">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
+      '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="r">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
+    "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq") + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
+    (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
-    '<p class="fn"><b>' + esc(me.name || "Cementing Engineer") + "</b>" + (me.phone ? " · " + esc(me.phone) : "") + " · Cementing Toolkit — verify against the cement program before execution.</p>";
+    '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.phone + " · verify against the cement program before execution.</p>";
   var sh = document.getElementById("sheet");
   sh.innerHTML = '<div class="tb"><button data-a="back">‹ Back</button><b style="font-size:15px">Worksheet</b><button class="pr" data-a="print">Print / PDF</button></div><div class="doc">' + body + "</div>";
   sh.onclick = function (e) {
@@ -890,345 +715,68 @@ function showSheet(w, s, m) {
   document.body.classList.add("sheet"); window.scrollTo(0, 0);
 }
 
-/* ═════════════════════════ WELLS ═════════════════════════ */
-function WellsHome(root) {
-  var me = load("me", {}), q = { v: "" };
+/* ───────────────────────── home ───────────────────────── */
+var OWNER = { name: "Mohammed Al Araimi", phone: "90911090" };
+function Home(root) {
+  var q = { v: "" };
   function list() {
-    var L = db.wells.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
-      .filter(function (w) { return !q.v || (w.name + " " + (w.rig || "") + " " + (w.field || "")).toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
-    if (!db.wells.length) return '<div class="empty">No wells yet. Type a well number above and tap Create.</div>';
+    if (!db.jobs.length) return '<div class="empty">No wells yet. Type a well number above and tap Create.</div>';
+    var L = db.jobs.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
+      .filter(function (j) { return !q.v || j.name.toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
     if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
-    return L.map(function (w) {
-      var n = w.jobs.length;
-      return item('data-go="well/' + w.id + '"', "var(--accent)", esc((w.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(w.name),
-        (n ? n + " job" + (n > 1 ? "s" : "") + " · " : "") + (w.rig ? esc(w.rig) + " · " : "") + when(w.updated || w.created), "well:" + w.id);
+    return L.map(function (j) {
+      return item('data-go="job/' + j.id + '"', "var(--accent)", esc((j.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(j.name),
+        esc(summary(j)) + "<br>" + when(j.updated || j.created), "job:" + j.id);
     }).join("");
   }
-  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div><h1 class="title">Cementing</h1><p class="lede">Every well you cement, saved as a record.</p>';
-  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well number (e.g. MRM-1802)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
-  h += '<div class="sec"><div class="sh">History<span>' + db.wells.length + " well" + (db.wells.length === 1 ? "" : "s") + "</span></div>" +
-    (db.wells.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px;background:#e3e3e8">' : "") +
+  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div>' +
+    '<div class="brand"><img src="pdo-logo.png" alt="" onerror="this.remove()"><span class="kicker">FOR THE WELLSITE PE</span></div>' +
+    '<h1 class="title">Cement Job</h1><p class="lede">Built for the PE position — cement volumes, displacement and the job sheet in a few taps, so the calculations take minutes, not an hour.</p>';
+  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well number (e.g. NMR-175)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+  h += '<div class="sec"><div class="sh">History<span>' + db.jobs.length + " record" + (db.jobs.length === 1 ? "" : "s") + "</span></div>" +
+    (db.jobs.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px;background:#e3e3e8">' : "") +
     '<div class="grp" id="list">' + list() + "</div></div>";
-  h += '<div class="foot"><div class="nm">' + esc(me.name || "Cementing Engineer") + '</div><div class="ro">' + esc(me.role || "Cementing Engineer") + "</div>" +
-    (me.phone ? '<a href="tel:' + esc(me.phone.replace(/[^+\d]/g, "")) + '">' + esc(me.phone) + "</a>" : "") +
-    '<div><button class="linkbtn" data-a="me">' + (me.name ? "Edit my details" : "Add your name & phone") + "</button></div></div></div>";
+  h += '<div class="foot2">Created by ' + OWNER.name + '<br><a href="tel:+968' + OWNER.phone + '">' + OWNER.phone + "</a></div></div>";
   root.innerHTML = h;
   var create = function () {
     var inp = root.querySelector("#wname"), name = inp.value.trim();
     if (!name) { toast("Enter a well number first."); inp.focus(); return; }
-    var ex = db.wells.filter(function (w) { return w.name.toLowerCase() === name.toLowerCase(); })[0];
-    if (ex) { toast("Opened existing " + ex.name); location.hash = "well/" + ex.id; return; }
-    var w = { id: uid(), name: name, rig: "", field: "", notes: "", created: Date.now(), updated: Date.now(), jobs: [newJob()], plugs: [], recipe: newRecipe() };
-    db.wells.push(w); saveDb(); save("cur", w.id);
-    location.hash = "job/" + w.id + "/" + w.jobs[0].id;
+    var j = newJob(name); db.jobs.push(j); saveDb(); location.hash = "job/" + j.id;
   };
   root.querySelector("#wname").addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
   var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
   root.addEventListener("click", function (e) {
     var mo = e.target.closest("[data-more]");
     if (mo) {
-      var w = wellById(mo.getAttribute("data-more").split(":")[1]); if (!w) return;
-      menu(w.name, [
-        { label: "Open", fn: function () { location.hash = "well/" + w.id; } },
-        { label: "Edit", fn: function () { renameWell(w, route); } },
-        { label: "Delete", danger: true, fn: function () { delWell(w, route); } }]);
+      var j = jobById(mo.getAttribute("data-more").split(":")[1]); if (!j) return;
+      menu(j.name, [
+        { label: "Open", fn: function () { location.hash = "job/" + j.id; } },
+        { label: "Rename", fn: function () { form("Well number", [{ label: "Well number", value: j.name }], "Save", function (v) { if (!v[0]) return; j.name = v[0]; touch(j); route(); }); } },
+        { label: "Duplicate", fn: function () { dupJob(j); route(); toast("Duplicated"); } },
+        { label: "Delete", danger: true, fn: function () { delJob(j, route); } }]);
       return;
     }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
-    var a = e.target.getAttribute("data-a");
-    if (a === "create") create();
-    if (a === "me") {
-      form("My details", [{ label: "Your name", value: me.name }, { label: "Title", value: me.role || "Cementing Engineer" }, { label: "Phone (optional)", value: me.phone }], "Save", function (v) {
-        save("me", { name: v[0], role: v[1], phone: v[2] }); route();
-      });
-    }
+    if (e.target.getAttribute("data-a") === "create") create();
   });
 }
 
-function WellPage(root, w) {
-  save("cur", w.id);
-  function persist() { touch(w); }
-  function draw() {
-    var h = '<h1 class="title" id="o-wn">' + esc(w.name) + '</h1><p class="lede">Created ' + when(w.created) + "</p>";
-    h += grp("Well", txt("Well number", "name", w, "") + txt("Rig", "rig", w, "optional") + txt("Field", "field", w, "optional") + txt("Notes", "notes", w, "optional"));
-    h += grp("Cement jobs", w.jobs.map(function (j) {
-      return item('data-go="job/' + w.id + "/" + j.id + '"', "#c2410c", "C", esc(jobLabel(j)), jobSummary(j), "job:" + j.id);
-    }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addJob">+ New cement job</button>', w.jobs.length + "");
-    h += grp("Balanced plugs", w.plugs.map(function (p) {
-      return item('data-go="plug/' + w.id + "/" + p.id + '"', "#0284c7", "B", esc(p.title || "Plug" + (p.bottom ? " @ " + p.bottom + " m" : "")), p.len ? fi(P(p.len)) + " m plug" : "Not filled in yet", "plug:" + p.id);
-    }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addPlug">+ New balanced plug</button>');
-    h += grp("Slurry design", item('data-go="slurry/' + w.id + '"', "#d97706", "S", "Recipe → density & yield", "Send the result to any job in this well"));
-    h += '<div class="bar2" style="margin-top:26px"><button class="btn danger" data-act="delWell">Delete this well</button></div>';
-    root.innerHTML = '<div class="page">' + h + "</div>";
-  }
-  root.addEventListener("click", function (e) {
-    var mo = e.target.closest("[data-more]");
-    if (mo) {
-      var k = mo.getAttribute("data-more").split(":"), find = function (arr) { return arr.filter(function (x) { return x.id === k[1]; })[0]; };
-      if (k[0] === "job") {
-        var j = find(w.jobs); if (!j) return;
-        menu(jobLabel(j), [
-          { label: "Open", fn: function () { location.hash = "job/" + w.id + "/" + j.id; } },
-          { label: "Rename", fn: function () { form("Job name", [{ label: "e.g. Surface, Intermediate", value: j.title }], "Save", function (v) { j.title = v[0]; touch(w); draw(); }); } },
-          { label: "Duplicate", fn: function () { dupJob(w, j); draw(); toast("Duplicated"); } },
-          { label: "Delete", danger: true, fn: function () { delJob(w, j, draw); } }]);
-      } else {
-        var pl = find(w.plugs); if (!pl) return;
-        menu(pl.title || "Balanced plug", [
-          { label: "Open", fn: function () { location.hash = "plug/" + w.id + "/" + pl.id; } },
-          { label: "Rename", fn: function () { form("Plug name", [{ label: "e.g. Kick-off plug", value: pl.title }], "Save", function (v) { pl.title = v[0]; touch(w); draw(); }); } },
-          { label: "Delete", danger: true, fn: function () { ask("Delete this plug?", "", "Delete", true, function () { w.plugs = w.plugs.filter(function (x) { return x.id !== pl.id; }); touch(w); draw(); toast("Plug deleted"); }); } }]);
-      }
-      return;
-    }
-    var g = e.target.closest("[data-go]"); if (g) location.hash = g.getAttribute("data-go");
-  });
-  bind(root, w, persist, draw, function () { root.querySelector("#o-wn").textContent = w.name || "—"; }, {
-    addJob: function () { var j = newJob(); w.jobs.push(j); touch(w); location.hash = "job/" + w.id + "/" + j.id; },
-    addPlug: function () { var p = newPlug(); w.plugs.push(p); touch(w); location.hash = "plug/" + w.id + "/" + p.id; },
-    delWell: function () { delWell(w, function () { location.hash = "wells"; }); }
-  });
-  draw();
-}
-
-/* ═════════════════════════ SLURRY DESIGN ═════════════════════════ */
-// Absolute-volume method per 1 MT of cement.
-function sdCalc(s) {
-  var cs = P(s.cemSG), wt = P(s.water); if (!cs || wt == null) return null;
-  var mass = 1000 + wt * 10, vol = 1000 / cs + wt * 10, liqL = 0;
-  s.adds.forEach(function (a) {
-    var c = P(a.c), sg = P(a.sg); if (c == null || !sg) return;
-    var kg, L;
-    if (a.u === "bwoc") { kg = c * 10; L = kg / sg; } else if (a.u === "kgmt") { kg = c; L = kg / sg; } else { L = c; kg = c * sg; liqL += L; }
-    mass += kg; vol += L;
-  });
-  var y = vol / 1000, sack = P(s.sack) || 50;
-  return { sg: mass / vol, yield: y, mixFluid: (wt * 10 + liqL) / 1000, water: wt * 10 / 1000, sackKg: sack, perSack: y * sack };
-}
-function SlurryDesign(root, w) {
-  var s = w.recipe;
-  if (!s.target && w.jobs[0]) s.target = w.jobs[0].id;
-  function persist() { touch(w); }
-  var units = [{ id: "bwoc", label: "% BWOC" }, { id: "kgmt", label: "kg/MT" }, { id: "lmt", label: "L/MT liquid" }];
-  function draw() {
-    var h = '<h1 class="title">Slurry design</h1><p class="lede">' + esc(w.name) + " · per 1 MT cement</p>";
-    h += grp("Base", num("Cement SG", "cemSG", s, "", "3.15") + num("Water", "water", s, "% BWOC", "44") + num("Sack", "sack", s, "kg", "50"), "");
-    h += '<p class="note" style="padding:0 16px">Class G neat: 44% water → 1.90 SG. Class A 46%, class H 38%.</p>';
-    h += grp("Additives", s.adds.map(function (a, i) {
-      var p = "adds." + i + ".";
-      return '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(a.name) + '" placeholder="Additive name">' +
-        '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'c" value="' + esc(a.c) + '" placeholder="conc">' +
-        '<select class="chip" data-k="' + p + 'u">' + units.map(function (u) { return '<option value="' + u.id + '"' + (a.u === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join("") + "</select>" +
-        '<input class="in" inputmode="decimal" data-k="' + p + 'sg" value="' + esc(a.sg) + '" placeholder="SG">' +
-        '<button class="x" data-act="del" data-i="' + i + '">✕</button></div></div>';
-    }).join("") + '<p class="note">Liquids (L/MT) go into the mix fluid; solids add to the blend. SG is the absolute specific gravity.</p><button class="btn ghost" data-act="add">+ additive</button>');
-    h += grp("Result", '<div id="o-r"></div>');
-    h += grp("Send to a job", w.jobs.length ? sel("Job", "target", s, w.jobs.map(function (j) { return { id: j.id, label: jobLabel(j) }; })) +
-      '<div class="bar2" style="margin:12px 0"><button class="btn" style="background:var(--lead)" data-act="to" data-i="lead">→ Lead</button><button class="btn" style="background:var(--tail)" data-act="to" data-i="tail">→ Tail / single</button></div>'
-      : '<div class="empty">This well has no cement job yet.</div>');
-    root.innerHTML = '<div class="page">' + h + "</div>"; outs();
-  }
-  function outs() {
-    var r = sdCalc(s), o = root.querySelector("#o-r");
-    if (!r) { o.innerHTML = '<div class="empty">Enter cement SG and water.</div>'; return; }
-    o.innerHTML = '<div class="tiles">' + tile("Density", fx(r.sg, 3), "SG") + tile("Yield", fx(r.yield, 3), "m³/MT") + tile("Mix fluid", fx(r.mixFluid, 3), "m³/MT") + "</div>" +
-      line("Density", fx(r.sg * 8.3454, 2) + " ppg · " + fi(r.sg * 1000) + " kg/m³") +
-      line("Yield per " + r.sackKg + " kg sack", fx(r.perSack * 1000, 1) + " L · " + fx(r.perSack * 35.3147, 3) + " ft³") +
-      line("Water only", fx(r.water, 3) + " m³/MT") +
-      line("Gradient", fx(r.sg * G, 4) + " bar/m · " + fx(r.sg * 0.4335, 3) + " psi/ft");
-  }
-  bind(root, s, persist, draw, outs, {
-    add: function () { s.adds.push({ name: "", c: "", u: "bwoc", sg: "" }); persist(); draw(); },
-    del: function (i) { s.adds.splice(+i, 1); persist(); draw(); },
-    to: function (which) {
-      var r = sdCalc(s), j = w.jobs.filter(function (x) { return x.id === s.target; })[0]; if (!r || !j) return;
-      j[which + "SG"] = r.sg.toFixed(2); j[which + "Yield"] = r.yield.toFixed(3); j[which + "Conc"] = r.mixFluid.toFixed(3);
-      if (which === "lead") j.slurry = "leadtail";
-      touch(w); toast("Sent to " + which + " · " + jobLabel(j));
-    }
-  });
-  draw();
-}
-
-/* ═════════════════════════ BALANCED PLUG ═════════════════════════ */
-function PlugTool(root, w, s) {
-  function persist() { touch(w); }
-  function draw() {
-    var h = '<h1 class="title">Balanced plug</h1><p class="lede">' + esc(w.name) + "</p>";
-    h += '<div class="bar2"><button class="btn danger" data-act="del">Delete plug</button></div>';
-    h += grp("Plug", txt("Name", "title", s, "e.g. Kick-off plug") + '<div class="pad" style="padding-top:0">' + seg("where", s, [["oh", "Open hole"], ["cased", "Inside casing"]]) + "</div>" +
-      (s.where === "oh" ? sel("Hole", "holeSize", s, HOLES, true) + num("Excess", "ex", s, "%") : csgRows("Casing", "csgSize", s)) +
-      num("Plug bottom", "bottom", s, "m") + num("Plug length", "len", s, "m") + sel("Work string", "pipe", s, PIPE, true) +
-      num("Spacer ahead", "spAhead", s, "m³") + num("Under-displace", "under", s, "m³", "0"));
-    h += grp("Result", '<div id="o-p"></div>');
-    h += grp("Cement", num("Slurry yield", "yield", s, "m³/MT") + num("Mix fluid", "conc", s, "m³/MT") + num("Pump output", "pumpOut", s, "L/stk") + '<div id="o-p2"></div>');
-    root.innerHTML = '<div class="page">' + h + "</div>"; outs();
-  }
-  function outs() {
-    var D = s.where === "oh" ? P(s.holeSize) : (csg(s.csgSize) || {}).idIn, pp = pipe(s.pipe), B = P(s.bottom), L = P(s.len), ex = s.where === "oh" ? (P(s.ex) || 0) / 100 : 0;
-    var o = root.querySelector("#o-p"), o2 = root.querySelector("#o-p2");
-    if (!D || !pp || B == null || !L) { o.innerHTML = '<div class="empty">Enter plug bottom, length and the work string.</div>'; o2.innerHTML = ""; return; }
-    if (L > B) { o.innerHTML = '<div class="warn" style="margin:12px 0">⚠ The plug is longer than its bottom depth.</div>'; o2.innerHTML = ""; return; }
-    var hc = cap(D), pc = cap(pp.idIn), ac = ann(D, pp.od);
-    var V = L * hc * (1 + ex) / 1000, Hp = V * 1000 / (ac + pc), topIn = B - Hp, topOut = B - V * 1000 / hc;
-    var spH = (P(s.spAhead) || 0) * 1000 / ac, spBehind = spH * pc / 1000;
-    var disp = Math.max(0, pc * (topIn - spH) / 1000 - (P(s.under) || 0)), po = P(s.pumpOut);
-    o.innerHTML = '<div class="tiles">' + tile("Cement", fx(V), "m³") + tile("Spacer behind", fx(spBehind), "m³") + tile("Displace", fx(disp), "m³") + "</div>" +
-      line("Hole / annulus / pipe", fx(hc) + " / " + fx(ac) + " / " + fx(pc), "capacities, L/m") +
-      line("Plug height, pipe in", fi(Hp) + " m", "V ÷ (annulus + pipe capacity)") +
-      line("Top of cement, pipe in", fi(topIn) + " m") +
-      line("Top of cement, pipe out", fi(topOut) + " m", "pull above this before circulating", "var(--accent)") +
-      line("Spacer height (balanced)", fi(spH) + " m") +
-      line("Displacement", fx(disp) + " m³ · " + fx(disp * BBL, 1) + " bbl", P(s.under) ? "under-displaced by " + esc(s.under) + " m³" : "balanced") +
-      (po ? line("Strokes", fi(disp * 1000 / po) + " stk") : "");
-    var y = P(s.yield), cc = P(s.conc);
-    o2.innerHTML = y ? '<div class="tiles" style="margin-bottom:14px">' + tile("Dry cement", fx(V / y), "MT") + tile("Mix fluid", cc ? fx(V / y * cc) : "—", "m³") + tile("Sacks", fi(V / y * 1000 / 50), "× 50 kg") + "</div>" : "";
-  }
-  bind(root, s, persist, draw, outs, {
-    del: function () { ask("Delete this plug?", "", "Delete", true, function () { w.plugs = w.plugs.filter(function (x) { return x.id !== s.id; }); touch(w); toast("Plug deleted"); location.hash = "well/" + w.id; }); }
-  });
-  draw();
-}
-
-/* ═════════════════════════ TOOLS ═════════════════════════ */
-function ToolsPage(root) {
-  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div><h1 class="title">Tools</h1><p class="lede">Quick calculators — not tied to a well.</p>';
-  h += grp("Calculators", item('data-go="caps"', "#0d9488", "C", "Capacities", "Hole, casing, annulus — L/m") + item('data-go="units"', "#7c3aed", "U", "Converter", "SG · ppg · bar · psi · bbl · m³"));
-  h += grp("Backup", '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note" style="padding-bottom:12px">Your wells live on this phone only. Save a copy to keep them safe or move them to another phone.</p>');
-  root.innerHTML = h + "</div>";
-  root.addEventListener("click", function (e) {
-    var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
-    if (e.target.getAttribute("data-a") === "export") {
-      var data = { app: "cementing-toolkit", v: 2, at: new Date().toISOString(), wells: db.wells, me: load("me", {}) };
-      var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
-      el.href = url; el.download = "cementing-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
-      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
-    }
-  });
-  root.addEventListener("change", function (e) {
-    if (e.target.getAttribute("data-a") !== "import") return;
-    var f = e.target.files[0]; if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function () {
-      try {
-        var d = JSON.parse(rd.result);
-        if (d.app !== "cementing-toolkit" || !Array.isArray(d.wells)) { toast("That is not a Cementing Toolkit backup."); return; }
-        var n = 0;
-        d.wells.forEach(function (w) {
-          var i = db.wells.findIndex(function (x) { return x.id === w.id; });
-          if (i < 0) { db.wells.push(w); n++; } else if ((w.updated || 0) > (db.wells[i].updated || 0)) { db.wells[i] = w; n++; }
-        });
-        saveDb(); if (d.me && !load("me", {}).name) save("me", d.me);
-        toast("Restored " + n + " well" + (n === 1 ? "" : "s"));
-      } catch (x) { toast("Could not read that file."); }
-    };
-    rd.readAsText(f);
-  });
-}
-
-var capS = Object.assign({ outer: "hole", oHole: "12.25", oCsg: "9.625-47", oMan: "", inner: "csg", iCsg: "9.625-47", iPipe: "DP 5″ 19.5#", iMan: "", len: "1000" }, load("cap", {}));
-function CapTool(root) {
-  var s = capS;
-  function persist() { save("cap", s); }
-  function draw() {
-    var h = '<h1 class="title">Capacities</h1>';
-    h += grp("Outside", '<div class="pad" style="padding-bottom:0">' + seg("outer", s, [["hole", "Hole"], ["csg", "Casing ID"], ["man", "Manual"]]) + "</div>" +
-      (s.outer === "hole" ? sel("Hole", "oHole", s, HOLES, true) : s.outer === "csg" ? csgRows("Casing", "oCsg", s) : num("Diameter", "oMan", s, "in")));
-    h += grp("Inside", '<div class="pad" style="padding-bottom:0">' + seg("inner", s, [["none", "Empty"], ["csg", "Casing"], ["pipe", "DP/Tbg"], ["man", "Manual"]]) + "</div>" +
-      (s.inner === "csg" ? csgRows("Casing", "iCsg", s) : s.inner === "pipe" ? sel("String", "iPipe", s, PIPE, true) : s.inner === "man" ? num("Diameter", "iMan", s, "in") : ""));
-    h += grp("Result", num("Length", "len", s, "m") + '<div id="o-c"></div>');
-    h += grp("Casing table", '<div class="pad"><table class="t"><tr><th>Size</th><th class="n">ID in</th><th class="n">L/m</th></tr>' +
-      CASING.map(function (c) { return "<tr><td>" + c.label + '</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + fx(cap(c.idIn)) + "</td></tr>"; }).join("") + "</table></div>");
-    root.innerHTML = '<div class="page">' + h + "</div>"; outs();
-  }
-  function outs() {
-    var D = s.outer === "hole" ? P(s.oHole) : s.outer === "csg" ? (csg(s.oCsg) || {}).idIn : P(s.oMan);
-    var d = s.inner === "none" ? 0 : s.inner === "csg" ? (csg(s.iCsg) || {}).od : s.inner === "pipe" ? (pipe(s.iPipe) || {}).od : P(s.iMan);
-    var o = root.querySelector("#o-c"), L = P(s.len);
-    if (!D || d == null) { o.innerHTML = '<div class="empty">Pick both sizes.</div>'; return; }
-    if (d >= D) { o.innerHTML = '<div class="warn" style="margin:12px 0">⚠ ' + d + "″ does not fit inside " + D + "″.</div>"; return; }
-    var c = ann(D, d), pIn = s.inner === "pipe" ? cap((pipe(s.iPipe) || {}).idIn) : s.inner === "csg" ? cap((csg(s.iCsg) || {}).idIn) : null;
-    o.innerHTML = '<div class="tiles">' + tile(d ? "Annulus" : "Capacity", fx(c, 3), "L/m") + tile("Volume", L ? fx(c * L / 1000) : "—", "m³") + "</div>" +
-      line("bbl/ft", fx(c / 1000 * BBL * 0.3048, 5)) + line("m per m³", fx(1000 / c, 1)) + line("Formula", "(" + D + "² − " + d + "²) × 0.5067") +
-      (pIn ? line("Inside the pipe", fx(pIn, 3) + " L/m" + (L ? " · " + fx(pIn * L / 1000) + " m³" : "")) : "");
-  }
-  bind(root, s, persist, draw, outs, {});
-  draw();
-}
-
-var CONV = [
-  { t: "Density", u: [["SG", 1], ["ppg", 1 / 8.3454], ["kg/m³", 0.001], ["psi/ft", 1 / 0.4335], ["bar/m", 1 / G]] },
-  { t: "Pressure", u: [["bar", 1], ["psi", 1 / PSI], ["kPa", 0.01], ["MPa", 10]] },
-  { t: "Volume", u: [["m³", 1], ["bbl", 1 / BBL], ["L", 0.001], ["ft³", 0.0283168], ["gal (US)", 0.00378541]] },
-  { t: "Rate", u: [["m³/min", 1], ["bpm", 1 / BBL], ["L/min", 0.001], ["gpm", 0.00378541]] },
-  { t: "Length", u: [["m", 1], ["ft", 0.3048], ["in", 0.0254]] },
-  { t: "Yield", u: [["m³/MT", 1], ["L/kg", 1], ["ft³/sk (94 lb)", 1 / (35.3147 * 0.042638)]] },
-  { t: "Capacity", u: [["L/m", 1], ["m³/m", 1000], ["bbl/ft", 1000 / (BBL * 0.3048)]] }
-];
-var cv = Object.assign({ cat: "0", val: {} }, load("cv", {}));
-function ConvTool(root) {
-  function draw() {
-    var c = CONV[+cv.cat] || CONV[0];
-    var h = '<h1 class="title">Converter</h1><div class="seg" style="flex-wrap:wrap">' + CONV.map(function (x, i) {
-      return '<button data-cat="' + i + '" class="' + (String(i) === String(cv.cat) ? "on" : "") + '" style="flex:1 0 28%">' + x.t + "</button>";
-    }).join("") + "</div>";
-    h += grp(c.t, c.u.map(function (u, i) {
-      return '<label class="r"><span class="l">' + u[0] + '</span><input class="in" inputmode="decimal" data-cv="' + i + '"></label>';
-    }).join(""), "type in any box");
-    root.innerHTML = '<div class="page">' + h + "</div>";
-    var inputs = root.querySelectorAll("[data-cv]");
-    var fill = function (b, skip) { inputs.forEach(function (el, i) { if (i !== skip) el.value = b == null ? "" : +(b / c.u[i][1]).toPrecision(6); }); };
-    fill(cv.val[cv.cat], -1);
-    inputs.forEach(function (el, i) {
-      el.addEventListener("input", function () { var v = P(el.value), b = v == null ? null : v * c.u[i][1]; cv.val[cv.cat] = b; save("cv", cv); fill(b, i); });
-    });
-  }
-  root.addEventListener("click", function (e) { var b = e.target.closest("[data-cat]"); if (b) { cv.cat = b.getAttribute("data-cat"); save("cv", cv); draw(); } });
-  draw();
-}
-
-/* ═════════════════════════ SHELL ═════════════════════════ */
-var ICON = {
-  wells: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4h16M8 4v20M20 4v20M12 4v20M16 4v20M5 24h18"/></svg>',
-  cement: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="6" width="20" height="16" rx="1.5"/><path d="M4 11.3h20M4 16.6h20M10 6v5.3M18 6v5.3M14 11.3v5.3M8 16.6V22M20 16.6V22"/></svg>',
-  tools: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="18" height="20" rx="2.5"/><path d="M9 8.5h10M9.5 13.5h1M14 13.5h1M18.5 13.5h.5M9.5 17.5h1M14 17.5h1M18.5 17.5h.5M9.5 21h1M14 21h1"/></svg>'
-};
+/* ───────────────────────── shell ───────────────────────── */
 function route() {
-  var parts = (location.hash || "#wells").slice(1).split("/"), page = parts[0] || "wells";
+  var parts = (location.hash || "#home").slice(1).split("/");
   var root = document.getElementById("root");
   document.body.classList.remove("sheet");
   // A fresh node each time so listeners from the last page are dropped.
   var fresh = root.cloneNode(false); root.parentNode.replaceChild(fresh, root); root = fresh;
   window.scrollTo(0, 0);
-  var w = parts[1] ? wellById(parts[1]) : null, tab = "wells", back = null, body = document.createElement("div");
-  var find = function (arr, id) { return (arr || []).filter(function (x) { return x.id === id; })[0]; };
-  if (page === "well" && w) { tab = "cement"; back = ["wells", "Wells"]; WellPage(body, w); }
-  else if (page === "job" && w && find(w.jobs, parts[2])) { tab = "cement"; back = ["well/" + w.id, w.name]; CementJob(body, w, find(w.jobs, parts[2])); }
-  else if (page === "plug" && w && find(w.plugs, parts[2])) { tab = "cement"; back = ["well/" + w.id, w.name]; PlugTool(body, w, find(w.plugs, parts[2])); }
-  else if (page === "slurry" && w) { tab = "cement"; back = ["well/" + w.id, w.name]; SlurryDesign(body, w); }
-  else if (page === "tools") { tab = "tools"; ToolsPage(body); }
-  else if (page === "caps") { tab = "tools"; back = ["tools", "Tools"]; CapTool(body); }
-  else if (page === "units") { tab = "tools"; back = ["tools", "Tools"]; ConvTool(body); }
-  else WellsHome(body);
-  if (back) {
+  var j = parts[0] === "job" ? jobById(parts[1]) : null, body = document.createElement("div");
+  if (j) {
     var top = document.createElement("div"); top.className = "top";
-    top.innerHTML = '<button><b>‹</b><span></span></button>'; top.querySelector("span").textContent = back[1];
-    top.querySelector("button").onclick = function () { location.hash = back[0]; };
-    root.appendChild(top);
-  }
+    top.innerHTML = "<button><b>‹</b><span>Home</span></button>";
+    top.querySelector("button").onclick = function () { location.hash = "home"; };
+    root.appendChild(top); CementPage(body, j);
+  } else Home(body);
   root.appendChild(body);
-  var tabs = document.createElement("nav"); tabs.className = "tabs";
-  tabs.innerHTML = [["wells", "Wells"], ["cement", "Cement"], ["tools", "Tools"]].map(function (t) {
-    return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + ICON[t[0]] + "<span>" + t[1] + "</span></button>";
-  }).join("");
-  tabs.onclick = function (e) {
-    var b = e.target.closest("[data-tab]"); if (!b) return;
-    var t = b.getAttribute("data-tab");
-    if (t === "cement") { var c = curWell(); if (c) location.hash = "well/" + c.id; else { toast("Create a well first"); location.hash = "wells"; } }
-    else location.hash = t;
-  };
-  root.appendChild(tabs);
 }
 window.addEventListener("hashchange", route);
 window.addEventListener("error", function (e) {

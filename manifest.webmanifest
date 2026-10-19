@@ -1,6 +1,6 @@
 {
-  "name": "Cementing Toolkit",
-  "short_name": "Cementing",
+  "name": "Cement Job",
+  "short_name": "Cement Job",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

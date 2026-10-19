@@ -1,17 +1,13 @@
-# Cementing Toolkit
+# Cement Job
 
-An offline, phone-first toolkit for cement jobs. Open `index.html` on a phone (or host the folder on GitHub Pages) and "Add to Home Screen" to run it as an app.
+A phone-first, offline cement job calculator built for the wellsite PE.
 
-How it works: type a well number on the home page and tap **Create** — the well is saved in **History** and you can reopen it any time. Each well holds its cement jobs (one per casing/liner string), balanced plugs and a slurry recipe. The bottom bar has **Wells**, **Cement** (the well you last opened) and **Tools**.
+- **Home** — type a well number and tap **Create**; every well is kept in **History** (⋯ menu: open, rename, duplicate, delete).
+- **Cement page** — casing or liner, single or lead/tail; previous casing, open hole, cement program and excess; schematic; section-by-section cement volumes; displacement and strokes; lead/tail slurry (dry cement, mix fluid, equivalent dry, additives) and spacer; printable A4 worksheet (PDF).
 
-Inside each well:
-- **Cement Job** (all on one page) — casing or liner, single or lead/tail. Section-by-section volumes with excess, shoe track, rathole, displacement, strokes, slurry/additive quantities, spacer, end-of-job hydrostatics (differential, bump, EMW vs frac) and a printable A4 worksheet (PDF). Pump schedule with job time and thickening-time check is on the same page.
-- **Slurry Design** — absolute-volume density, yield and mix-fluid from a recipe; sends the result to the cement job.
-- **Balanced Plug** — cement volume, balanced height, spacer behind, displacement, pull-out depth.
+Capacities come from the rig spec-sheet tables (e.g. 12¼″×9⅝″ = 28.94 L/m) and can be overridden per job.
+Data stays on the phone. Verify results against the approved cement program.
 
-Tools (not tied to a well):
-- **Capacities** — hole, casing and annulus capacities plus a casing table.
-- **Converter** — SG/ppg, bar/psi, m³/bbl, rates, yields.
+To show the company logo on the home page, add the image as `pdo-logo.png` next to `index.html`.
 
-Everything is stored on the device; use Tools → Backup → Save a copy to move jobs between phones.
-Always verify results against the approved cement program.
+Created by Mohammed Al Araimi · 90911090
