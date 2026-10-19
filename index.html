@@ -133,6 +133,29 @@
   .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 86px); transform:translateX(-50%); z-index:9999;
     background:#1c1c1e; color:#fff; font-size:15px; font-weight:500; padding:11px 20px; border-radius:999px; box-shadow:0 6px 24px rgba(0,0,0,.25); white-space:nowrap; }
 
+  .more { width:38px; height:38px; flex:0 0 38px; border-radius:99px; display:flex; align-items:center; justify-content:center;
+    color:var(--sub); font-size:22px; font-weight:700; letter-spacing:1px; cursor:pointer; margin-left:auto; }
+  .more:active { background:var(--field); }
+  .more + .ch { margin-left:0; }
+  .modal { position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,.38); display:flex; align-items:flex-end; justify-content:center;
+    padding:0 10px calc(env(safe-area-inset-bottom) + 10px); animation:fade .15s ease-out; }
+  .modal.mid { align-items:center; padding:20px; }
+  @keyframes fade { from { opacity:0; } to { opacity:1; } }
+  .sheetbox { width:100%; max-width:480px; }
+  .sheetbox .grpm { background:rgba(255,255,255,.98); border-radius:14px; overflow:hidden; margin-bottom:8px; }
+  .sheetbox .hdm { padding:13px 16px; text-align:center; font-size:13px; color:var(--sub); border-bottom:1px solid var(--line); }
+  .sheetbox button { display:block; width:100%; background:none; border:none; border-bottom:1px solid var(--line); padding:17px; font-size:19px; color:#0a64d6; cursor:pointer; }
+  .sheetbox button:last-child { border-bottom:none; }
+  .sheetbox button.dg { color:var(--danger); } .sheetbox button.cx { font-weight:600; }
+  .dlg { width:100%; max-width:340px; background:#fff; border-radius:16px; overflow:hidden; text-align:center; }
+  .dlg .bd { padding:20px 18px 16px; }
+  .dlg h4 { margin:0 0 6px; font-size:17px; } .dlg p { margin:0; font-size:14px; color:var(--sub); line-height:1.4; }
+  .dlg .in { width:100%; max-width:none; text-align:left; margin-top:10px; font-size:16px; }
+  .dlg .bt { display:flex; border-top:1px solid var(--line); }
+  .dlg .bt button { flex:1; background:none; border:none; padding:14px; font-size:17px; color:#0a64d6; cursor:pointer; }
+  .dlg .bt button + button { border-left:1px solid var(--line); font-weight:600; }
+  .dlg .bt button.dg { color:var(--danger); }
+
   /* Printable worksheet */
   #sheet { display:none; background:#fff; color:#141a17; min-height:100vh; }
   body.sheet #root { display:none; }
@@ -242,13 +265,43 @@ function line(k, v, small, color) {
 }
 function big(k, v, unit, cls) { return '<div class="big ' + (cls || "") + '"><span class="k">' + k + '</span><span class="v">' + v + "<small>" + (unit || "") + "</small></span></div>"; }
 function tile(k, v, unit) { return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + "<small>" + (unit || "") + "</small></div></div>"; }
-function item(go, color, letter, name, sub, extra) {
-  return '<button class="item" ' + go + '><span class="ic" style="background:' + color + '">' + letter + '</span><span style="flex:1;min-width:0"><span class="nm">' + name +
-    '</span><span class="sb">' + sub + "</span></span>" + (extra || "") + '<span class="ch">›</span></button>';
+function item(go, color, letter, name, sub, more) {
+  return '<div class="item" role="button" ' + go + '><span class="ic" style="background:' + color + '">' + letter + '</span><span style="flex:1;min-width:0"><span class="nm">' + name +
+    '</span><span class="sb">' + sub + "</span></span>" + (more ? '<span class="more" role="button" aria-label="More" data-more="' + more + '">⋯</span>' : "") + '<span class="ch">›</span></div>';
 }
 function toast(msg) {
   var t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
   setTimeout(function () { t.remove(); }, 1800);
+}
+// In-page dialogs: the browser's confirm/prompt are blocked in some
+// viewers (and look out of place), so the app draws its own.
+function modal(html, mid) {
+  var m = document.createElement("div"); m.className = "modal" + (mid ? " mid" : ""); m.innerHTML = html;
+  document.body.appendChild(m); return m;
+}
+function menu(title, actions) {
+  var m = modal('<div class="sheetbox"><div class="grpm">' + (title ? '<div class="hdm">' + esc(title) + "</div>" : "") +
+    actions.map(function (a, i) { return '<button data-i="' + i + '" class="' + (a.danger ? "dg" : "") + '">' + esc(a.label) + "</button>"; }).join("") +
+    '</div><div class="grpm"><button class="cx" data-i="x">Cancel</button></div></div>');
+  m.onclick = function (e) {
+    var b = e.target.closest("button"); if (!b && e.target !== m) return;
+    m.remove(); if (b && b.getAttribute("data-i") !== "x") actions[+b.getAttribute("data-i")].fn();
+  };
+}
+function ask(title, msg, ok, danger, fn) {
+  var m = modal('<div class="dlg"><div class="bd"><h4>' + esc(title) + "</h4><p>" + esc(msg || "") + '</p></div><div class="bt"><button data-v="0">Cancel</button><button data-v="1" class="' +
+    (danger ? "dg" : "") + '">' + esc(ok) + "</button></div></div>", true);
+  m.onclick = function (e) { var b = e.target.closest("button"); if (!b && e.target !== m) return; m.remove(); if (b && b.getAttribute("data-v") === "1") fn(); };
+}
+// fields: [{label, value, ph}] → fn([values])
+function form(title, fields, ok, fn) {
+  var m = modal('<div class="dlg"><div class="bd"><h4>' + esc(title) + "</h4>" + fields.map(function (f, i) {
+    return '<input class="in" data-f="' + i + '" value="' + esc(f.value || "") + '" placeholder="' + esc(f.ph || f.label || "") + '" autocomplete="off">';
+  }).join("") + '</div><div class="bt"><button data-v="0">Cancel</button><button data-v="1">' + esc(ok || "Save") + "</button></div></div>", true);
+  var ins = m.querySelectorAll("[data-f]"); setTimeout(function () { ins[0].focus(); ins[0].select(); }, 50);
+  var done = function (yes) { var v = Array.prototype.map.call(ins, function (x) { return x.value.trim(); }); m.remove(); if (yes) fn(v); };
+  ins.forEach(function (x) { x.addEventListener("keydown", function (e) { if (e.key === "Enter") done(true); }); });
+  m.onclick = function (e) { var b = e.target.closest("button"); if (b) done(b.getAttribute("data-v") === "1"); else if (e.target === m) done(false); };
 }
 function setPath(o, path, v) {
   var ks = path.split("."), x = o;
@@ -679,20 +732,38 @@ function CementJob(root, w, s) {
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
     addStage: function () { s.stages.push({ name: "", vol: "", rate: "", extra: "" }); persist(); draw(); },
     delStage: function (i) { s.stages.splice(+i, 1); persist(); draw(); },
-    build: function () { if (s.stages.length && !confirm("Replace the stages with ones built from this job?")) return; s.stages = stagesFromJob(s); persist(); draw(); },
-    pdf: function () { var m = jobModel(s); if (!m.items) { toast(m.err && m.err.length ? "Fix the flagged rows first." : "Enter the job data first."); return; } showSheet(w, s, m); },
-    dup: function () {
-      var c = JSON.parse(JSON.stringify(s)); c.id = uid(); c.created = Date.now(); c.title = (s.title ? s.title + " " : "") + "(copy)";
-      w.jobs.push(c); touch(w); location.hash = "job/" + w.id + "/" + c.id; toast("Duplicated");
+    build: function () {
+      var go = function () { s.stages = stagesFromJob(s); persist(); draw(); };
+      if (s.stages.length) ask("Rebuild schedule?", "Replace the stages with ones built from this job.", "Rebuild", false, go); else go();
     },
-    delJob: function () {
-      if (!confirm("Delete this cement job from " + w.name + "?")) return;
-      w.jobs = w.jobs.filter(function (x) { return x.id !== s.id; }); touch(w); location.hash = "well/" + w.id;
-    }
+    pdf: function () { var m = jobModel(s); if (!m.items) { toast(m.err && m.err.length ? "Fix the flagged rows first." : "Enter the job data first."); return; } showSheet(w, s, m); },
+    dup: function () { var c = dupJob(w, s); location.hash = "job/" + w.id + "/" + c.id; toast("Duplicated"); },
+    delJob: function () { delJob(w, s, function () { location.hash = "well/" + w.id; }); }
   });
   draw();
 }
 
+function dupJob(w, s) {
+  var c = JSON.parse(JSON.stringify(s)); c.id = uid(); c.created = Date.now();
+  c.title = (s.title || "").replace(/\s*\(copy\)$/, "") + " (copy)"; c.title = c.title.trim();
+  w.jobs.splice(w.jobs.indexOf(s) + 1, 0, c); touch(w); return c;
+}
+function delJob(w, s, after) {
+  ask("Delete this job?", jobLabel(s) + " will be removed from " + w.name + ".", "Delete", true, function () {
+    w.jobs = w.jobs.filter(function (x) { return x.id !== s.id; }); touch(w); toast("Job deleted"); after();
+  });
+}
+function delWell(w, after) {
+  ask("Delete " + w.name + "?", "The well and all its jobs and plugs will be removed. This cannot be undone.", "Delete", true, function () {
+    db.wells = db.wells.filter(function (x) { return x.id !== w.id; }); saveDb(); toast(w.name + " deleted"); after();
+  });
+}
+function renameWell(w, after) {
+  form("Edit well", [{ label: "Well number", value: w.name }, { label: "Rig (optional)", value: w.rig }, { label: "Field (optional)", value: w.field }], "Save", function (v) {
+    if (!v[0]) { toast("Well number can't be empty"); return; }
+    w.name = v[0]; w.rig = v[1]; w.field = v[2]; touch(w); after();
+  });
+}
 function showSheet(w, s, m) {
   var sl = slurries(s, m), pr = pressures(s, m), me = load("me", {});
   var colr = { lead: "#b45309", tail: "#0d7a6f", shoetrack: "#6d28d9", rathole: "#be185d" };
@@ -743,7 +814,7 @@ function showSheet(w, s, m) {
   sh.onclick = function (e) {
     var a = e.target.getAttribute("data-a");
     if (a === "back") document.body.classList.remove("sheet");
-    if (a === "print") { try { window.print(); } catch (x) { alert("Use Share → Print to save as PDF."); } }
+    if (a === "print") { try { window.print(); } catch (x) { toast("Use Share → Print to save as PDF."); } }
   };
   document.body.classList.add("sheet"); window.scrollTo(0, 0);
 }
@@ -759,7 +830,7 @@ function WellsHome(root) {
     return L.map(function (w) {
       var n = w.jobs.length;
       return item('data-go="well/' + w.id + '"', "var(--accent)", esc((w.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(w.name),
-        (n ? n + " job" + (n > 1 ? "s" : "") + " · " : "") + (w.rig ? esc(w.rig) + " · " : "") + when(w.updated || w.created));
+        (n ? n + " job" + (n > 1 ? "s" : "") + " · " : "") + (w.rig ? esc(w.rig) + " · " : "") + when(w.updated || w.created), "well:" + w.id);
     }).join("");
   }
   var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div><h1 class="title">Cementing</h1><p class="lede">Every well you cement, saved as a record.</p>';
@@ -783,14 +854,22 @@ function WellsHome(root) {
   root.querySelector("#wname").addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
   var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
   root.addEventListener("click", function (e) {
+    var mo = e.target.closest("[data-more]");
+    if (mo) {
+      var w = wellById(mo.getAttribute("data-more").split(":")[1]); if (!w) return;
+      menu(w.name, [
+        { label: "Open", fn: function () { location.hash = "well/" + w.id; } },
+        { label: "Edit", fn: function () { renameWell(w, route); } },
+        { label: "Delete", danger: true, fn: function () { delWell(w, route); } }]);
+      return;
+    }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
     var a = e.target.getAttribute("data-a");
     if (a === "create") create();
     if (a === "me") {
-      var n = prompt("Your name", me.name || ""); if (n == null) return;
-      var r = prompt("Your title", me.role || "Cementing Engineer"); if (r == null) return;
-      var p = prompt("Phone (optional)", me.phone || ""); if (p == null) return;
-      save("me", { name: n.trim(), role: r.trim(), phone: p.trim() }); route();
+      form("My details", [{ label: "Your name", value: me.name }, { label: "Title", value: me.role || "Cementing Engineer" }, { label: "Phone (optional)", value: me.phone }], "Save", function (v) {
+        save("me", { name: v[0], role: v[1], phone: v[2] }); route();
+      });
     }
   });
 }
@@ -802,23 +881,41 @@ function WellPage(root, w) {
     var h = '<h1 class="title" id="o-wn">' + esc(w.name) + '</h1><p class="lede">Created ' + when(w.created) + "</p>";
     h += grp("Well", txt("Well number", "name", w, "") + txt("Rig", "rig", w, "optional") + txt("Field", "field", w, "optional") + txt("Notes", "notes", w, "optional"));
     h += grp("Cement jobs", w.jobs.map(function (j) {
-      return item('data-go="job/' + w.id + "/" + j.id + '"', "#c2410c", "C", esc(jobLabel(j)), jobSummary(j));
+      return item('data-go="job/' + w.id + "/" + j.id + '"', "#c2410c", "C", esc(jobLabel(j)), jobSummary(j), "job:" + j.id);
     }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addJob">+ New cement job</button>', w.jobs.length + "");
     h += grp("Balanced plugs", w.plugs.map(function (p) {
-      return item('data-go="plug/' + w.id + "/" + p.id + '"', "#0284c7", "B", esc(p.title || "Plug" + (p.bottom ? " @ " + p.bottom + " m" : "")), p.len ? fi(P(p.len)) + " m plug" : "Not filled in yet");
+      return item('data-go="plug/' + w.id + "/" + p.id + '"', "#0284c7", "B", esc(p.title || "Plug" + (p.bottom ? " @ " + p.bottom + " m" : "")), p.len ? fi(P(p.len)) + " m plug" : "Not filled in yet", "plug:" + p.id);
     }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addPlug">+ New balanced plug</button>');
     h += grp("Slurry design", item('data-go="slurry/' + w.id + '"', "#d97706", "S", "Recipe → density & yield", "Send the result to any job in this well"));
     h += '<div class="bar2" style="margin-top:26px"><button class="btn danger" data-act="delWell">Delete this well</button></div>';
     root.innerHTML = '<div class="page">' + h + "</div>";
   }
-  root.addEventListener("click", function (e) { var g = e.target.closest("[data-go]"); if (g) location.hash = g.getAttribute("data-go"); });
+  root.addEventListener("click", function (e) {
+    var mo = e.target.closest("[data-more]");
+    if (mo) {
+      var k = mo.getAttribute("data-more").split(":"), find = function (arr) { return arr.filter(function (x) { return x.id === k[1]; })[0]; };
+      if (k[0] === "job") {
+        var j = find(w.jobs); if (!j) return;
+        menu(jobLabel(j), [
+          { label: "Open", fn: function () { location.hash = "job/" + w.id + "/" + j.id; } },
+          { label: "Rename", fn: function () { form("Job name", [{ label: "e.g. Surface, Intermediate", value: j.title }], "Save", function (v) { j.title = v[0]; touch(w); draw(); }); } },
+          { label: "Duplicate", fn: function () { dupJob(w, j); draw(); toast("Duplicated"); } },
+          { label: "Delete", danger: true, fn: function () { delJob(w, j, draw); } }]);
+      } else {
+        var pl = find(w.plugs); if (!pl) return;
+        menu(pl.title || "Balanced plug", [
+          { label: "Open", fn: function () { location.hash = "plug/" + w.id + "/" + pl.id; } },
+          { label: "Rename", fn: function () { form("Plug name", [{ label: "e.g. Kick-off plug", value: pl.title }], "Save", function (v) { pl.title = v[0]; touch(w); draw(); }); } },
+          { label: "Delete", danger: true, fn: function () { ask("Delete this plug?", "", "Delete", true, function () { w.plugs = w.plugs.filter(function (x) { return x.id !== pl.id; }); touch(w); draw(); toast("Plug deleted"); }); } }]);
+      }
+      return;
+    }
+    var g = e.target.closest("[data-go]"); if (g) location.hash = g.getAttribute("data-go");
+  });
   bind(root, w, persist, draw, function () { root.querySelector("#o-wn").textContent = w.name || "—"; }, {
     addJob: function () { var j = newJob(); w.jobs.push(j); touch(w); location.hash = "job/" + w.id + "/" + j.id; },
     addPlug: function () { var p = newPlug(); w.plugs.push(p); touch(w); location.hash = "plug/" + w.id + "/" + p.id; },
-    delWell: function () {
-      if (!confirm("Delete " + w.name + " and all its jobs? This cannot be undone.")) return;
-      db.wells = db.wells.filter(function (x) { return x.id !== w.id; }); saveDb(); location.hash = "wells";
-    }
+    delWell: function () { delWell(w, function () { location.hash = "wells"; }); }
   });
   draw();
 }
@@ -917,7 +1014,7 @@ function PlugTool(root, w, s) {
     o2.innerHTML = y ? '<div class="tiles" style="margin-bottom:14px">' + tile("Dry cement", fx(V / y), "MT") + tile("Mix fluid", cc ? fx(V / y * cc) : "—", "m³") + tile("Sacks", fi(V / y * 1000 / 50), "× 50 kg") + "</div>" : "";
   }
   bind(root, s, persist, draw, outs, {
-    del: function () { if (!confirm("Delete this plug?")) return; w.plugs = w.plugs.filter(function (x) { return x.id !== s.id; }); touch(w); location.hash = "well/" + w.id; }
+    del: function () { ask("Delete this plug?", "", "Delete", true, function () { w.plugs = w.plugs.filter(function (x) { return x.id !== s.id; }); touch(w); toast("Plug deleted"); location.hash = "well/" + w.id; }); }
   });
   draw();
 }
@@ -945,7 +1042,7 @@ function ToolsPage(root) {
     rd.onload = function () {
       try {
         var d = JSON.parse(rd.result);
-        if (d.app !== "cementing-toolkit" || !Array.isArray(d.wells)) { alert("That is not a Cementing Toolkit backup."); return; }
+        if (d.app !== "cementing-toolkit" || !Array.isArray(d.wells)) { toast("That is not a Cementing Toolkit backup."); return; }
         var n = 0;
         d.wells.forEach(function (w) {
           var i = db.wells.findIndex(function (x) { return x.id === w.id; });
@@ -953,7 +1050,7 @@ function ToolsPage(root) {
         });
         saveDb(); if (d.me && !load("me", {}).name) save("me", d.me);
         toast("Restored " + n + " well" + (n === 1 ? "" : "s"));
-      } catch (x) { alert("Could not read that file."); }
+      } catch (x) { toast("Could not read that file."); }
     };
     rd.readAsText(f);
   });
