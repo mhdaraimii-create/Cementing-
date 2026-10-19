@@ -4,132 +4,134 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Cementing" />
-<meta name="theme-color" content="#0c1119" />
+<meta name="theme-color" content="#f2f2f7" />
 <title>Cementing Toolkit</title>
 <link rel="apple-touch-icon" href="icon-180.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* Deepwater. Change these values and the whole app follows. */
+  /* Light, grouped-list look. Change these values and the whole app follows. */
   :root {
-    --bg:#0c1119; --card:#151c27; --edge:#222c3a; --edge2:#1a2330;
-    --ink:#f2f6fa; --sub:#8896a8; --faint:#5d6b7d;
-    --field:#0f1620; --fedge:#26313f; --accent:#7dd3fc;
-    --danger:#f87171; --danger-bg:#2a1519; --danger-edge:#4a2229;
-    --lead:#f59e0b; --tail:#2dd4bf; --track:#a78bfa; --rat:#f472b6; --disp:#60a5fa;
-    --r:16px;
-    --font:'Archivo',-apple-system,'Segoe UI',Roboto,sans-serif;
+    --bg:#f2f2f7; --card:#ffffff; --line:#e5e5ea; --ink:#111114; --sub:#6c6c72; --faint:#a1a1a8;
+    --field:#e9e9ee; --accent:#a5511f; --accent-bg:#fdf0e4; --accent-ink:#7c3a12;
+    --danger:#c62828; --danger-bg:#fdecec; --danger-edge:#f4c7c7; --good:#1b7a4a; --good-bg:#e7f6ee;
+    --lead:#d97706; --tail:#0f8a7e; --track:#7c3aed; --rat:#db2777; --disp:#2563eb;
+    --r:14px;
+    --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
   }
   * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
   html, body { margin:0; padding:0; overflow-x:hidden; background:var(--bg); color:var(--ink);
     -webkit-text-size-adjust:100%; font-family:var(--font); }
-  /* Fixed-width digits so a figure stops shifting sideways as it settles. */
   body, input, select, button { font-variant-numeric: tabular-nums; }
-  input, select, button { font-family: inherit; }
-  input, select { color:var(--ink); caret-color:var(--accent); }
-  select option { background:var(--card); color:var(--ink); }
+  input, select, button { font-family: inherit; color:var(--ink); }
   input::placeholder { color:var(--faint); }
-  ::-webkit-scrollbar { width:0; height:0; }
   #root { min-height:100vh; }
 
-  .page { max-width:560px; margin:0 auto; padding:14px 14px 60px; }
-  .home { padding:calc(env(safe-area-inset-top) + 34px) 18px 40px; }
-  .kicker { font-size:11px; font-weight:600; letter-spacing:.26em; color:var(--accent); }
-  .hero { margin:8px 0 0; font-size:38px; font-weight:800; letter-spacing:-.03em; line-height:.98; }
-  .lede { margin:11px 0 0; color:var(--sub); font-size:13.5px; }
+  .page { max-width:600px; margin:0 auto; padding:0 16px calc(env(safe-area-inset-bottom) + 110px); }
+  .top { position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;
+    border-bottom:1px solid var(--line); }
+  .top button { background:none; border:none; color:var(--accent); font-size:17px; cursor:pointer; display:flex; align-items:center; gap:4px; padding:4px; }
+  .top button b { font-size:24px; font-weight:400; line-height:1; margin-top:-2px; }
+  .title { font-size:34px; font-weight:800; letter-spacing:-.02em; margin:18px 0 4px; line-height:1.1; word-break:break-word; }
+  .lede { color:var(--sub); font-size:15px; margin:0 0 6px; }
 
-  .bar { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:11px;
-    background:color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--edge2);
-    padding:calc(env(safe-area-inset-top) + 8px) 14px 8px; }
-  .bar .back { background:var(--card); border:1px solid var(--edge); border-radius:12px; width:38px; height:38px;
-    font-size:19px; color:var(--ink); cursor:pointer; line-height:1; }
-  .bar .ttl { font-weight:700; font-size:17px; letter-spacing:-.015em; }
-  .bar .dot { margin-left:auto; width:9px; height:9px; border-radius:99px; }
+  .sec { margin-top:24px; }
+  .sh { display:flex; align-items:flex-end; gap:8px; font-size:13px; font-weight:600; color:var(--sub); text-transform:uppercase;
+    letter-spacing:.05em; padding:0 16px 7px; }
+  .sh span { margin-left:auto; text-transform:none; letter-spacing:0; font-weight:500; }
+  .grp { background:var(--card); border-radius:var(--r); padding:0 16px; }
+  .pad { padding:12px 0; }
+  .r { display:flex; align-items:center; gap:12px; min-height:56px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .grp > .r:last-child, .grp > :last-child .r:last-child { border-bottom:none; }
+  .r .l { flex:1; min-width:0; font-size:16px; }
+  .r .l i { font-style:normal; color:var(--faint); font-size:14px; }
+  .in { width:44%; max-width:200px; text-align:right; background:var(--field); border:2px solid transparent; border-radius:10px;
+    padding:10px 12px; font-size:17px; min-width:0; -webkit-appearance:none; appearance:none; }
+  .in:focus { outline:none; border-color:var(--accent); background:#fff; }
+  .chip { background:var(--accent-bg); color:var(--accent); border:none; border-radius:10px; padding:10px 30px 10px 12px; font-size:16px;
+    font-weight:600; max-width:60%; -webkit-appearance:none; appearance:none; cursor:pointer;
+    background-image:linear-gradient(45deg,transparent 50%,var(--accent) 50%),linear-gradient(135deg,var(--accent) 50%,transparent 50%);
+    background-position:calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size:5px 5px; background-repeat:no-repeat; }
+  .chip:focus { outline:2px solid var(--accent); }
+  .wide { width:100%; text-align:left; max-width:none; }
 
-  .tool { text-align:left; background:var(--card); border:1px solid var(--edge); border-radius:var(--r);
-    padding:16px 15px; cursor:pointer; color:var(--ink); display:flex; align-items:center; gap:14px; width:100%;
-    box-shadow:0 2px 10px rgba(0,0,0,.30); }
-  .tool .ic { width:42px; height:42px; border-radius:12px; flex-shrink:0; display:flex; align-items:center;
-    justify-content:center; font-weight:800; font-size:19px; color:var(--bg); }
-  .tool .nm { display:block; font-size:18px; font-weight:700; letter-spacing:-.015em; }
-  .tool .sb { display:block; font-size:12.5px; color:var(--sub); margin-top:2px; }
-  .tool .ch { color:var(--faint); font-size:20px; margin-left:auto; }
-  .grid { display:grid; gap:11px; }
+  .seg { display:flex; background:#e3e3e8; border-radius:11px; padding:3px; gap:3px; margin:12px 0; }
+  .seg button { flex:1; border:none; background:transparent; color:var(--ink); padding:10px 6px; border-radius:9px; font-size:15px; font-weight:500; cursor:pointer; }
+  .seg button.on { background:#fff; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,.14); }
+  .pill { border-radius:999px; padding:7px 15px; font-size:14px; font-weight:600; cursor:pointer; border:1px solid var(--line); background:var(--card); color:var(--sub); }
+  .pill.on { background:var(--accent); border-color:var(--accent); color:#fff; }
 
-  .card { background:var(--card); border:1px solid var(--edge); border-radius:var(--r); padding:14px; margin-bottom:12px; }
-  .card > h3 { margin:0 0 10px; font-size:12px; font-weight:700; color:var(--accent); text-transform:uppercase;
-    letter-spacing:.06em; display:flex; align-items:center; gap:8px; }
-  .card > h3 .rt { margin-left:auto; text-transform:none; letter-spacing:0; }
-  .row { display:flex; gap:8px; margin-bottom:8px; }
-  .row > * { flex:1 1 0; min-width:0; }
-  .lbl { display:block; font-size:11.5px; color:var(--sub); font-weight:600; margin-bottom:4px; white-space:nowrap;
-    overflow:hidden; text-overflow:ellipsis; }
-  .lbl i { font-style:normal; color:var(--faint); font-weight:400; }
-  .fld, .sel { width:100%; background:var(--field); border:1px solid var(--fedge); border-radius:10px;
-    padding:10px 11px; font-size:15px; min-width:0; -webkit-appearance:none; appearance:none; }
-  .sel { background-image:linear-gradient(45deg,transparent 50%,var(--sub) 50%),linear-gradient(135deg,var(--sub) 50%,transparent 50%);
-    background-position:calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size:5px 5px; background-repeat:no-repeat; padding-right:26px; }
-  .fld:focus, .sel:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(125,211,252,.16); }
-  .fld.bad { border-color:var(--danger); }
-  .small .fld, .small .sel { padding:8px 9px; font-size:13.5px; border-radius:8px; }
+  .btn { border:none; border-radius:12px; padding:12px 16px; font-size:16px; font-weight:600; cursor:pointer; background:var(--accent); color:#fff; white-space:nowrap; }
+  .btn.sec2 { background:var(--card); color:var(--ink); border:1px solid var(--line); }
+  .btn.ghost { background:transparent; border:1.5px dashed #c7c7cc; color:var(--sub); width:100%; margin:4px 0 12px; }
+  .btn.danger { background:var(--danger-bg); color:var(--danger); }
+  .x { width:40px; height:40px; flex:0 0 40px; background:var(--danger-bg); border:1px solid var(--danger-edge); color:var(--danger); border-radius:10px; cursor:pointer; font-size:14px; }
+  .bar2 { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .bar2 .btn { flex:1 1 auto; }
 
-  .seg { display:flex; background:var(--field); border:1px solid var(--fedge); border-radius:12px; padding:3px; gap:3px; margin-bottom:8px; }
-  .seg button { flex:1; border:none; background:transparent; color:var(--sub); padding:9px 6px; border-radius:9px;
-    font-size:13px; font-weight:600; cursor:pointer; }
-  .seg button.on { color:#fff; }
-  .pill { border-radius:999px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer;
-    border:1px solid var(--fedge); background:var(--field); color:var(--sub); }
-  .pill.on { background:#b91c1c; border-color:#b91c1c; color:#fff; }
+  .item { display:flex; align-items:center; gap:13px; padding:12px 0; border-bottom:1px solid var(--line); cursor:pointer; width:100%;
+    background:none; border-left:none; border-right:none; border-top:none; text-align:left; font-size:16px; }
+  .grp > .item:last-child { border-bottom:none; }
+  .item .ic { width:40px; height:40px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:17px; }
+  .item .nm { display:block; font-size:17px; font-weight:500; }
+  .item .sb { display:block; font-size:14px; color:var(--sub); margin-top:2px; }
+  .item .ch { margin-left:auto; color:#c4c4c8; font-size:24px; font-weight:300; }
 
-  .btn { border:none; border-radius:10px; padding:10px 14px; font-size:13.5px; font-weight:700; cursor:pointer; color:#fff; white-space:nowrap; }
-  .btn.ghost { background:transparent; border:1px dashed var(--fedge); color:var(--sub); width:100%; font-weight:600; }
-  .x { width:30px; height:30px; flex:0 0 30px !important; background:var(--danger-bg); border:1px solid var(--danger-edge);
-    color:var(--danger); border-radius:8px; cursor:pointer; font-size:12px; }
+  .note { font-size:13px; color:var(--sub); margin:6px 0 0; line-height:1.45; }
+  .warn { background:var(--danger-bg); border:1px solid var(--danger-edge); border-radius:12px; padding:12px 14px; margin-top:14px; color:var(--danger); font-size:14px; line-height:1.45; }
+  .ok { background:var(--good-bg); border-radius:12px; padding:12px 14px; margin-top:10px; color:var(--good); font-size:14px; }
+  .empty { text-align:center; color:var(--faint); padding:22px 0; font-size:15px; }
 
-  .note { font-size:11.5px; color:var(--faint); margin:4px 0 0; line-height:1.45; }
-  .warn { background:rgba(185,28,28,.12); border:1px solid rgba(248,113,113,.35); border-radius:12px; padding:11px 13px;
-    margin-bottom:12px; color:#fca5a5; font-size:13px; line-height:1.45; }
-  .ok { background:rgba(13,148,136,.12); border:1px solid rgba(45,212,191,.35); border-radius:12px; padding:11px 13px;
-    margin-bottom:12px; color:#99f6e4; font-size:13px; }
+  .line { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .line .k { font-size:15px; display:flex; align-items:center; gap:11px; min-width:0; }
+  .line .k small { display:block; font-size:13px; color:var(--sub); margin-top:2px; }
+  .line .v { font-size:16px; font-weight:700; white-space:nowrap; }
+  .num { width:28px; height:28px; border-radius:99px; color:#fff; font-size:13px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .tag { font-size:15px; font-weight:700; margin:12px 0 0; display:flex; align-items:center; gap:7px; }
+  .tag::before { content:""; width:12px; height:12px; border-radius:3px; background:currentColor; }
+  .sum { display:flex; justify-content:space-between; padding:12px 0 4px; font-weight:700; font-size:15px; border-top:2px solid var(--line); }
+  .big { border-radius:13px; padding:17px 16px; margin:12px 0; display:flex; justify-content:space-between; align-items:center; background:var(--accent-bg); }
+  .big .k { font-size:17px; font-weight:600; color:var(--accent-ink); }
+  .big .v { font-size:28px; font-weight:800; letter-spacing:-.02em; }
+  .big .v small { font-size:16px; font-weight:700; margin-left:3px; }
+  .big.blue { background:#e8f0fd; } .big.blue .k { color:#1e4fa8; }
+  .tiles { display:flex; gap:8px; margin:12px 0 6px; }
+  .tile { flex:1; min-width:0; background:var(--bg); border-radius:12px; padding:11px 12px; }
+  .tile .k { font-size:13px; color:var(--sub); font-weight:500; }
+  .tile .v { font-size:22px; font-weight:800; margin-top:3px; letter-spacing:-.01em; }
+  .tile .v small { font-size:12px; color:var(--sub); font-weight:600; margin-left:3px; }
 
-  .line { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:8px 2px; border-bottom:1px solid var(--edge2); }
-  .line .k { font-size:12.5px; color:var(--sub); }
-  .line .k b { font-weight:700; margin-right:6px; }
-  .line .k small { display:block; font-size:10.5px; color:var(--faint); margin-top:2px; font-family:ui-monospace,'SF Mono',Menlo,monospace; }
-  .line .v { font-size:14px; font-weight:700; white-space:nowrap; font-family:ui-monospace,'SF Mono',Menlo,monospace; }
-  .sum { display:flex; justify-content:space-between; align-items:center; padding:8px 2px; font-weight:700; font-size:13px; }
-  .sum .v { font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:15px; }
-  .big { border-radius:13px; padding:14px 15px; margin-top:12px; display:flex; justify-content:space-between; align-items:center; }
-  .big .k { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
-  .big .v { font-size:26px; font-weight:800; letter-spacing:-.02em; }
-  .big .v small { font-size:13px; font-weight:600; margin-left:4px; }
-  .tiles { display:flex; gap:8px; margin:6px 0 4px; }
-  .tile { flex:1; min-width:0; background:var(--field); border:1px solid var(--edge); border-radius:11px; padding:9px 10px; }
-  .tile .k { font-size:10.5px; color:var(--sub); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  .tile .v { font-size:17px; font-weight:800; margin-top:3px; }
-  .tile .v small { font-size:11px; color:var(--sub); font-weight:600; margin-left:3px; }
-  .tag { font-size:11px; font-weight:700; letter-spacing:.06em; margin:10px 0 2px; }
+  .add { padding:10px 0; border-bottom:1px solid var(--line); }
+  .add .in { width:100%; max-width:none; text-align:left; font-size:16px; }
+  .add .rw { display:flex; gap:7px; align-items:center; margin-top:7px; }
+  .add .rw .in { flex:1; text-align:left; padding:10px; }
+  .add .rw .chip { flex:1; max-width:none; font-size:15px; padding-right:26px; }
+  .add .amt { flex:1.1; text-align:right; font-weight:700; font-size:15px; }
 
-  table.t { width:100%; border-collapse:collapse; font-size:12.5px; }
-  table.t th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--faint); font-weight:700;
-    padding:6px 4px; border-bottom:1px solid var(--edge); }
-  table.t td { padding:7px 4px; border-bottom:1px solid var(--edge2); }
-  table.t td.n { text-align:right; font-family:ui-monospace,'SF Mono',Menlo,monospace; font-weight:600; white-space:nowrap; }
+  table.t { width:100%; border-collapse:collapse; font-size:14px; }
+  table.t th { text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--sub); font-weight:600; padding:8px 4px; border-bottom:1px solid var(--line); }
+  table.t td { padding:9px 4px; border-bottom:1px solid var(--line); }
+  table.t tr:last-child td { border-bottom:none; }
+  table.t td.n, table.t th.n { text-align:right; white-space:nowrap; }
 
-  .foot { margin-top:4px; padding-top:18px; border-top:1px solid var(--edge2); text-align:center; }
-  .foot .nm { font-size:15px; font-weight:700; }
-  .foot .ro { font-size:10.5px; color:var(--faint); margin-top:3px; letter-spacing:.03em; }
-  .foot a { display:inline-block; margin-top:7px; font-size:13.5px; color:var(--accent); text-decoration:none; letter-spacing:.04em; }
-  .linkbtn { background:none; border:none; color:var(--faint); font-size:11px; text-decoration:underline; cursor:pointer; margin-top:8px; }
+  .tabs { position:fixed; left:0; right:0; bottom:0; z-index:90; display:flex; background:rgba(249,249,251,.94); backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px); border-top:1px solid #dcdce0; padding:6px 0 calc(env(safe-area-inset-bottom) + 6px); }
+  .tabs button { flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px; color:#8e8e93; font-size:12px; font-weight:500; cursor:pointer; padding:4px 0; }
+  .tabs button.on { color:var(--accent); font-weight:600; }
+  .tabs svg { width:28px; height:28px; }
 
-  .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 22px); transform:translateX(-50%); z-index:9999;
-    background:#0d9488; color:#fff; font-size:13.5px; font-weight:600; padding:10px 18px; border-radius:999px;
-    box-shadow:0 6px 24px rgba(0,0,0,.4); }
+  .foot { text-align:center; margin-top:34px; }
+  .foot .nm { font-size:16px; font-weight:700; }
+  .foot .ro { font-size:13px; color:var(--sub); margin-top:2px; }
+  .foot a { display:inline-block; margin-top:6px; font-size:15px; color:var(--accent); text-decoration:none; }
+  .linkbtn { background:none; border:none; color:var(--accent); font-size:14px; cursor:pointer; margin-top:8px; }
+
+  .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 86px); transform:translateX(-50%); z-index:9999;
+    background:#1c1c1e; color:#fff; font-size:15px; font-weight:500; padding:11px 20px; border-radius:999px; box-shadow:0 6px 24px rgba(0,0,0,.25); white-space:nowrap; }
 
   /* Printable worksheet */
   #sheet { display:none; background:#fff; color:#141a17; min-height:100vh; }
@@ -137,24 +139,24 @@
   body.sheet #sheet { display:block; }
   #sheet .tb { position:sticky; top:0; display:flex; gap:8px; align-items:center; padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;
     border-bottom:1px solid #e5e7e2; background:#f6f7f5; }
-  #sheet .tb button { background:#fff; border:1px solid #e5e7e2; border-radius:10px; padding:9px 14px; font-size:14px; font-weight:600; cursor:pointer; color:#141a17; }
-  #sheet .tb .pr { margin-left:auto; background:#b91c1c; color:#fff; border:none; }
+  #sheet .tb button { background:#fff; border:1px solid #e5e7e2; border-radius:10px; padding:9px 14px; font-size:15px; font-weight:600; cursor:pointer; color:#141a17; }
+  #sheet .tb .pr { margin-left:auto; background:var(--accent); color:#fff; border:none; }
   #sheet .doc { max-width:760px; margin:0 auto; padding:16px 14px 60px; font-size:10.5px; line-height:1.38; }
   #sheet h1 { font-size:17px; margin:0; } #sheet .sub { color:#6b7770; font-weight:400; }
   #sheet .hd { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #141a17; padding-bottom:5px; margin-bottom:8px; }
   #sheet .meta { text-align:right; font-size:9.5px; color:#444; }
   #sheet .cols { display:flex; gap:14px; align-items:flex-start; }
   #sheet .left { width:170px; flex-shrink:0; } #sheet .right { flex:1; min-width:0; }
-  #sheet h2 { font-size:11.5px; color:#b91c1c; margin:9px 0 3px; border-bottom:1px solid #edd; padding-bottom:2px; }
+  #sheet h2 { font-size:11.5px; color:var(--accent); margin:9px 0 3px; border-bottom:1px solid #eedccf; padding-bottom:2px; }
   #sheet table { width:100%; border-collapse:collapse; margin:2px 0 4px; }
   #sheet td, #sheet th { text-align:left; padding:2.5px 5px; border-bottom:1px solid #eee; vertical-align:top; }
   #sheet th { background:#f4f5f3; font-size:8.5px; text-transform:uppercase; letter-spacing:.3px; color:#666; }
-  #sheet td.f { font-family:ui-monospace,'SF Mono',monospace; color:#666; font-size:9px; }
-  #sheet td.r { text-align:right; font-family:ui-monospace,'SF Mono',monospace; font-weight:700; white-space:nowrap; }
-  #sheet .tot td { background:#3d1412; color:#fff; font-weight:700; border:none; }
+  #sheet td.f { font-family:var(--mono); color:#666; font-size:9px; }
+  #sheet td.r { text-align:right; font-family:var(--mono); font-weight:700; white-space:nowrap; }
+  #sheet .tot td { background:#5a2a10; color:#fff; font-weight:700; border:none; }
   #sheet .totd td { background:#12233d; color:#fff; font-weight:700; border:none; }
   #sheet .fn { font-size:8.5px; color:#888; border-top:1px solid #ddd; padding-top:4px; margin-top:10px; }
-  @media (max-width:600px){ #sheet .cols { flex-direction:column; } #sheet .left { width:100%; } }
+  @media (max-width:600px){ #sheet .cols { flex-direction:column; } #sheet .left { width:100%; max-width:240px; } }
   @media print {
     @page { size:A4; margin:10mm; }
     #sheet .tb { display:none !important; }
@@ -173,7 +175,7 @@
 /* ───────────────────────── storage ───────────────────────── */
 // Everything lives on the phone. Every access is guarded: a private
 // window or a locked-down browser must still run the calculators.
-var NS = "cmt.";
+var NS = "cmt2.";
 function load(k, d) { try { var v = localStorage.getItem(NS + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function save(k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 
@@ -218,30 +220,32 @@ function csg(id) { for (var i = 0; i < CASING.length; i++) if (CASING[i].id === 
 function pipe(id) { for (var i = 0; i < PIPE.length; i++) if (PIPE[i].id === id) return PIPE[i]; return null; }
 function hole(id) { var d = P(id); return d ? { d: d, label: frac(d) } : null; }
 
-/* ───────────────────────── tiny view helpers ───────────────────────── */
-function card(title, body, right) { return '<div class="card"><h3>' + title + (right ? '<span class="rt">' + right + "</span>" : "") + "</h3>" + body + "</div>"; }
-function row() { return '<div class="row">' + Array.prototype.join.call(arguments, "") + "</div>"; }
-function num(label, k, s, hint, ph) {
-  return '<label><span class="lbl">' + label + (hint ? " <i>" + hint + "</i>" : "") + '</span><input class="fld" inputmode="decimal" autocomplete="off" data-k="' + k +
-    '" value="' + esc(s[k] == null ? "" : s[k]) + '" placeholder="' + esc(ph || "") + '"></label>';
+/* ───────────────────────── view helpers ───────────────────────── */
+function grp(title, body, right) {
+  return '<div class="sec"><div class="sh">' + title + (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
 }
-function txt(label, k, s, ph) {
-  return '<label><span class="lbl">' + label + '</span><input class="fld" autocomplete="off" data-k="' + k + '" value="' + esc(s[k] || "") + '" placeholder="' + esc(ph || "") + '"></label>';
+function num(label, k, s, unit, ph) {
+  return '<label class="r"><span class="l">' + label + (unit ? " <i>· " + unit + "</i>" : "") + '</span><input class="in" inputmode="decimal" autocomplete="off" data-k="' + k +
+    '" value="' + esc(s[k] == null ? "" : s[k]) + '" placeholder="' + esc(ph == null ? "" : ph) + '"></label>';
 }
 function sel(label, k, s, opts, re) {
-  return '<label>' + (label ? '<span class="lbl">' + label + "</span>" : "") + '<select class="sel" data-k="' + k + '"' + (re ? " data-re" : "") + ">" +
+  return '<label class="r"><span class="l">' + label + '</span><select class="chip" data-k="' + k + '"' + (re ? " data-re" : "") + ">" +
     opts.map(function (o) { return '<option value="' + esc(o.id) + '"' + (String(s[k]) === String(o.id) ? " selected" : "") + ">" + esc(o.label) + "</option>"; }).join("") + "</select></label>";
 }
-function seg(k, s, opts, color) {
+function seg(k, s, opts) {
   return '<div class="seg">' + opts.map(function (o) {
-    var on = s[k] === o[0]; return '<button data-seg="' + k + '" data-v="' + o[0] + '" class="' + (on ? "on" : "") + '" style="' + (on ? "background:" + color : "") + '">' + o[1] + "</button>";
+    return '<button data-seg="' + k + '" data-v="' + o[0] + '" class="' + (s[k] === o[0] ? "on" : "") + '">' + o[1] + "</button>";
   }).join("") + "</div>";
 }
 function line(k, v, small, color) {
-  return '<div class="line"><span class="k">' + k + (small ? "<small>" + small + "</small>" : "") + '</span><span class="v"' + (color ? ' style="color:' + color + '"' : "") + ">" + v + "</span></div>";
+  return '<div class="line"><span class="k"><span>' + k + (small ? "<small>" + small + "</small>" : "") + '</span></span><span class="v"' + (color ? ' style="color:' + color + '"' : "") + ">" + v + "</span></div>";
 }
-function big(k, v, unit, bg, fg) { return '<div class="big" style="background:' + bg + ';color:' + fg + '"><span class="k">' + k + '</span><span class="v" style="color:#fff">' + v + "<small>" + (unit || "") + "</small></span></div>"; }
+function big(k, v, unit, cls) { return '<div class="big ' + (cls || "") + '"><span class="k">' + k + '</span><span class="v">' + v + "<small>" + (unit || "") + "</small></span></div>"; }
 function tile(k, v, unit) { return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + "<small>" + (unit || "") + "</small></div></div>"; }
+function item(go, color, letter, name, sub, extra) {
+  return '<button class="item" ' + go + '><span class="ic" style="background:' + color + '">' + letter + '</span><span style="flex:1;min-width:0"><span class="nm">' + name +
+    '</span><span class="sb">' + sub + "</span></span>" + (extra || "") + '<span class="ch">›</span></button>';
+}
 function toast(msg) {
   var t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
   setTimeout(function () { t.remove(); }, 1800);
@@ -251,10 +255,11 @@ function setPath(o, path, v) {
   for (var i = 0; i < ks.length - 1; i++) x = x[ks[i]];
   x[ks[ks.length - 1]] = v;
 }
+function when(t) { var d = new Date(t); return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) + " · " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }); }
 
-// Binds a tool's inputs to its state. Typing updates only the results
+// Binds a page's inputs to its state. Typing updates only the results
 // (re-rendering the inputs would steal focus); structural controls
-// (segments, flagged selects, buttons) redraw the whole tool.
+// (segments, flagged selects, buttons) redraw the whole page.
 function bind(root, st, persist, draw, outs, acts) {
   root.addEventListener("input", function (e) {
     var k = e.target.getAttribute("data-k"); if (!k) return;
@@ -268,33 +273,47 @@ function bind(root, st, persist, draw, outs, acts) {
   });
 }
 
-/* ═════════════════════════ CEMENT JOB ═════════════════════════ */
-var JOB_SAMPLE = {
-  name: "", jobType: "casing", slurry: "leadtail",
-  prevOn: true, prevSize: "13.375-68", prevShoe: "450",
-  csgSize: "9.625-47", shoe: "1495", fc: "1470", linerTop: "", dpSize: "DP 5″ 19.5#",
-  holeSize: "12.25", td: "1500",
-  toc: "300", tailTop: "1200",
-  exLOH: "25", exLC: "10", exTOH: "25", exTC: "0",
-  capInt: "", capOH: "", capCC: "", capFull: "",
-  pumpOut: "18.9", rate: "1.2",
-  leadYield: "1.25", leadConc: "0.95", leadDead: "3", leadSG: "1.50",
-  tailYield: "0.76", tailConc: "0.44", tailDead: "2", tailSG: "1.90",
-  spacerVol: "8", spacerDead: "2", spacerSG: "1.25",
-  mudSG: "1.15", dispSG: "1.15", fracSG: "", bumpOver: "35",
-  leadAdd: [{ name: "Extender", f: "20", u: "kg", on: "dry" }, { name: "Defoamer", f: "2", u: "L", on: "eq" }],
-  tailAdd: [{ name: "Fluid loss", f: "4", u: "L", on: "eq" }, { name: "Retarder", f: "1.5", u: "L", on: "eq" }, { name: "Defoamer", f: "2", u: "L", on: "eq" }],
-  spacerAdd: [{ name: "Spacer viscosifier", f: "12", u: "kg", on: "mix" }, { name: "Surfactant", f: "20", u: "L", on: "mix" }]
-};
-function blankJob() {
-  var j = JSON.parse(JSON.stringify(JOB_SAMPLE));
-  ["prevShoe", "shoe", "fc", "linerTop", "td", "toc", "tailTop", "leadYield", "leadConc", "leadDead", "leadSG", "tailYield", "tailConc", "tailDead", "tailSG",
-    "spacerVol", "spacerDead", "spacerSG", "mudSG", "dispSG", "fracSG"].forEach(function (k) { j[k] = ""; });
-  j.leadAdd = []; j.tailAdd = []; j.spacerAdd = [];
-  return j;
+/* ───────────────────────── wells & jobs ───────────────────────── */
+// One record per well; each well holds its cement jobs (one per string),
+// its balanced plugs and a slurry recipe. Everything stays on the phone.
+function newJob() {
+  return {
+    id: uid(), created: Date.now(), title: "",
+    jobType: "casing", slurry: "single",
+    prevOn: false, prevSize: "13.375-68", prevShoe: "",
+    csgSize: "9.625-47", shoe: "", fc: "", linerTop: "", dpSize: "DP 5″ 19.5#",
+    holeSize: "12.25", td: "", toc: "", tailTop: "",
+    exLOH: "25", exLC: "0", exTOH: "25", exTC: "0",
+    capInt: "", capOH: "", capCC: "", capFull: "",
+    pumpOut: "", rate: "",
+    leadYield: "", leadConc: "", leadDead: "", leadSG: "",
+    tailYield: "", tailConc: "", tailDead: "", tailSG: "",
+    spacerVol: "", spacerDead: "", spacerSG: "",
+    mudSG: "", dispSG: "", fracSG: "", bumpOver: "35",
+    leadAdd: [], tailAdd: [], spacerAdd: [],
+    stages: [], leadTT: "", tailTT: "", margin: "60"
+  };
 }
-var job = Object.assign(JSON.parse(JSON.stringify(JOB_SAMPLE)), load("job", {}));
-function saveJob() { save("job", job); }
+function newPlug() {
+  return { id: uid(), created: Date.now(), title: "", where: "oh", holeSize: "8.5", csgSize: "9.625-47", ex: "20", bottom: "", len: "",
+    pipe: "DP 3½″ 13.3#", spAhead: "", under: "", pumpOut: "", yield: "", conc: "" };
+}
+function newRecipe() {
+  return { cemSG: "3.15", water: "44", sack: "50", adds: [] };
+}
+var db = load("db", null) || { wells: [] };
+function saveDb() { if (!save("db", db)) toast("Could not save on this device."); }
+function wellById(id) { return db.wells.filter(function (w) { return w.id === id; })[0] || null; }
+function curWell() { return wellById(load("cur", null)); }
+function touch(w) { w.updated = Date.now(); saveDb(); }
+function jobLabel(j) {
+  var c = csg(j.csgSize);
+  return (j.title ? j.title + " · " : "") + (c ? c.label : "") + (j.jobType === "liner" ? " liner" : " casing");
+}
+function jobSummary(j) {
+  var m = jobModel(j);
+  return m.items ? fx(m.total / 1000, 1) + " m³ cement · " + fx(m.dispL / 1000, 1) + " m³ disp" : m.err && m.err.length ? "Check the inputs" : "Not filled in yet";
+}
 
 // Build the well model: every interval that gets slurry, and the displacement path.
 function jobModel(s) {
@@ -475,107 +494,129 @@ function schematic(m, light) {
   return o + "</svg>";
 }
 
-function addRows(title, key, rows, color, isSpacer) {
+/* ═════════════════════════ CEMENT JOB (all on one page) ═════════════════════════ */
+function txt(label, k, s, ph) {
+  return '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="' + k + '" value="' + esc(s[k] || "") + '" placeholder="' + esc(ph || "") + '"></label>';
+}
+function addRows(key, rows, color, isSpacer) {
   var units = [{ id: "kg", label: "kg" }, { id: "L", label: "L" }];
   var ons = [{ id: "dry", label: "/MT dry" }, { id: "eq", label: "/MT eq" }];
-  var h = '<div style="margin-top:10px"><div class="lbl" style="white-space:normal">' + title + ' <i>· factor ' + (isSpacer ? "per m³ mix" : "per MT") + "</i></div>";
+  var opt = function (list, v) { return list.map(function (u) { return '<option value="' + u.id + '"' + (v === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join(""); };
+  var h = "";
   rows.forEach(function (r, i) {
-    h += '<div class="row small" style="align-items:center;margin-bottom:6px">' +
-      '<input class="fld" style="flex:1.6" data-k="' + key + "." + i + '.name" value="' + esc(r.name) + '" placeholder="name">' +
-      '<input class="fld" style="flex:.9" inputmode="decimal" data-k="' + key + "." + i + '.f" value="' + esc(r.f) + '" placeholder="factor">' +
-      '<select class="sel" style="flex:.8" data-k="' + key + "." + i + '.u">' + units.map(function (u) { return '<option value="' + u.id + '"' + (r.u === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join("") + "</select>" +
-      (isSpacer ? "" : '<select class="sel" style="flex:1.1" data-k="' + key + "." + i + '.on">' + ons.map(function (u) { return '<option value="' + u.id + '"' + (r.on === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join("") + "</select>") +
-      '<span data-out="' + key + "." + i + '" style="flex:1.1;text-align:right;font-weight:700;font-size:13px;color:' + color + '">—</span>' +
-      '<button class="x" data-act="delAdd" data-i="' + key + "." + i + '">✕</button></div>';
+    var p = key + "." + i + ".";
+    h += '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="Additive name">' +
+      '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'f" value="' + esc(r.f) + '" placeholder="factor">' +
+      '<select class="chip" data-k="' + p + 'u">' + opt(units, r.u) + "</select>" +
+      (isSpacer ? "" : '<select class="chip" data-k="' + p + 'on">' + opt(ons, r.on) + "</select>") +
+      '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
+      '<button class="x" data-act="delAdd" data-i="' + key + "." + i + '">✕</button></div></div>';
   });
-  return h + '<button class="btn ghost" data-act="addAdd" data-i="' + key + '">+ additive</button></div>';
+  return h + '<p class="note">' + (isSpacer ? "Factor is kg or L per m³ of spacer mix." : "Factor is kg or L per MT — of dry cement, or of equivalent dry (the mix fluid you prepare, dead volume included).") + "</p>" +
+    '<button class="btn ghost" data-act="addAdd" data-i="' + key + '">+ additive</button>';
+}
+function stagesFromJob(j) {
+  var m = jobModel(j), r = P(j.rate) || 1;
+  var st = [{ name: "Pressure test lines", vol: "", rate: "", extra: "10" }];
+  if (P(j.spacerVol)) st.push({ name: "Spacer", vol: String(j.spacerVol), rate: String(r), extra: "" });
+  st.push({ name: "Drop bottom plug", vol: "", rate: "", extra: "5" });
+  if (m.items) {
+    if (m.hasLead) st.push({ name: "Lead slurry", vol: fx(m.leadVol / 1000), rate: String(r), extra: "" });
+    st.push({ name: m.hasLead ? "Tail slurry" : "Cement slurry", vol: fx(m.tailVol / 1000), rate: String(r), extra: "" });
+    st.push({ name: "Drop top plug", vol: "", rate: "", extra: "5" });
+    var d = m.dispL / 1000, slow = Math.min(3, d * 0.1);
+    st.push({ name: "Displacement", vol: fx(d - slow), rate: String(r), extra: "" });
+    st.push({ name: "Slow down to bump", vol: fx(slow), rate: String(Math.round(r * 0.4 * 10) / 10 || 0.5), extra: "" });
+  }
+  return st;
 }
 
-function CementJob(root) {
-  var s = job;
-  function persist() { saveJob(); }
-  function draw() {
-    var html = "";
-    html += '<div class="row" style="flex-wrap:wrap;align-items:center">' +
-      '<input class="fld" data-k="name" style="flex:1 1 150px" value="' + esc(s.name) + '" placeholder="Job name (e.g. Well-123 9⅝″)">' +
-      '<button class="btn" style="flex:0 0 auto;background:#0d9488" data-act="save">Save</button>' +
-      '<button class="btn" style="flex:0 0 auto;background:#334155" data-act="jobs">Jobs' + (jobsList().length ? " (" + jobsList().length + ")" : "") + "</button>" +
-      '<button class="btn" style="flex:0 0 auto;background:#64748b" data-act="new">New</button>' +
-      '<button class="btn" style="flex:0 0 auto;background:#b91c1c" data-act="pdf">PDF</button></div>';
-    html += '<div id="jobsBox"></div><div id="errBox"></div>';
-    html += card("Job Type", seg("jobType", s, [["casing", "Casing"], ["liner", "Liner"]], "#b91c1c") + seg("slurry", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]], "#d97706"));
-    var prevOn = s.prevOn || s.jobType === "liner";
-    html += card("Previous Casing", prevOn ?
-      row(sel("Size", "prevSize", s, CASING, true), num("Shoe depth", "prevShoe", s, "m")) +
-      row(num("Csg-Csg ann", "capCC", s, "L/m", fx(capPh("cc"), 3))) :
-      '<p class="note" style="margin:0">Open hole from surface. Add it when the cement comes up inside a previous casing.</p>',
-      s.jobType === "liner" ? '<span class="pill on">required</span>' : '<button class="pill' + (prevOn ? " on" : "") + '" data-act="prev">' + (prevOn ? "present ✓" : "none") + "</button>");
-    html += card(s.jobType === "liner" ? "Liner (being cemented)" : "Casing (being cemented)",
-      row(sel("Size", "csgSize", s, CASING, true), num("Shoe depth", "shoe", s, "m")) +
-      row(num("Float collar", "fc", s, "m"), s.jobType === "liner" ? num("Liner top", "linerTop", s, "m") : "") +
-      (s.jobType === "liner" ? row(sel("Running string", "dpSize", s, PIPE, true)) : "") +
-      row(num("Internal cap", "capInt", s, "L/m", fx(capPh("int"), 3)), num("OH annulus", "capOH", s, "L/m", fx(capPh("oh"), 3))) +
-      '<p class="note">Leave capacities blank to use the computed value (shown faint). Type a value to override — e.g. from a caliper log.</p>');
-    html += card("Open Hole", row(sel("Size", "holeSize", s, HOLES, true), num("TD", "td", s, "m")) + row(num("Full bore cap", "capFull", s, "L/m", fx(capPh("full"), 3))));
-    html += card("Cement Program",
-      row(num(s.slurry === "leadtail" ? "TOC — lead" : "TOC", "toc", s, "m"), s.slurry === "leadtail" ? num("Top of tail", "tailTop", s, "m") : "") +
-      (s.slurry === "leadtail" ? '<div class="tag" style="color:var(--lead)">LEAD EXCESS</div>' + row(num("Open hole", "exLOH", s, "%", "25"), num("Cased", "exLC", s, "%", "0")) : "") +
-      '<div class="tag" style="color:var(--tail)">' + (s.slurry === "leadtail" ? "TAIL" : "SLURRY") + " EXCESS</div>" + row(num("Open hole", "exTOH", s, "%", "25"), num("Cased", "exTC", s, "%", "0")) +
-      '<p class="note">Rathole takes the tail open-hole excess. The shoe track has no excess.</p>');
-    html += card("Schematic", '<div id="o-sch"></div>', '<span class="note">not to scale</span>');
-    html += card("Cement Volumes", '<div id="o-vol"></div>');
-    html += card("Displacement", '<div id="o-disp"></div>' +
-      row(num("Pump output", "pumpOut", s, "L/stk"), num("Pump rate", "rate", s, "m³/min")) + '<div id="o-stk"></div>');
-    if (s.slurry === "leadtail") html += card("Lead Slurry",
-      row(num("Density", "leadSG", s, "SG"), num("Yield", "leadYield", s, "m³/MT")) +
-      row(num("Mix fluid", "leadConc", s, "m³/MT"), num("Dead vol", "leadDead", s, "m³")) + '<div id="o-lead"></div>' + addRows("Lead additives", "leadAdd", s.leadAdd, "var(--lead)"));
-    html += card(s.slurry === "leadtail" ? "Tail Slurry" : "Cement Slurry",
-      row(num("Density", "tailSG", s, "SG"), num("Yield", "tailYield", s, "m³/MT")) +
-      row(num("Mix fluid", "tailConc", s, "m³/MT"), num("Dead vol", "tailDead", s, "m³")) + '<div id="o-tail"></div>' + addRows(s.slurry === "leadtail" ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "var(--tail)"));
-    html += card("Spacer", row(num("Pumped", "spacerVol", s, "m³"), num("Dead vol", "spacerDead", s, "m³"), num("Density", "spacerSG", s, "SG")) + '<div id="o-sp"></div>' + addRows("Spacer additives", "spacerAdd", s.spacerAdd, "var(--tail)", true));
-    html += card("Pressures <span style=\"color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0\">· plug on float collar</span>",
-      row(num("Mud", "mudSG", s, "SG"), num("Displace with", "dispSG", s, "SG")) +
-      row(num("Frac gradient", "fracSG", s, "SG EMW", "optional"), num("Bump over", "bumpOver", s, "bar")) + '<div id="o-pr"></div>' +
-      '<p class="note">Static hydrostatics, TVD taken as MD (vertical well). Friction is not included — circulating pressure will be higher.</p>');
-    root.innerHTML = '<div class="page">' + html + "</div>";
-    outs();
-  }
+function CementJob(root, w, s) {
+  function persist() { touch(w); }
   function capPh(k) {
     var c = csg(s.csgSize), h = hole(s.holeSize), pc = csg(s.prevSize);
     if (k === "int") return c && cap(c.idIn); if (k === "oh") return c && h && ann(h.d, c.od);
     if (k === "full") return h && cap(h.d); if (k === "cc") return c && pc && ann(pc.idIn, c.od);
   }
+  function draw() {
+    var lt = s.slurry === "leadtail", liner = s.jobType === "liner", prevOn = s.prevOn || liner;
+    var h = '<h1 class="title" id="o-title">' + esc(jobLabel(s)) + '</h1><p class="lede">' + esc(w.name) + " · cement job</p>";
+    h += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn sec2" data-act="dup">Duplicate</button><button class="btn danger" data-act="delJob">Delete</button></div>';
+    h += '<div id="errBox"></div>';
+    h += grp("Job", txt("Job name", "title", s, "e.g. Surface, Intermediate") + '<div class="pad" style="padding-top:0">' +
+      seg("jobType", s, [["casing", "Casing · surface"], ["liner", "Liner · hung"]]) + seg("slurry", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
+    h += grp("Previous casing", prevOn ?
+      sel("Size", "prevSize", s, CASING, true) + num("Shoe depth", "prevShoe", s, "m") + num("Csg-Csg annulus", "capCC", s, "L/m", fx(capPh("cc"))) :
+      '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add one if the TOC lands inside a previous casing.</p>',
+      liner ? '<span class="pill on">required</span>' : '<button class="pill' + (prevOn ? " on" : "") + '" data-act="prev">' + (prevOn ? "present ✓" : "none") + "</button>");
+    h += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
+      sel("Size", "csgSize", s, CASING, true) + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
+      (liner ? num("Liner top", "linerTop", s, "m") + sel("Running string", "dpSize", s, PIPE, true) : "") +
+      num("Internal cap", "capInt", s, "L/m", fx(capPh("int"))) + num("OH annulus", "capOH", s, "L/m", fx(capPh("oh"))));
+    h += '<p class="note" style="padding:0 16px">Capacities left blank use the computed value (shown grey). Type one to override, e.g. from a caliper log.</p>';
+    h += grp("Open hole", sel("Size", "holeSize", s, HOLES, true) + num("TD", "td", s, "m") + num("Full bore cap", "capFull", s, "L/m", fx(capPh("full"))));
+    h += grp("Cement program",
+      num(lt ? "TOC · lead" : "TOC", "toc", s, "m") + (lt ? num("Top of tail", "tailTop", s, "m") : "") +
+      (lt ? '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLOH", s, "%") + num("Lead cased", "exLC", s, "%") : "") +
+      '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTOH", s, "%") + num(lt ? "Tail cased" : "Cased", "exTC", s, "%") +
+      '<p class="note" style="padding-bottom:12px">Rathole takes the ' + (lt ? "tail " : "") + "open-hole excess. The shoe track has no excess.</p>");
+    h += grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale");
+    h += grp("Cement volumes", '<div id="o-vol"></div>');
+    h += grp("Displacement", '<div id="o-disp"></div>' + num("Pump output", "pumpOut", s, "L/stk") + num("Pump rate", "rate", s, "m³/min") + '<div id="o-stk"></div>');
+    if (lt) h += grp("Lead slurry", '<div class="pad" id="o-leadv" style="padding-bottom:0"></div>' + num("Density", "leadSG", s, "SG") + num("Slurry yield", "leadYield", s, "m³/MT") +
+      num("Mix fluid", "leadConc", s, "m³/MT") + num("Dead volume", "leadDead", s, "m³") + '<div id="o-lead"></div>' + addRows("leadAdd", s.leadAdd, "var(--lead)"));
+    h += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" id="o-tailv" style="padding-bottom:0"></div>' + num("Density", "tailSG", s, "SG") + num("Slurry yield", "tailYield", s, "m³/MT") +
+      num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") + '<div id="o-tail"></div>' + addRows("tailAdd", s.tailAdd, "var(--tail)"));
+    h += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + num("Density", "spacerSG", s, "SG") +
+      '<div id="o-sp"></div>' + addRows("spacerAdd", s.spacerAdd, "var(--tail)", true));
+    h += grp("Pressures", num("Mud", "mudSG", s, "SG") + num("Displace with", "dispSG", s, "SG") + num("Frac gradient", "fracSG", s, "SG EMW", "optional") +
+      num("Bump over", "bumpOver", s, "bar") + '<div id="o-pr"></div>', "plug on float collar");
+    var st = s.stages.map(function (x, i) {
+      var p = "stages." + i + ".";
+      return '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(x.name) + '" placeholder="Stage">' +
+        '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'vol" value="' + esc(x.vol) + '" placeholder="m³">' +
+        '<input class="in" inputmode="decimal" data-k="' + p + 'rate" value="' + esc(x.rate) + '" placeholder="m³/min">' +
+        '<input class="in" inputmode="decimal" data-k="' + p + 'extra" value="' + esc(x.extra) + '" placeholder="+ min">' +
+        '<button class="x" data-act="delStage" data-i="' + i + '">✕</button></div></div>';
+    }).join("");
+    h += grp("Pump schedule", (st ? '<p class="note" style="padding-top:10px;margin:0">Each stage: volume m³ · rate m³/min · fixed minutes (plug drops, tests).</p>' + st : '<div class="empty">No stages yet.</div>') +
+      '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-act="addStage">+ stage</button><button class="btn" data-act="build">' + (st ? "Rebuild from job" : "Build from job") + "</button></div>" +
+      num("Lead thickening time", "leadTT", s, "min") + num("Tail thickening time", "tailTT", s, "min") + num("Safety margin", "margin", s, "min") +
+      '<div id="o-sch2"></div>');
+    root.innerHTML = '<div class="page">' + h + "</div>";
+    outs();
+  }
   function outs() {
     var m = jobModel(s), sl = slurries(s, m), $ = function (id) { return root.querySelector("#" + id); };
+    $("o-title").textContent = jobLabel(s);
     $("errBox").innerHTML = m.err && m.err.length ? '<div class="warn">⚠ ' + m.err.map(esc).join("<br>⚠ ") + "</div>" : "";
-    $("o-sch").innerHTML = schematic(m.items ? m : null);
-    var cols = { lead: "var(--lead)", tail: "var(--tail)", shoetrack: "var(--track)", rathole: "var(--rat)" };
+    $("o-sch").innerHTML = m.items ? schematic(m, true) : '<div class="empty">Enter shoe, float collar, TD and TOC to draw the well.</div>';
+    var col = { lead: "var(--lead)", tail: "var(--tail)", shoetrack: "var(--track)", rathole: "var(--rat)" };
     if (m.items) {
-      var v = "", grp = function (key, title, color, filt, tot) {
-        var g = '<div class="tag" style="color:' + color + '">■ ' + title + "</div>";
+      var grpV = function (title, color, filt, tot) {
+        var g = '<div class="tag" style="color:' + color + '">' + title + "</div>";
         m.items.filter(filt).forEach(function (z) {
-          g += line('<b style="color:' + cols[z.slurry] + '">' + z.n + "</b>" + esc(z.label), fx(z.vol / 1000) + " m³",
-            "(" + z.dBot + "−" + z.dTop + ")×" + fx(z.cap, 3) + "÷1000" + (z.ex > 0 ? "×" + (1 + z.ex).toFixed(2) : ""));
+          g += '<div class="line"><span class="k"><span class="num" style="background:' + col[z.slurry] + '">' + z.n + "</span><span>" + esc(z.label) +
+            "<small>" + fx(z.dBot - z.dTop, 1) + " m × " + fx(z.cap) + " L/m" + (z.ex > 0 ? " +" + fi(z.ex * 100) + "%" : "") + '</small></span></span><span class="v">' + fx(z.vol / 1000) + " m³</span></div>";
         });
-        return g + '<div class="sum" style="color:' + color + '"><span>' + title.charAt(0) + title.slice(1).toLowerCase() + ' volume</span><span class="v">' + fx(tot / 1000) + " m³</span></div>";
+        return g + '<div class="sum"><span>' + title + ' volume</span><span>' + fx(tot / 1000) + " m³</span></div>";
       };
-      if (m.hasLead) v += grp("lead", "LEAD", "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol);
-      v += grp("tail", m.hasLead ? "TAIL" : "SLURRY", "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
-      v += big("Total cement", fx(m.total / 1000), " m³", "#3d1412", "#f3c6c0");
-      $("o-vol").innerHTML = v;
+      var v = "";
+      if (m.hasLead) v += grpV("Lead", "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol);
+      v += grpV(m.hasLead ? "Tail" : "Slurry", "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
+      $("o-vol").innerHTML = v + big("Total cement", fx(m.total / 1000), " m³");
       $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), fx(p.v / 1000) + " m³"); }).join("") +
-        big("Displacement", fx(m.dispL / 1000), " m³", "#12233d", "#bcd3f5") +
-        '<p class="note">' + fx(m.dispL / 1000 * BBL, 1) + " bbl · to float collar. Shoe track stays inside.</p>";
+        big("Displacement volume", fx(m.dispL / 1000), " m³", "blue") + '<p class="note" style="margin-top:-4px;padding-bottom:6px">' + fx(m.dispL / 1000 * BBL, 1) + " bbl · to the float collar</p>";
       var po = P(s.pumpOut), rt = P(s.rate);
-      $("o-stk").innerHTML = '<div class="tiles">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") +
+      $("o-stk").innerHTML = '<div class="tiles" style="margin-bottom:14px">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") +
         tile("Time", rt ? hhmm(m.dispL / 1000 / rt) : "—", "h:mm") + tile("Rate", rt ? fx(rt * BBL, 1) : "—", "bpm") + "</div>";
     } else {
-      ["o-vol", "o-disp", "o-stk"].forEach(function (id) { $(id).innerHTML = id === "o-stk" ? "" : '<div class="note" style="text-align:center;padding:14px 0">Enter data above</div>'; });
+      $("o-vol").innerHTML = '<div class="empty">Enter the data above</div>'; $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = "";
     }
     var slOut = function (o) {
-      if (!o) return '<div class="note">Enter the volumes and yield.</div>';
+      if (!o) return '<p class="note" style="padding-bottom:10px">Enter the yield to get cement and mix fluid.</p>';
       return '<div class="tiles">' + tile("Dry cement", fx(o.dry), "MT") + tile("Mix fluid", fx(o.mix), "m³") + tile("Equiv dry", fx(o.equiv), "MT") + "</div>" +
-        '<p class="note">Slurry ' + fx(o.V) + " m³ · prepare " + fx(o.fluid) + " m³ mix fluid (with dead vol) · " + fi(o.dry * 1000 / 50) + " × 50 kg sacks</p>";
+        '<p class="note" style="padding-bottom:6px">Prepare ' + fx(o.fluid) + " m³ mix fluid (with dead volume) · " + fi(o.dry * 1000 / 50) + " × 50 kg sacks</p>";
     };
     var amts = function (key, rows, o, spm) {
       rows.forEach(function (r, i) {
@@ -583,64 +624,76 @@ function CementJob(root) {
         var a = addAmt(r, o, spm); el.textContent = a != null ? fx(a, a >= 100 ? 0 : 1) + " " + r.u : "—";
       });
     };
-    if ($("o-lead")) { $("o-lead").innerHTML = slOut(sl && sl.lead); amts("leadAdd", s.leadAdd, sl && sl.lead, null); }
+    var vol = function (o) { return '<span style="color:var(--sub);font-size:14px">Volume ' + (o ? fx(o.V) : "—") + " m³</span>"; };
+    if ($("o-lead")) { $("o-leadv").innerHTML = vol(m.items && { V: m.leadVol / 1000 }); $("o-lead").innerHTML = slOut(sl && sl.lead); amts("leadAdd", s.leadAdd, sl && sl.lead, null); }
+    $("o-tailv").innerHTML = vol(m.items && { V: m.tailVol / 1000 });
     $("o-tail").innerHTML = slOut(sl && sl.tail); amts("tailAdd", s.tailAdd, sl && sl.tail, null);
     var spm = P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null;
-    $("o-sp").innerHTML = '<p class="note" style="margin:0 0 4px;color:var(--accent);font-weight:700">Mix volume = ' + fx(spm) + " m³ <span style=\"color:var(--faint);font-weight:400\">(pumped + dead)" +
-      (m.items && P(s.spacerVol) ? " · " + fi(P(s.spacerVol) * 1000 / m.capTOC) + " m of annulus" : "") + "</span></p>";
+    $("o-sp").innerHTML = '<p class="note" style="padding:10px 0 2px;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead' +
+      (m.items && P(s.spacerVol) ? " · " + fi(P(s.spacerVol) * 1000 / m.capTOC) + " m of annulus" : "") + ")</span></p>";
     amts("spacerAdd", s.spacerAdd, null, spm);
     var pr = pressures(s, m);
-    if (!pr) $("o-pr").innerHTML = '<div class="note">Enter mud, slurry and displacement densities.</div>';
+    if (!pr) $("o-pr").innerHTML = '<p class="note" style="padding-bottom:12px">Enter mud, slurry and displacement densities to get the pressures.</p>';
     else {
-      var ph = function (b) { return fx(b, 1) + " bar <span style=\"color:var(--faint);font-weight:500\">" + fi(b * PSI) + " psi</span>"; };
-      var t = '<table class="t"><tr><th>Annulus column</th><th style="text-align:right">Height m</th><th style="text-align:right">SG</th></tr>' +
-        pr.cols.map(function (c) { return "<tr><td>" + c.n + '</td><td class="n">' + fi(c.h) + '</td><td class="n">' + fx(c.sg) + "</td></tr>"; }).join("") + "</table>";
+      var ph = function (b) { return fx(b, 1) + ' bar <span style="color:var(--sub);font-weight:500">· ' + fi(b * PSI) + " psi</span>"; };
+      var t = '<div class="pad"><table class="t"><tr><th>Annulus column</th><th class="n">Height m</th><th class="n">SG</th></tr>' +
+        pr.cols.map(function (c) { return "<tr><td>" + c.n + '</td><td class="n">' + fi(c.h) + '</td><td class="n">' + fx(c.sg) + "</td></tr>"; }).join("") + "</table></div>";
       t += line("Annulus at shoe", ph(pr.pAnn)) + line("Inside at shoe", ph(pr.pIn), "displacement fluid + shoe track") +
-        line("Differential (lift)", ph(pr.diff), "pressure to hold at end of displacement", "var(--accent)") +
-        line("Bump pressure", ph(pr.bump), "differential + " + fx(pr.over, 0) + " bar", "#fca5a5");
+        line("Differential (lift)", ph(pr.diff), "to hold at end of displacement", "var(--accent)") +
+        line("Bump pressure", ph(pr.bump), "differential + " + fx(pr.over, 0) + " bar", "var(--danger)");
       var emwRow = function (n, e) { var bad = pr.frac && e > pr.frac; return line(n, fx(e) + " SG" + (bad ? " ⚠" : ""), null, bad ? "var(--danger)" : null); };
       if (pr.emwPS != null) t += emwRow("EMW at previous shoe", pr.emwPS);
       t += emwRow("EMW at shoe", pr.emwShoe) + emwRow("EMW at TD", pr.emwTD);
       if (pr.frac) {
         var worst = Math.max(pr.emwShoe, pr.emwTD, pr.emwPS || 0);
-        t += worst > pr.frac ? '<div class="warn" style="margin:10px 0 0">⚠ Static EMW ' + fx(worst) + " SG exceeds the frac gradient " + fx(pr.frac) + " SG. Consider a lighter lead, lower TOC or two-stage job.</div>"
-          : '<div class="ok" style="margin:10px 0 0">✓ Static EMW stays below the frac gradient (margin ' + fx(pr.frac - worst) + " SG).</div>";
+        t += worst > pr.frac ? '<div class="warn">⚠ Static EMW ' + fx(worst) + " SG is above the frac gradient " + fx(pr.frac) + " SG. Consider a lighter lead, lower TOC or a two-stage job.</div>"
+          : '<div class="ok">✓ Static EMW stays below the frac gradient (margin ' + fx(pr.frac - worst) + " SG).</div>";
       }
-      $("o-pr").innerHTML = t;
+      $("o-pr").innerHTML = t + '<p class="note" style="padding-bottom:12px">Static, vertical well (TVD = MD), no friction — circulating pressure will be higher.</p>';
     }
-    var jb = $("jobsBox"); if (jb && jb.dataset.open) jb.innerHTML = jobsPanel();
-  }
-  function jobsPanel() {
-    var L = jobsList();
-    return '<div class="card"><h3>Saved Jobs</h3>' + (L.length ? L.map(function (j) {
-      return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--edge2)"><div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">' + esc(j.name) +
-        '</div><div style="font-size:11px;color:var(--faint)">' + new Date(j.at).toLocaleString() + '</div></div><button class="btn" style="background:#0d9488;padding:7px 13px" data-act="open" data-i="' + j.id +
-        '">Open</button><button class="x" data-act="del" data-i="' + j.id + '">✕</button></div>';
-    }).join("") : '<p class="note" style="margin:0">No saved jobs yet. Type a name and tap Save.</p>') + "</div>";
+    // pump schedule
+    var po2 = P(s.pumpOut), T = 0, V = 0, rows = [];
+    s.stages.forEach(function (x) {
+      var vv = P(x.vol) || 0, rr = P(x.rate), dt = (vv && rr ? vv / rr : 0) + (P(x.extra) || 0);
+      rows.push({ x: x, rt: rr, t0: T, dt: dt, cumV: V + vv, cumT: T + dt, stk: po2 && vv ? vv * 1000 / po2 : null }); T += dt; V += vv;
+    });
+    if (!rows.length) { $("o-sch2").innerHTML = ""; return; }
+    var o = '<div class="pad"><table class="t"><tr><th>Stage</th><th class="n">bpm</th><th class="n">Min</th><th class="n">Cum m³</th><th class="n">Clock</th></tr>' +
+      rows.map(function (r) {
+        return "<tr><td>" + esc(r.x.name) + (r.stk ? '<div style="font-size:12px;color:var(--sub)">' + fi(r.stk) + " stk</div>" : "") + '</td><td class="n">' + (r.rt ? fx(r.rt * BBL, 1) : "—") +
+          '</td><td class="n">' + fx(r.dt, 0) + '</td><td class="n">' + fx(r.cumV, 1) + '</td><td class="n">' + hhmm(r.cumT) + "</td></tr>";
+      }).join("") + "</table></div>" + big("Total job time", hhmm(T), " h:mm", "blue");
+    var find = function (re) { for (var i = 0; i < rows.length; i++) if (re.test(rows[i].x.name)) return rows[i]; return null; };
+    var mg = P(s.margin) || 0;
+    [[find(/lead/i), P(s.leadTT), "Lead"], [find(/tail|cement slurry/i), P(s.tailTT), "Tail"]].forEach(function (q) {
+      if (!q[0] || !q[1]) return;
+      var exp = T - q[0].t0, spare = q[1] - exp;
+      o += line(q[2] + " exposure", hhmm(exp) + " of " + hhmm(q[1]), "from start of " + q[2].toLowerCase() + " to bump", spare < mg ? "var(--danger)" : "var(--good)");
+      if (spare < mg) o += '<div class="warn">⚠ ' + q[2] + " has only " + fx(spare, 0) + " min of thickening time left (want ≥ " + mg + ").</div>";
+    });
+    $("o-sch2").innerHTML = o + '<div style="height:12px"></div>';
   }
   bind(root, s, persist, draw, outs, {
     prev: function () { s.prevOn = !s.prevOn; persist(); draw(); },
     addAdd: function (k) { s[k].push({ name: "", f: "", u: k === "spacerAdd" ? "kg" : "L", on: "eq" }); persist(); draw(); },
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
-    save: function () {
-      if (!s.name.trim()) { toast("Enter a job name first."); return; }
-      var L = jobsList(), ex = L.filter(function (j) { return j.name === s.name.trim(); })[0];
-      var rec = { id: ex ? ex.id : uid(), name: s.name.trim(), at: Date.now(), data: JSON.parse(JSON.stringify(s)) };
-      L = L.filter(function (j) { return j.id !== rec.id; }); L.unshift(rec);
-      toast(save("jobs", L) ? "Saved: " + rec.name : "Could not save on this device."); draw();
+    addStage: function () { s.stages.push({ name: "", vol: "", rate: "", extra: "" }); persist(); draw(); },
+    delStage: function (i) { s.stages.splice(+i, 1); persist(); draw(); },
+    build: function () { if (s.stages.length && !confirm("Replace the stages with ones built from this job?")) return; s.stages = stagesFromJob(s); persist(); draw(); },
+    pdf: function () { var m = jobModel(s); if (!m.items) { toast(m.err && m.err.length ? "Fix the flagged rows first." : "Enter the job data first."); return; } showSheet(w, s, m); },
+    dup: function () {
+      var c = JSON.parse(JSON.stringify(s)); c.id = uid(); c.created = Date.now(); c.title = (s.title ? s.title + " " : "") + "(copy)";
+      w.jobs.push(c); touch(w); location.hash = "job/" + w.id + "/" + c.id; toast("Duplicated");
     },
-    jobs: function () { var jb = root.querySelector("#jobsBox"); if (jb.dataset.open) { delete jb.dataset.open; jb.innerHTML = ""; } else { jb.dataset.open = "1"; jb.innerHTML = jobsPanel(); } },
-    open: function (id) { var j = jobsList().filter(function (x) { return x.id === id; })[0]; if (!j) return; replaceJob(j.data); persist(); draw(); toast("Opened " + j.name); },
-    del: function (id) { if (!confirm("Delete this saved job?")) return; save("jobs", jobsList().filter(function (x) { return x.id !== id; })); var jb = root.querySelector("#jobsBox"); jb.innerHTML = jobsPanel(); },
-    "new": function () { if (!confirm("Start a new, empty job? Unsaved changes to the current one are lost.")) return; replaceJob(blankJob()); persist(); draw(); },
-    pdf: function () { var m = jobModel(s); if (!m.items) { toast(m.err && m.err.length ? "Fix the flagged rows first." : "Enter the job data first."); return; } showSheet(s, m); }
+    delJob: function () {
+      if (!confirm("Delete this cement job from " + w.name + "?")) return;
+      w.jobs = w.jobs.filter(function (x) { return x.id !== s.id; }); touch(w); location.hash = "well/" + w.id;
+    }
   });
   draw();
 }
-function jobsList() { return load("jobs", []); }
-function replaceJob(d) { Object.keys(job).forEach(function (k) { delete job[k]; }); Object.assign(job, JSON.parse(JSON.stringify(JOB_SAMPLE)), d); }
 
-function showSheet(s, m) {
+function showSheet(w, s, m) {
   var sl = slurries(s, m), pr = pressures(s, m), me = load("me", {});
   var colr = { lead: "#b45309", tail: "#0d7a6f", shoetrack: "#6d28d9", rathole: "#be185d" };
   var items = m.items.map(function (z) {
@@ -654,34 +707,34 @@ function showSheet(s, m) {
   };
   var slT = function (name, o, rows, color, sg) {
     if (!o) return "";
-    return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³" + (sg ? " · " + sg + " SG" : "") + "</td></tr>" +
+    return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³" + (sg ? " · " + esc(sg) + " SG" : "") + "</td></tr>" +
       '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="r">' + fx(o.dry) + " MT</td></tr>" +
       '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="r">' + fx(o.mix) + " m³</td></tr>" +
       '<tr><td>Mix fluid to prepare</td><td class="f">+ dead vol</td><td class="r">' + fx(o.fluid) + " m³</td></tr>" +
       '<tr><td>Equiv dry</td><td class="f">' + fx(o.fluid) + '÷conc</td><td class="r">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, o);
   };
   var po = P(s.pumpOut);
-  var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(s.name || "Untitled job") + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
+  var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(w.name) + (w.rig ? " · " + esc(w.rig) : "") + " · " + esc(jobLabel(s)) + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
     '<div class="meta">' + esc(m.c.label) + " · Hole " + frac(m.h.d) + "<br>TD " + m.TD + " m · Shoe " + m.SH + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
     '<div class="cols"><div class="left">' + schematic(m, true) +
     '<table style="margin-top:6px"><tr><td>TOC</td><td class="r">' + m.TOC + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="r">' + m.tTop + " m</td></tr>" : "") +
     (m.LT != null ? '<tr><td>Liner top</td><td class="r">' + m.LT + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="r">' + m.FC + " m</td></tr>" +
     (m.PS ? '<tr><td>Prev shoe</td><td class="r">' + m.PS + " m</td></tr>" : "") +
-    (m.hasLead ? '<tr><td>Excess lead OH/Cs</td><td class="r">' + (s.exLOH || 0) + "/" + (s.exLC || 0) + "%</td></tr>" : "") +
-    '<tr><td>Excess tail OH/Cs</td><td class="r">' + (s.exTOH || 0) + "/" + (s.exTC || 0) + "%</td></tr></table></div>" +
+    (m.hasLead ? '<tr><td>Excess lead OH/Cs</td><td class="r">' + esc(s.exLOH || 0) + "/" + esc(s.exLC || 0) + "%</td></tr>" : "") +
+    '<tr><td>Excess ' + (m.hasLead ? "tail " : "") + 'OH/Cs</td><td class="r">' + esc(s.exTOH || 0) + "/" + esc(s.exTC || 0) + "%</td></tr></table></div>" +
     '<div class="right"><h2>Volume Calculations <span class="sub" style="font-size:8.5px">(B−T)×cap÷1000×(1+ex)</span></h2><table><tr><th>#</th><th>Section</th><th>Working</th><th>m³</th></tr>' + items +
     (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">Lead total</td><td class="r" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
     '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="r" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
     '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="r">' + fx(m.total / 1000, 2) + " m³</td></tr></table>" +
-    '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return '<tr><td colspan=2>' + esc(p.t) + '</td><td class="r">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
+    '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="r">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
     '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="r">' + fx(m.dispL / 1000) + " m³</td></tr></table>" +
     "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", s.leadSG) + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", s.tailSG) + "</table>" +
-    (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³" + (s.spacerSG ? " · " + s.spacerSG + " SG" : "") + "</span></h2><table>" + addT(s.spacerAdd, null, sl.spMix) + "</table>" : "") +
-    (pr ? "<h2>Pressures <span class=\"sub\" style=\"font-size:8.5px\">static, plug on float collar</span></h2><table>" +
+    (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³" + (s.spacerSG ? " · " + esc(s.spacerSG) + " SG" : "") + "</span></h2><table>" + addT(s.spacerAdd, null, sl.spMix) + "</table>" : "") +
+    (pr ? '<h2>Pressures <span class="sub" style="font-size:8.5px">static, plug on float collar</span></h2><table>' +
       '<tr><td>Annulus at shoe</td><td class="r">' + fx(pr.pAnn, 1) + " bar / " + fi(pr.pAnn * PSI) + " psi</td></tr>" +
       '<tr><td>Inside at shoe</td><td class="r">' + fx(pr.pIn, 1) + " bar / " + fi(pr.pIn * PSI) + " psi</td></tr>" +
       '<tr><td>Differential (lift)</td><td class="r">' + fx(pr.diff, 1) + " bar / " + fi(pr.diff * PSI) + " psi</td></tr>" +
-      '<tr><td>Bump (+' + fx(pr.over, 0) + ' bar)</td><td class="r">' + fx(pr.bump, 1) + " bar / " + fi(pr.bump * PSI) + " psi</td></tr>" +
+      "<tr><td>Bump (+" + fx(pr.over, 0) + ' bar)</td><td class="r">' + fx(pr.bump, 1) + " bar / " + fi(pr.bump * PSI) + " psi</td></tr>" +
       '<tr><td>EMW shoe / TD</td><td class="r">' + fx(pr.emwShoe) + " / " + fx(pr.emwTD) + " SG</td></tr></table>" : "") +
     "</div></div>" +
     '<p class="fn"><b>' + esc(me.name || "Cementing Engineer") + "</b>" + (me.phone ? " · " + esc(me.phone) : "") + " · Cementing Toolkit — verify against the cement program before execution.</p>";
@@ -689,216 +742,245 @@ function showSheet(s, m) {
   sh.innerHTML = '<div class="tb"><button data-a="back">‹ Back</button><b style="font-size:15px">Worksheet</b><button class="pr" data-a="print">Print / PDF</button></div><div class="doc">' + body + "</div>";
   sh.onclick = function (e) {
     var a = e.target.getAttribute("data-a");
-    if (a === "back") { document.body.classList.remove("sheet"); }
+    if (a === "back") document.body.classList.remove("sheet");
     if (a === "print") { try { window.print(); } catch (x) { alert("Use Share → Print to save as PDF."); } }
   };
   document.body.classList.add("sheet"); window.scrollTo(0, 0);
 }
 
-/* ═════════════════════════ SLURRY DESIGN ═════════════════════════ */
-// Absolute-volume method per 1 MT of cement.
-var sd = Object.assign({ cemSG: "3.15", water: "44", sack: "50", adds: [
-  { name: "Silica flour", c: "35", u: "bwoc", sg: "2.65" },
-  { name: "Fluid loss (liquid)", c: "4", u: "lmt", sg: "1.10" },
-  { name: "Retarder (liquid)", c: "1.5", u: "lmt", sg: "1.15" }] }, load("sd", {}));
-function sdCalc(s) {
-  var cs = P(s.cemSG), w = P(s.water); if (!cs || w == null) return null;
-  var mass = 1000, vol = 1000 / cs, fluidL = w * 10, liqL = 0;   // kg, L, L
-  mass += fluidL; vol += fluidL;
-  var rows = s.adds.map(function (a) {
-    var c = P(a.c), sg = P(a.sg); if (c == null || !sg) return null;
-    var kg, L;
-    if (a.u === "bwoc") { kg = c * 10; L = kg / sg; }
-    else if (a.u === "kgmt") { kg = c; L = kg / sg; }
-    else { L = c; kg = c * sg; liqL += L; }
-    mass += kg; vol += L; return { kg: kg, L: L };
-  });
-  var yieldM = vol / 1000, sack = P(s.sack) || 50;
-  return { rows: rows, mass: mass, vol: vol, sg: mass / vol, yield: yieldM, mixFluid: (fluidL + liqL) / 1000, water: fluidL / 1000,
-    sackKg: sack, perSack: yieldM * sack };
-}
-function SlurryDesign(root) {
-  var s = sd;
-  function persist() { save("sd", s); }
-  var units = [{ id: "bwoc", label: "% BWOC" }, { id: "kgmt", label: "kg/MT" }, { id: "lmt", label: "L/MT liquid" }];
-  function draw() {
-    var h = card("Base", row(num("Cement SG", "cemSG", s, "", "3.15"), num("Water", "water", s, "% BWOC", "44"), num("Sack", "sack", s, "kg", "50")) +
-      '<p class="note">Class G neat: 44% water → 1.90 SG. Class A: 46%. Class H: 38%.</p>');
-    var ad = s.adds.map(function (a, i) {
-      return '<div class="row small" style="align-items:center;margin-bottom:6px"><input class="fld" style="flex:1.7" data-k="adds.' + i + '.name" value="' + esc(a.name) + '" placeholder="name">' +
-        '<input class="fld" style="flex:.8" inputmode="decimal" data-k="adds.' + i + '.c" value="' + esc(a.c) + '" placeholder="conc">' +
-        '<select class="sel" style="flex:1.3" data-k="adds.' + i + '.u">' + units.map(function (u) { return '<option value="' + u.id + '"' + (a.u === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join("") + "</select>" +
-        '<input class="fld" style="flex:.7" inputmode="decimal" data-k="adds.' + i + '.sg" value="' + esc(a.sg) + '" placeholder="SG">' +
-        '<button class="x" data-act="del" data-i="' + i + '">✕</button></div>';
+/* ═════════════════════════ WELLS ═════════════════════════ */
+function WellsHome(root) {
+  var me = load("me", {}), q = { v: "" };
+  function list() {
+    var L = db.wells.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
+      .filter(function (w) { return !q.v || (w.name + " " + (w.rig || "") + " " + (w.field || "")).toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
+    if (!db.wells.length) return '<div class="empty">No wells yet. Type a well number above and tap Create.</div>';
+    if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
+    return L.map(function (w) {
+      var n = w.jobs.length;
+      return item('data-go="well/' + w.id + '"', "var(--accent)", esc((w.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(w.name),
+        (n ? n + " job" + (n > 1 ? "s" : "") + " · " : "") + (w.rig ? esc(w.rig) + " · " : "") + when(w.updated || w.created));
     }).join("");
-    h += card("Additives", '<div class="row" style="margin-bottom:4px"><span class="lbl" style="flex:1.7">Name</span><span class="lbl" style="flex:.8">Conc</span><span class="lbl" style="flex:1.3">Unit</span><span class="lbl" style="flex:.7">SG</span><span style="flex:0 0 30px"></span></div>' +
-      ad + '<button class="btn ghost" data-act="add">+ additive</button><p class="note">Liquid additives (L/MT) go into the mix fluid. Solids add to the dry blend. SG of the additive is its absolute specific gravity.</p>');
-    h += card("Result <span style=\"color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0\">· per 1 MT cement</span>", '<div id="o-r"></div>');
-    h += card("Send to Cement Job", '<div class="row"><button class="btn" style="background:#d97706" data-act="to" data-i="lead">→ Lead</button><button class="btn" style="background:#0d9488" data-act="to" data-i="tail">→ Tail / single</button></div>' +
-      '<p class="note">Copies density, yield and mix-fluid ratio into the current cement job.</p>');
-    root.innerHTML = '<div class="page">' + h + "</div>"; outs();
   }
-  function outs() {
-    var r = sdCalc(s), o = root.querySelector("#o-r");
-    if (!r) { o.innerHTML = '<div class="note">Enter cement SG and water.</div>'; return; }
-    o.innerHTML = '<div class="tiles">' + tile("Density", fx(r.sg, 3), "SG") + tile("Yield", fx(r.yield, 3), "m³/MT") + tile("Mix fluid", fx(r.mixFluid, 3), "m³/MT") + "</div>" +
-      line("Density", fx(r.sg * 8.3454, 2) + " ppg · " + fi(r.sg * 1000) + " kg/m³") +
-      line("Yield per sack (" + r.sackKg + " kg)", fx(r.perSack * 1000, 1) + " L · " + fx(r.perSack * 35.3147, 3) + " ft³") +
-      line("Water only", fx(r.water, 3) + " m³/MT") +
-      line("Hydrostatic gradient", fx(r.sg * G, 4) + " bar/m · " + fx(r.sg * 0.4335, 3) + " psi/ft") +
-      line("Slurry per 1 m³", fx(1 / r.yield, 3) + " MT cement");
+  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div><h1 class="title">Cementing</h1><p class="lede">Every well you cement, saved as a record.</p>';
+  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well number (e.g. MRM-1802)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+  h += '<div class="sec"><div class="sh">History<span>' + db.wells.length + " well" + (db.wells.length === 1 ? "" : "s") + "</span></div>" +
+    (db.wells.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px;background:#e3e3e8">' : "") +
+    '<div class="grp" id="list">' + list() + "</div></div>";
+  h += '<div class="foot"><div class="nm">' + esc(me.name || "Cementing Engineer") + '</div><div class="ro">' + esc(me.role || "Cementing Engineer") + "</div>" +
+    (me.phone ? '<a href="tel:' + esc(me.phone.replace(/[^+\d]/g, "")) + '">' + esc(me.phone) + "</a>" : "") +
+    '<div><button class="linkbtn" data-a="me">' + (me.name ? "Edit my details" : "Add your name & phone") + "</button></div></div></div>";
+  root.innerHTML = h;
+  var create = function () {
+    var inp = root.querySelector("#wname"), name = inp.value.trim();
+    if (!name) { toast("Enter a well number first."); inp.focus(); return; }
+    var ex = db.wells.filter(function (w) { return w.name.toLowerCase() === name.toLowerCase(); })[0];
+    if (ex) { toast("Opened existing " + ex.name); location.hash = "well/" + ex.id; return; }
+    var w = { id: uid(), name: name, rig: "", field: "", notes: "", created: Date.now(), updated: Date.now(), jobs: [newJob()], plugs: [], recipe: newRecipe() };
+    db.wells.push(w); saveDb(); save("cur", w.id);
+    location.hash = "job/" + w.id + "/" + w.jobs[0].id;
+  };
+  root.querySelector("#wname").addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
+  var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
+  root.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
+    var a = e.target.getAttribute("data-a");
+    if (a === "create") create();
+    if (a === "me") {
+      var n = prompt("Your name", me.name || ""); if (n == null) return;
+      var r = prompt("Your title", me.role || "Cementing Engineer"); if (r == null) return;
+      var p = prompt("Phone (optional)", me.phone || ""); if (p == null) return;
+      save("me", { name: n.trim(), role: r.trim(), phone: p.trim() }); route();
+    }
+  });
+}
+
+function WellPage(root, w) {
+  save("cur", w.id);
+  function persist() { touch(w); }
+  function draw() {
+    var h = '<h1 class="title" id="o-wn">' + esc(w.name) + '</h1><p class="lede">Created ' + when(w.created) + "</p>";
+    h += grp("Well", txt("Well number", "name", w, "") + txt("Rig", "rig", w, "optional") + txt("Field", "field", w, "optional") + txt("Notes", "notes", w, "optional"));
+    h += grp("Cement jobs", w.jobs.map(function (j) {
+      return item('data-go="job/' + w.id + "/" + j.id + '"', "#c2410c", "C", esc(jobLabel(j)), jobSummary(j));
+    }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addJob">+ New cement job</button>', w.jobs.length + "");
+    h += grp("Balanced plugs", w.plugs.map(function (p) {
+      return item('data-go="plug/' + w.id + "/" + p.id + '"', "#0284c7", "B", esc(p.title || "Plug" + (p.bottom ? " @ " + p.bottom + " m" : "")), p.len ? fi(P(p.len)) + " m plug" : "Not filled in yet");
+    }).join("") + '<button class="btn ghost" style="margin-top:12px" data-act="addPlug">+ New balanced plug</button>');
+    h += grp("Slurry design", item('data-go="slurry/' + w.id + '"', "#d97706", "S", "Recipe → density & yield", "Send the result to any job in this well"));
+    h += '<div class="bar2" style="margin-top:26px"><button class="btn danger" data-act="delWell">Delete this well</button></div>';
+    root.innerHTML = '<div class="page">' + h + "</div>";
   }
-  bind(root, s, persist, draw, outs, {
-    add: function () { s.adds.push({ name: "", c: "", u: "bwoc", sg: "" }); persist(); draw(); },
-    del: function (i) { s.adds.splice(+i, 1); persist(); draw(); },
-    to: function (which) {
-      var r = sdCalc(s); if (!r) return;
-      var p = which === "lead" ? "lead" : "tail";
-      job[p + "SG"] = r.sg.toFixed(2); job[p + "Yield"] = r.yield.toFixed(3); job[p + "Conc"] = r.mixFluid.toFixed(3);
-      if (which === "lead") job.slurry = "leadtail";
-      saveJob(); toast("Sent to " + (p === "lead" ? "lead" : "tail") + " slurry");
+  root.addEventListener("click", function (e) { var g = e.target.closest("[data-go]"); if (g) location.hash = g.getAttribute("data-go"); });
+  bind(root, w, persist, draw, function () { root.querySelector("#o-wn").textContent = w.name || "—"; }, {
+    addJob: function () { var j = newJob(); w.jobs.push(j); touch(w); location.hash = "job/" + w.id + "/" + j.id; },
+    addPlug: function () { var p = newPlug(); w.plugs.push(p); touch(w); location.hash = "plug/" + w.id + "/" + p.id; },
+    delWell: function () {
+      if (!confirm("Delete " + w.name + " and all its jobs? This cannot be undone.")) return;
+      db.wells = db.wells.filter(function (x) { return x.id !== w.id; }); saveDb(); location.hash = "wells";
     }
   });
   draw();
 }
 
-/* ═════════════════════════ PUMP SCHEDULE ═════════════════════════ */
-var sch = Object.assign({ stages: [], leadTT: "", tailTT: "", margin: "60" }, load("sch", {}));
-function stagesFromJob() {
-  var m = jobModel(job), sl = slurries(job, m), r = P(job.rate) || 1;
-  var st = [{ name: "Pressure test lines", vol: "", rate: "", extra: "10" }];
-  if (P(job.spacerVol)) st.push({ name: "Spacer", vol: String(job.spacerVol), rate: String(r), extra: "" });
-  st.push({ name: "Drop bottom plug", vol: "", rate: "", extra: "5" });
-  if (m.items) {
-    if (m.hasLead) st.push({ name: "Lead slurry", vol: fx(m.leadVol / 1000), rate: String(r), extra: "" });
-    st.push({ name: m.hasLead ? "Tail slurry" : "Cement slurry", vol: fx(m.tailVol / 1000), rate: String(r), extra: "" });
-    st.push({ name: "Drop top plug", vol: "", rate: "", extra: "5" });
-    var d = m.dispL / 1000, slow = Math.min(3, d * 0.1);
-    st.push({ name: "Displacement", vol: fx(d - slow), rate: String(r), extra: "" });
-    st.push({ name: "Slow down to bump", vol: fx(slow), rate: String(Math.round(r * 0.4 * 10) / 10 || 0.5), extra: "" });
-  }
-  return st;
+/* ═════════════════════════ SLURRY DESIGN ═════════════════════════ */
+// Absolute-volume method per 1 MT of cement.
+function sdCalc(s) {
+  var cs = P(s.cemSG), wt = P(s.water); if (!cs || wt == null) return null;
+  var mass = 1000 + wt * 10, vol = 1000 / cs + wt * 10, liqL = 0;
+  s.adds.forEach(function (a) {
+    var c = P(a.c), sg = P(a.sg); if (c == null || !sg) return;
+    var kg, L;
+    if (a.u === "bwoc") { kg = c * 10; L = kg / sg; } else if (a.u === "kgmt") { kg = c; L = kg / sg; } else { L = c; kg = c * sg; liqL += L; }
+    mass += kg; vol += L;
+  });
+  var y = vol / 1000, sack = P(s.sack) || 50;
+  return { sg: mass / vol, yield: y, mixFluid: (wt * 10 + liqL) / 1000, water: wt * 10 / 1000, sackKg: sack, perSack: y * sack };
 }
-function PumpSchedule(root) {
-  var s = sch;
-  if (!s.stages.length) s.stages = stagesFromJob();
-  function persist() { save("sch", s); }
+function SlurryDesign(root, w) {
+  var s = w.recipe;
+  if (!s.target && w.jobs[0]) s.target = w.jobs[0].id;
+  function persist() { touch(w); }
+  var units = [{ id: "bwoc", label: "% BWOC" }, { id: "kgmt", label: "kg/MT" }, { id: "lmt", label: "L/MT liquid" }];
   function draw() {
-    var st = s.stages.map(function (x, i) {
-      return '<div class="row small" style="align-items:center;margin-bottom:6px"><input class="fld" style="flex:2" data-k="stages.' + i + '.name" value="' + esc(x.name) + '" placeholder="stage">' +
-        '<input class="fld" style="flex:.9" inputmode="decimal" data-k="stages.' + i + '.vol" value="' + esc(x.vol) + '" placeholder="m³">' +
-        '<input class="fld" style="flex:.9" inputmode="decimal" data-k="stages.' + i + '.rate" value="' + esc(x.rate) + '" placeholder="m³/min">' +
-        '<input class="fld" style="flex:.8" inputmode="decimal" data-k="stages.' + i + '.extra" value="' + esc(x.extra) + '" placeholder="min">' +
-        '<button class="x" data-act="del" data-i="' + i + '">✕</button></div>';
-    }).join("");
-    var h = card("Stages", '<div class="row" style="margin-bottom:4px"><span class="lbl" style="flex:2">Stage</span><span class="lbl" style="flex:.9">Vol m³</span><span class="lbl" style="flex:.9">m³/min</span><span class="lbl" style="flex:.8">+ min</span><span style="flex:0 0 30px"></span></div>' +
-      st + '<button class="btn ghost" data-act="add">+ stage</button>' +
-      '<div class="row" style="margin-top:10px"><button class="btn" style="background:#334155" data-act="rebuild">Rebuild from Cement Job</button></div>' +
-      '<p class="note">"+ min" is a fixed time for steps with no pumping (plug drops, tests, shutdowns).</p>', '<span class="note">pump ' + esc(job.pumpOut || "—") + " L/stk</span>");
-    h += card("Thickening Time", row(num("Lead TT", "leadTT", s, "min", "e.g. 300"), num("Tail TT", "tailTT", s, "min", "e.g. 240"), num("Safety", "margin", s, "min", "60")) + '<div id="o-tt"></div>');
-    h += card("Schedule", '<div id="o-s"></div>');
+    var h = '<h1 class="title">Slurry design</h1><p class="lede">' + esc(w.name) + " · per 1 MT cement</p>";
+    h += grp("Base", num("Cement SG", "cemSG", s, "", "3.15") + num("Water", "water", s, "% BWOC", "44") + num("Sack", "sack", s, "kg", "50"), "");
+    h += '<p class="note" style="padding:0 16px">Class G neat: 44% water → 1.90 SG. Class A 46%, class H 38%.</p>';
+    h += grp("Additives", s.adds.map(function (a, i) {
+      var p = "adds." + i + ".";
+      return '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(a.name) + '" placeholder="Additive name">' +
+        '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'c" value="' + esc(a.c) + '" placeholder="conc">' +
+        '<select class="chip" data-k="' + p + 'u">' + units.map(function (u) { return '<option value="' + u.id + '"' + (a.u === u.id ? " selected" : "") + ">" + u.label + "</option>"; }).join("") + "</select>" +
+        '<input class="in" inputmode="decimal" data-k="' + p + 'sg" value="' + esc(a.sg) + '" placeholder="SG">' +
+        '<button class="x" data-act="del" data-i="' + i + '">✕</button></div></div>';
+    }).join("") + '<p class="note">Liquids (L/MT) go into the mix fluid; solids add to the blend. SG is the absolute specific gravity.</p><button class="btn ghost" data-act="add">+ additive</button>');
+    h += grp("Result", '<div id="o-r"></div>');
+    h += grp("Send to a job", w.jobs.length ? sel("Job", "target", s, w.jobs.map(function (j) { return { id: j.id, label: jobLabel(j) }; })) +
+      '<div class="bar2" style="margin:12px 0"><button class="btn" style="background:var(--lead)" data-act="to" data-i="lead">→ Lead</button><button class="btn" style="background:var(--tail)" data-act="to" data-i="tail">→ Tail / single</button></div>'
+      : '<div class="empty">This well has no cement job yet.</div>');
     root.innerHTML = '<div class="page">' + h + "</div>"; outs();
   }
-  function calc() {
-    var po = P(job.pumpOut), t = 0, v = 0, rows = [];
-    s.stages.forEach(function (x) {
-      var vol = P(x.vol) || 0, rt = P(x.rate), ex = P(x.extra) || 0, dt = (vol && rt ? vol / rt : 0) + ex;
-      rows.push({ x: x, vol: vol, rt: rt, t0: t, dt: dt, cumV: v + vol, cumT: t + dt, stk: po && vol ? vol * 1000 / po : null });
-      t += dt; v += vol;
-    });
-    return { rows: rows, T: t, V: v, po: po };
-  }
   function outs() {
-    var c = calc();
-    var t = '<table class="t"><tr><th>Stage</th><th style="text-align:right">bpm</th><th style="text-align:right">Time</th><th style="text-align:right">Cum vol</th><th style="text-align:right">Cum h:mm</th></tr>' +
-      c.rows.map(function (r) {
-        return "<tr><td>" + esc(r.x.name) + (r.stk ? '<div style="font-size:10.5px;color:var(--faint)">' + fi(r.stk) + " stk</div>" : "") + '</td><td class="n">' + (r.rt ? fx(r.rt * BBL, 1) : "—") + '</td><td class="n">' + fx(r.dt, 0) +
-          ' min</td><td class="n">' + fx(r.cumV, 1) + '</td><td class="n">' + hhmm(r.cumT) + "</td></tr>";
-      }).join("") + "</table>";
-    t += big("Total job time", hhmm(c.T), " h:mm", "#12233d", "#bcd3f5") + '<p class="note">' + fx(c.V, 1) + " m³ pumped in total · " + fx(c.V * BBL, 0) + " bbl</p>";
-    root.querySelector("#o-s").innerHTML = t;
-    var find = function (re) { for (var i = 0; i < c.rows.length; i++) if (re.test(c.rows[i].x.name)) return c.rows[i]; return null; };
-    var lead = find(/lead/i), tail = find(/tail|cement slurry/i), mg = P(s.margin) || 0, out = "";
-    [[lead, P(s.leadTT), "Lead"], [tail, P(s.tailTT), "Tail"]].forEach(function (q) {
-      if (!q[0] || !q[1]) return;
-      var exp = c.T - q[0].t0, spare = q[1] - exp;
-      out += line(q[2] + " exposure", hhmm(exp) + " / " + hhmm(q[1]), "from start of " + q[2].toLowerCase() + " to bump", spare < mg ? "var(--danger)" : "var(--tail)");
-      out += spare < mg ? '<div class="warn" style="margin:8px 0">⚠ ' + q[2] + " has only " + fx(spare, 0) + " min left of thickening time (want ≥ " + mg + ").</div>" : "";
-    });
-    root.querySelector("#o-tt").innerHTML = out || '<p class="note">Enter thickening times from the lab report to check the job time.</p>';
+    var r = sdCalc(s), o = root.querySelector("#o-r");
+    if (!r) { o.innerHTML = '<div class="empty">Enter cement SG and water.</div>'; return; }
+    o.innerHTML = '<div class="tiles">' + tile("Density", fx(r.sg, 3), "SG") + tile("Yield", fx(r.yield, 3), "m³/MT") + tile("Mix fluid", fx(r.mixFluid, 3), "m³/MT") + "</div>" +
+      line("Density", fx(r.sg * 8.3454, 2) + " ppg · " + fi(r.sg * 1000) + " kg/m³") +
+      line("Yield per " + r.sackKg + " kg sack", fx(r.perSack * 1000, 1) + " L · " + fx(r.perSack * 35.3147, 3) + " ft³") +
+      line("Water only", fx(r.water, 3) + " m³/MT") +
+      line("Gradient", fx(r.sg * G, 4) + " bar/m · " + fx(r.sg * 0.4335, 3) + " psi/ft");
   }
   bind(root, s, persist, draw, outs, {
-    add: function () { s.stages.push({ name: "", vol: "", rate: "", extra: "" }); persist(); draw(); },
-    del: function (i) { s.stages.splice(+i, 1); persist(); draw(); },
-    rebuild: function () { if (!confirm("Replace the stages with ones built from the current cement job?")) return; s.stages = stagesFromJob(); persist(); draw(); }
+    add: function () { s.adds.push({ name: "", c: "", u: "bwoc", sg: "" }); persist(); draw(); },
+    del: function (i) { s.adds.splice(+i, 1); persist(); draw(); },
+    to: function (which) {
+      var r = sdCalc(s), j = w.jobs.filter(function (x) { return x.id === s.target; })[0]; if (!r || !j) return;
+      j[which + "SG"] = r.sg.toFixed(2); j[which + "Yield"] = r.yield.toFixed(3); j[which + "Conc"] = r.mixFluid.toFixed(3);
+      if (which === "lead") j.slurry = "leadtail";
+      touch(w); toast("Sent to " + which + " · " + jobLabel(j));
+    }
   });
   draw();
 }
 
 /* ═════════════════════════ BALANCED PLUG ═════════════════════════ */
-var plug = Object.assign({ where: "oh", holeSize: "8.5", csgSize: "9.625-47", ex: "20", bottom: "", len: "150", pipe: "DP 3½″ 13.3#",
-  spAhead: "3", under: "0.5", pumpOut: "", yield: "0.76", conc: "0.44" }, load("plug", {}));
-function PlugTool(root) {
-  var s = plug;
-  function persist() { save("plug", s); }
+function PlugTool(root, w, s) {
+  function persist() { touch(w); }
   function draw() {
-    var h = card("Where", seg("where", s, [["oh", "Open hole"], ["cased", "Inside casing"]], "#0284c7") +
-      (s.where === "oh" ? row(sel("Hole", "holeSize", s, HOLES, true), num("Excess", "ex", s, "%", "20")) : row(sel("Casing", "csgSize", s, CASING, true))));
-    h += card("Plug", row(num("Plug bottom", "bottom", s, "m"), num("Plug length", "len", s, "m")) + row(sel("Work string", "pipe", s, PIPE, true)) +
-      row(num("Spacer ahead", "spAhead", s, "m³"), num("Under-displace", "under", s, "m³", "0")));
-    h += card("Result", '<div id="o-p"></div>' + row(num("Pump output", "pumpOut", s, "L/stk", job.pumpOut || ""), num("Yield", "yield", s, "m³/MT"), num("Mix fluid", "conc", s, "m³/MT")) + '<div id="o-p2"></div>');
+    var h = '<h1 class="title">Balanced plug</h1><p class="lede">' + esc(w.name) + "</p>";
+    h += '<div class="bar2"><button class="btn danger" data-act="del">Delete plug</button></div>';
+    h += grp("Plug", txt("Name", "title", s, "e.g. Kick-off plug") + '<div class="pad" style="padding-top:0">' + seg("where", s, [["oh", "Open hole"], ["cased", "Inside casing"]]) + "</div>" +
+      (s.where === "oh" ? sel("Hole", "holeSize", s, HOLES, true) + num("Excess", "ex", s, "%") : sel("Casing", "csgSize", s, CASING, true)) +
+      num("Plug bottom", "bottom", s, "m") + num("Plug length", "len", s, "m") + sel("Work string", "pipe", s, PIPE, true) +
+      num("Spacer ahead", "spAhead", s, "m³") + num("Under-displace", "under", s, "m³", "0"));
+    h += grp("Result", '<div id="o-p"></div>');
+    h += grp("Cement", num("Slurry yield", "yield", s, "m³/MT") + num("Mix fluid", "conc", s, "m³/MT") + num("Pump output", "pumpOut", s, "L/stk") + '<div id="o-p2"></div>');
     root.innerHTML = '<div class="page">' + h + "</div>"; outs();
   }
   function outs() {
     var D = s.where === "oh" ? P(s.holeSize) : (csg(s.csgSize) || {}).idIn, pp = pipe(s.pipe), B = P(s.bottom), L = P(s.len), ex = s.where === "oh" ? (P(s.ex) || 0) / 100 : 0;
     var o = root.querySelector("#o-p"), o2 = root.querySelector("#o-p2");
-    if (!D || !pp || B == null || !L) { o.innerHTML = '<div class="note">Enter plug bottom, length and the work string.</div>'; o2.innerHTML = ""; return; }
-    if (L > B) { o.innerHTML = '<div class="warn">⚠ Plug is longer than its bottom depth.</div>'; o2.innerHTML = ""; return; }
+    if (!D || !pp || B == null || !L) { o.innerHTML = '<div class="empty">Enter plug bottom, length and the work string.</div>'; o2.innerHTML = ""; return; }
+    if (L > B) { o.innerHTML = '<div class="warn" style="margin:12px 0">⚠ The plug is longer than its bottom depth.</div>'; o2.innerHTML = ""; return; }
     var hc = cap(D), pc = cap(pp.idIn), ac = ann(D, pp.od);
-    var V = L * hc * (1 + ex) / 1000;                       // m³
-    var Hp = V * 1000 / (ac + pc);                           // balanced height with pipe in
-    var topIn = B - Hp, topOut = B - V * 1000 / hc;
+    var V = L * hc * (1 + ex) / 1000, Hp = V * 1000 / (ac + pc), topIn = B - Hp, topOut = B - V * 1000 / hc;
     var spH = (P(s.spAhead) || 0) * 1000 / ac, spBehind = spH * pc / 1000;
-    var disp = Math.max(0, pc * (topIn - spH) / 1000 - (P(s.under) || 0));
-    var po = P(s.pumpOut) || P(job.pumpOut);
+    var disp = Math.max(0, pc * (topIn - spH) / 1000 - (P(s.under) || 0)), po = P(s.pumpOut);
     o.innerHTML = '<div class="tiles">' + tile("Cement", fx(V), "m³") + tile("Spacer behind", fx(spBehind), "m³") + tile("Displace", fx(disp), "m³") + "</div>" +
-      line("Hole / annulus / pipe cap", fx(hc, 2) + " / " + fx(ac, 2) + " / " + fx(pc, 2), "L/m") +
-      line("Plug height, pipe in", fi(Hp) + " m", "V ÷ (annulus cap + pipe cap)") +
+      line("Hole / annulus / pipe", fx(hc) + " / " + fx(ac) + " / " + fx(pc), "capacities, L/m") +
+      line("Plug height, pipe in", fi(Hp) + " m", "V ÷ (annulus + pipe capacity)") +
       line("Top of cement, pipe in", fi(topIn) + " m") +
       line("Top of cement, pipe out", fi(topOut) + " m", "pull above this before circulating", "var(--accent)") +
       line("Spacer height (balanced)", fi(spH) + " m") +
-      line("Displacement", fx(disp) + " m³ · " + fx(disp * BBL, 1) + " bbl", (P(s.under) ? "under-displaced by " + s.under + " m³" : "balanced")) +
+      line("Displacement", fx(disp) + " m³ · " + fx(disp * BBL, 1) + " bbl", P(s.under) ? "under-displaced by " + esc(s.under) + " m³" : "balanced") +
       (po ? line("Strokes", fi(disp * 1000 / po) + " stk") : "");
     var y = P(s.yield), cc = P(s.conc);
-    o2.innerHTML = y ? '<div class="tiles">' + tile("Dry cement", fx(V / y), "MT") + tile("Mix fluid", cc ? fx(V / y * cc) : "—", "m³") + tile("Sacks", fi(V / y * 1000 / 50), "× 50 kg") + "</div>" : "";
+    o2.innerHTML = y ? '<div class="tiles" style="margin-bottom:14px">' + tile("Dry cement", fx(V / y), "MT") + tile("Mix fluid", cc ? fx(V / y * cc) : "—", "m³") + tile("Sacks", fi(V / y * 1000 / 50), "× 50 kg") + "</div>" : "";
   }
-  bind(root, s, persist, draw, outs, {});
+  bind(root, s, persist, draw, outs, {
+    del: function () { if (!confirm("Delete this plug?")) return; w.plugs = w.plugs.filter(function (x) { return x.id !== s.id; }); touch(w); location.hash = "well/" + w.id; }
+  });
   draw();
 }
 
-/* ═════════════════════════ CAPACITIES ═════════════════════════ */
+/* ═════════════════════════ TOOLS ═════════════════════════ */
+function ToolsPage(root) {
+  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div><h1 class="title">Tools</h1><p class="lede">Quick calculators — not tied to a well.</p>';
+  h += grp("Calculators", item('data-go="caps"', "#0d9488", "C", "Capacities", "Hole, casing, annulus — L/m") + item('data-go="units"', "#7c3aed", "U", "Converter", "SG · ppg · bar · psi · bbl · m³"));
+  h += grp("Backup", '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="padding-bottom:12px">Your wells live on this phone only. Save a copy to keep them safe or move them to another phone.</p>');
+  root.innerHTML = h + "</div>";
+  root.addEventListener("click", function (e) {
+    var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
+    if (e.target.getAttribute("data-a") === "export") {
+      var data = { app: "cementing-toolkit", v: 2, at: new Date().toISOString(), wells: db.wells, me: load("me", {}) };
+      var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
+      el.href = url; el.download = "cementing-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
+      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
+    }
+  });
+  root.addEventListener("change", function (e) {
+    if (e.target.getAttribute("data-a") !== "import") return;
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (d.app !== "cementing-toolkit" || !Array.isArray(d.wells)) { alert("That is not a Cementing Toolkit backup."); return; }
+        var n = 0;
+        d.wells.forEach(function (w) {
+          var i = db.wells.findIndex(function (x) { return x.id === w.id; });
+          if (i < 0) { db.wells.push(w); n++; } else if ((w.updated || 0) > (db.wells[i].updated || 0)) { db.wells[i] = w; n++; }
+        });
+        saveDb(); if (d.me && !load("me", {}).name) save("me", d.me);
+        toast("Restored " + n + " well" + (n === 1 ? "" : "s"));
+      } catch (x) { alert("Could not read that file."); }
+    };
+    rd.readAsText(f);
+  });
+}
+
 var capS = Object.assign({ outer: "hole", oHole: "12.25", oCsg: "9.625-47", oMan: "", inner: "csg", iCsg: "9.625-47", iPipe: "DP 5″ 19.5#", iMan: "", len: "1000" }, load("cap", {}));
 function CapTool(root) {
   var s = capS;
   function persist() { save("cap", s); }
   function draw() {
-    var h = card("Outside", seg("outer", s, [["hole", "Hole"], ["csg", "Casing ID"], ["man", "Manual"]], "#0d9488") +
-      (s.outer === "hole" ? sel("", "oHole", s, HOLES, true) : s.outer === "csg" ? sel("", "oCsg", s, CASING, true) : num("Diameter", "oMan", s, "in")));
-    h += card("Inside", seg("inner", s, [["none", "Nothing"], ["csg", "Casing OD"], ["pipe", "DP / tubing"], ["man", "Manual"]], "#0d9488") +
-      (s.inner === "csg" ? sel("", "iCsg", s, CASING, true) : s.inner === "pipe" ? sel("", "iPipe", s, PIPE, true) : s.inner === "man" ? num("Diameter", "iMan", s, "in") : ""));
-    h += card("Result", num("Length", "len", s, "m") + '<div id="o-c"></div>');
-    h += card("Casing Table", '<table class="t"><tr><th>Size</th><th style="text-align:right">ID in</th><th style="text-align:right">Cap L/m</th></tr>' +
-      CASING.map(function (c) { return "<tr><td>" + c.label + '</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + fx(cap(c.idIn), 2) + "</td></tr>"; }).join("") + "</table>");
+    var h = '<h1 class="title">Capacities</h1>';
+    h += grp("Outside", '<div class="pad" style="padding-bottom:0">' + seg("outer", s, [["hole", "Hole"], ["csg", "Casing ID"], ["man", "Manual"]]) + "</div>" +
+      (s.outer === "hole" ? sel("Hole", "oHole", s, HOLES, true) : s.outer === "csg" ? sel("Casing", "oCsg", s, CASING, true) : num("Diameter", "oMan", s, "in")));
+    h += grp("Inside", '<div class="pad" style="padding-bottom:0">' + seg("inner", s, [["none", "Empty"], ["csg", "Casing"], ["pipe", "DP/Tbg"], ["man", "Manual"]]) + "</div>" +
+      (s.inner === "csg" ? sel("Casing OD", "iCsg", s, CASING, true) : s.inner === "pipe" ? sel("String", "iPipe", s, PIPE, true) : s.inner === "man" ? num("Diameter", "iMan", s, "in") : ""));
+    h += grp("Result", num("Length", "len", s, "m") + '<div id="o-c"></div>');
+    h += grp("Casing table", '<div class="pad"><table class="t"><tr><th>Size</th><th class="n">ID in</th><th class="n">L/m</th></tr>' +
+      CASING.map(function (c) { return "<tr><td>" + c.label + '</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + fx(cap(c.idIn)) + "</td></tr>"; }).join("") + "</table></div>");
     root.innerHTML = '<div class="page">' + h + "</div>"; outs();
   }
   function outs() {
     var D = s.outer === "hole" ? P(s.oHole) : s.outer === "csg" ? (csg(s.oCsg) || {}).idIn : P(s.oMan);
     var d = s.inner === "none" ? 0 : s.inner === "csg" ? (csg(s.iCsg) || {}).od : s.inner === "pipe" ? (pipe(s.iPipe) || {}).od : P(s.iMan);
     var o = root.querySelector("#o-c"), L = P(s.len);
-    if (!D || d == null) { o.innerHTML = '<div class="note">Pick both sizes.</div>'; return; }
-    if (d >= D) { o.innerHTML = '<div class="warn">⚠ Inside pipe (' + d + '″) does not fit in ' + D + "″.</div>"; return; }
-    var c = ann(D, d);
-    var pIn = s.inner === "pipe" ? cap((pipe(s.iPipe) || {}).idIn) : s.inner === "csg" ? cap((csg(s.iCsg) || {}).idIn) : null;
+    if (!D || d == null) { o.innerHTML = '<div class="empty">Pick both sizes.</div>'; return; }
+    if (d >= D) { o.innerHTML = '<div class="warn" style="margin:12px 0">⚠ ' + d + "″ does not fit inside " + D + "″.</div>"; return; }
+    var c = ann(D, d), pIn = s.inner === "pipe" ? cap((pipe(s.iPipe) || {}).idIn) : s.inner === "csg" ? cap((csg(s.iCsg) || {}).idIn) : null;
     o.innerHTML = '<div class="tiles">' + tile(d ? "Annulus" : "Capacity", fx(c, 3), "L/m") + tile("Volume", L ? fx(c * L / 1000) : "—", "m³") + "</div>" +
       line("bbl/ft", fx(c / 1000 * BBL * 0.3048, 5)) + line("m per m³", fx(1000 / c, 1)) + line("Formula", "(" + D + "² − " + d + "²) × 0.5067") +
       (pIn ? line("Inside the pipe", fx(pIn, 3) + " L/m" + (L ? " · " + fx(pIn * L / 1000) + " m³" : "")) : "");
@@ -907,7 +989,6 @@ function CapTool(root) {
   draw();
 }
 
-/* ═════════════════════════ CONVERTER ═════════════════════════ */
 var CONV = [
   { t: "Density", u: [["SG", 1], ["ppg", 1 / 8.3454], ["kg/m³", 0.001], ["psi/ft", 1 / 0.4335], ["bar/m", 1 / G]] },
   { t: "Pressure", u: [["bar", 1], ["psi", 1 / PSI], ["kPa", 0.01], ["MPa", 10]] },
@@ -915,117 +996,76 @@ var CONV = [
   { t: "Rate", u: [["m³/min", 1], ["bpm", 1 / BBL], ["L/min", 0.001], ["gpm", 0.00378541]] },
   { t: "Length", u: [["m", 1], ["ft", 0.3048], ["in", 0.0254]] },
   { t: "Yield", u: [["m³/MT", 1], ["L/kg", 1], ["ft³/sk (94 lb)", 1 / (35.3147 * 0.042638)]] },
-  { t: "Capacity", u: [["L/m", 1], ["m³/m", 1000], ["bbl/ft", 1 / (BBL * 0.3048) * 1000]] }
+  { t: "Capacity", u: [["L/m", 1], ["m³/m", 1000], ["bbl/ft", 1000 / (BBL * 0.3048)]] }
 ];
 var cv = Object.assign({ cat: "0", val: {} }, load("cv", {}));
 function ConvTool(root) {
   function draw() {
     var c = CONV[+cv.cat] || CONV[0];
-    var h = card("Quantity", '<div class="seg" style="flex-wrap:wrap">' + CONV.map(function (x, i) {
-      var on = String(i) === String(cv.cat); return '<button data-act="cat" data-i="' + i + '" class="' + (on ? "on" : "") + '" style="flex:1 0 28%;' + (on ? "background:#7c3aed" : "") + '">' + x.t + "</button>";
-    }).join("") + "</div>");
-    h += card(c.t, c.u.map(function (u, i) {
-      return '<label style="display:block;margin-bottom:8px"><span class="lbl">' + u[0] + '</span><input class="fld" inputmode="decimal" data-cv="' + i + '"></label>';
-    }).join("") + '<p class="note">Type in any box; the others follow.</p>');
+    var h = '<h1 class="title">Converter</h1><div class="seg" style="flex-wrap:wrap">' + CONV.map(function (x, i) {
+      return '<button data-cat="' + i + '" class="' + (String(i) === String(cv.cat) ? "on" : "") + '" style="flex:1 0 28%">' + x.t + "</button>";
+    }).join("") + "</div>";
+    h += grp(c.t, c.u.map(function (u, i) {
+      return '<label class="r"><span class="l">' + u[0] + '</span><input class="in" inputmode="decimal" data-cv="' + i + '"></label>';
+    }).join(""), "type in any box");
     root.innerHTML = '<div class="page">' + h + "</div>";
-    var inputs = root.querySelectorAll("[data-cv]"), base = cv.val[cv.cat];
-    var fill = function (b, skip) {
-      inputs.forEach(function (el, i) { if (i === skip) return; el.value = b == null ? "" : +(b / c.u[i][1]).toPrecision(6); });
-    };
-    fill(base, -1);
+    var inputs = root.querySelectorAll("[data-cv]");
+    var fill = function (b, skip) { inputs.forEach(function (el, i) { if (i !== skip) el.value = b == null ? "" : +(b / c.u[i][1]).toPrecision(6); }); };
+    fill(cv.val[cv.cat], -1);
     inputs.forEach(function (el, i) {
-      el.addEventListener("input", function () { var v = P(el.value); var b = v == null ? null : v * c.u[i][1]; cv.val[cv.cat] = b; save("cv", cv); fill(b, i); });
+      el.addEventListener("input", function () { var v = P(el.value), b = v == null ? null : v * c.u[i][1]; cv.val[cv.cat] = b; save("cv", cv); fill(b, i); });
     });
   }
-  root.addEventListener("click", function (e) { var b = e.target.closest("[data-act=cat]"); if (b) { cv.cat = b.getAttribute("data-i"); save("cv", cv); draw(); } });
+  root.addEventListener("click", function (e) { var b = e.target.closest("[data-cat]"); if (b) { cv.cat = b.getAttribute("data-cat"); save("cv", cv); draw(); } });
   draw();
 }
 
-/* ═════════════════════════ HOME & SHELL ═════════════════════════ */
-var TOOLS = [
-  { id: "cement", name: "Cement Job", sub: "Volumes · displacement · pressures · PDF", color: "#b91c1c", Comp: CementJob },
-  { id: "slurry", name: "Slurry Design", sub: "Density & yield from the recipe", color: "#d97706", Comp: SlurryDesign },
-  { id: "schedule", name: "Pump Schedule", sub: "Stages, job time, thickening check", color: "#2563eb", Comp: PumpSchedule },
-  { id: "plug", name: "Balanced Plug", sub: "Cement, spacer behind, displacement", color: "#0284c7", Comp: PlugTool },
-  { id: "caps", name: "Capacities", sub: "Hole, casing, annulus — L/m", color: "#0d9488", Comp: CapTool },
-  { id: "units", name: "Converter", sub: "SG · ppg · bar · psi · bbl · m³", color: "#7c3aed", Comp: ConvTool }
-];
-
-function Home(root, go) {
-  var me = load("me", {});
-  var m = jobModel(job);
-  var h = '<div class="home"><div style="max-width:520px;margin:0 auto">' +
-    '<div style="margin-bottom:26px"><div class="kicker">FIELD OPS</div><h1 class="hero">Cementing<br>Toolkit</h1><p class="lede">Slurry · volumes · displacement · plugs · fully offline</p></div>';
-  h += '<div class="card" style="margin-bottom:16px"><h3>Current job</h3>' +
-    '<div style="display:flex;align-items:center;gap:12px"><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:700">' + esc(job.name || "Untitled job") + "</div>" +
-    '<div style="font-size:12px;color:var(--sub);margin-top:2px">' + (m.items ? esc(m.c.label) + " " + (job.jobType === "liner" ? "liner" : "casing") + " · " + fx(m.total / 1000, 1) + " m³ cement · " + fx(m.dispL / 1000, 1) + " m³ disp" : "Not filled in yet") +
-    '</div></div><button class="btn" style="background:#b91c1c" data-go="cement">Open</button></div></div>';
-  h += '<div class="grid">' + TOOLS.map(function (t) {
-    return '<button class="tool" data-go="' + t.id + '"><span class="ic" style="background:' + t.color + '">' + t.name[0] + '</span><span style="flex:1;min-width:0"><span class="nm">' + t.name +
-      '</span><span class="sb">' + t.sub + '</span></span><span class="ch">›</span></button>';
-  }).join("") + "</div>";
-  h += '<div class="card" style="margin-top:22px"><h3>Backup</h3><div class="row"><button class="btn" style="background:#334155" data-a="export">Save a copy</button>' +
-    '<label class="btn" style="background:#334155;text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note">Saved jobs live on this phone only. Save a copy to keep them safe or move them to another device.</p></div>';
-  h += '<div class="foot"><div class="nm">' + esc(me.name || "Cementing Engineer") + '</div><div class="ro">' + esc(me.role || "Cementing Engineer") + "</div>" +
-    (me.phone ? '<a href="tel:' + esc(me.phone.replace(/[^+\d]/g, "")) + '">' + esc(me.phone) + "</a>" : "") +
-    '<div><button class="linkbtn" data-a="me">' + (me.name ? "Edit details" : "Add your name & phone") + "</button></div></div>" +
-    '<p style="text-align:center;color:var(--faint);font-size:10.5px;margin-top:20px">Add to Home Screen to run as an app</p></div></div>';
-  root.innerHTML = h;
-  root.onclick = function (e) {
-    var g = e.target.closest("[data-go]"); if (g) { go(g.getAttribute("data-go")); return; }
-    var a = e.target.getAttribute("data-a");
-    if (a === "me") {
-      var n = prompt("Your name", me.name || ""); if (n == null) return;
-      var r = prompt("Your title", me.role || "Cementing Engineer"); if (r == null) return;
-      var p = prompt("Phone (optional)", me.phone || ""); if (p == null) return;
-      save("me", { name: n.trim(), role: r.trim(), phone: p.trim() }); Home(root, go);
-    }
-    if (a === "export") {
-      var data = { app: "cementing-toolkit", v: 1, at: new Date().toISOString(), job: job, jobs: jobsList(), sd: sd, sch: sch, plug: plug, me: load("me", {}) };
-      var blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
-      var url = URL.createObjectURL(blob), el = document.createElement("a");
-      el.href = url; el.download = "cementing-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
-      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
-    }
-  };
-  root.onchange = function (e) {
-    if (e.target.getAttribute("data-a") !== "import") return;
-    var f = e.target.files[0]; if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function () {
-      try {
-        var d = JSON.parse(rd.result);
-        if (d.app !== "cementing-toolkit") { alert("That file is not a Cementing Toolkit backup."); return; }
-        var have = jobsList(), ids = {}; have.forEach(function (j) { ids[j.id] = 1; });
-        (d.jobs || []).forEach(function (j) { if (!ids[j.id]) have.push(j); });
-        save("jobs", have);
-        if (d.job) { replaceJob(d.job); saveJob(); }
-        ["sd", "sch", "plug", "me"].forEach(function (k) { if (d[k]) save(k, d[k]); });
-        alert("Restored " + (d.jobs || []).length + " job(s). Reloading.");
-        location.reload();
-      } catch (x) { alert("Could not read that file."); }
-    };
-    rd.readAsText(f);
-  };
-}
-
+/* ═════════════════════════ SHELL ═════════════════════════ */
+var ICON = {
+  wells: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4h16M8 4v20M20 4v20M12 4v20M16 4v20M5 24h18"/></svg>',
+  cement: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="6" width="20" height="16" rx="1.5"/><path d="M4 11.3h20M4 16.6h20M10 6v5.3M18 6v5.3M14 11.3v5.3M8 16.6V22M20 16.6V22"/></svg>',
+  tools: '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="18" height="20" rx="2.5"/><path d="M9 8.5h10M9.5 13.5h1M14 13.5h1M18.5 13.5h.5M9.5 17.5h1M14 17.5h1M18.5 17.5h.5M9.5 21h1M14 21h1"/></svg>'
+};
 function route() {
-  var id = (location.hash || "#home").slice(1), root = document.getElementById("root");
+  var parts = (location.hash || "#wells").slice(1).split("/"), page = parts[0] || "wells";
+  var root = document.getElementById("root");
   document.body.classList.remove("sheet");
-  var t = TOOLS.filter(function (x) { return x.id === id; })[0];
-  // A fresh node each time so listeners from the last tool are dropped.
+  // A fresh node each time so listeners from the last page are dropped.
   var fresh = root.cloneNode(false); root.parentNode.replaceChild(fresh, root); root = fresh;
   window.scrollTo(0, 0);
-  if (!t) { Home(root, function (x) { location.hash = x; }); return; }
-  root.innerHTML = '<div class="bar"><button class="back" aria-label="Back">‹</button><span class="ttl">' + t.name + '</span><span class="dot" style="background:' + t.color + ";box-shadow:0 0 10px " + t.color + '"></span></div><div id="tool"></div>';
-  root.querySelector(".back").onclick = function () { location.hash = "home"; };
-  t.Comp(root.querySelector("#tool"));
+  var w = parts[1] ? wellById(parts[1]) : null, tab = "wells", back = null, body = document.createElement("div");
+  var find = function (arr, id) { return (arr || []).filter(function (x) { return x.id === id; })[0]; };
+  if (page === "well" && w) { tab = "cement"; back = ["wells", "Wells"]; WellPage(body, w); }
+  else if (page === "job" && w && find(w.jobs, parts[2])) { tab = "cement"; back = ["well/" + w.id, w.name]; CementJob(body, w, find(w.jobs, parts[2])); }
+  else if (page === "plug" && w && find(w.plugs, parts[2])) { tab = "cement"; back = ["well/" + w.id, w.name]; PlugTool(body, w, find(w.plugs, parts[2])); }
+  else if (page === "slurry" && w) { tab = "cement"; back = ["well/" + w.id, w.name]; SlurryDesign(body, w); }
+  else if (page === "tools") { tab = "tools"; ToolsPage(body); }
+  else if (page === "caps") { tab = "tools"; back = ["tools", "Tools"]; CapTool(body); }
+  else if (page === "units") { tab = "tools"; back = ["tools", "Tools"]; ConvTool(body); }
+  else WellsHome(body);
+  if (back) {
+    var top = document.createElement("div"); top.className = "top";
+    top.innerHTML = '<button><b>‹</b><span></span></button>'; top.querySelector("span").textContent = back[1];
+    top.querySelector("button").onclick = function () { location.hash = back[0]; };
+    root.appendChild(top);
+  }
+  root.appendChild(body);
+  var tabs = document.createElement("nav"); tabs.className = "tabs";
+  tabs.innerHTML = [["wells", "Wells"], ["cement", "Cement"], ["tools", "Tools"]].map(function (t) {
+    return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? "on" : "") + '">' + ICON[t[0]] + "<span>" + t[1] + "</span></button>";
+  }).join("");
+  tabs.onclick = function (e) {
+    var b = e.target.closest("[data-tab]"); if (!b) return;
+    var t = b.getAttribute("data-tab");
+    if (t === "cement") { var c = curWell(); if (c) location.hash = "well/" + c.id; else { toast("Create a well first"); location.hash = "wells"; } }
+    else location.hash = t;
+  };
+  root.appendChild(tabs);
 }
 window.addEventListener("hashchange", route);
 window.addEventListener("error", function (e) {
   var t = document.getElementById("errbar");
-  if (!t) { t = document.createElement("div"); t.id = "errbar"; t.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;font:12px -apple-system,sans-serif;padding:10px 14px;white-space:pre-wrap;"; document.body.appendChild(t); }
+  if (!t) { t = document.createElement("div"); t.id = "errbar"; t.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;font:12px -apple-system,sans-serif;padding:10px 14px;white-space:pre-wrap;"; document.body.appendChild(t); }
   t.textContent = "⚠ " + e.message + (e.lineno ? " @" + e.lineno : "");
 });
 route();
