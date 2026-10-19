@@ -195,7 +195,7 @@
   #sheet td, #sheet th { text-align:left; padding:2.5px 5px; border-bottom:1px solid #eee; vertical-align:top; }
   #sheet th { background:#f4f5f3; font-size:8.5px; text-transform:uppercase; letter-spacing:.3px; color:#666; }
   #sheet td.f { font-family:var(--mono); color:#666; font-size:9px; }
-  #sheet td.r { text-align:right; font-family:var(--mono); font-weight:700; white-space:nowrap; }
+  #sheet td.rv { text-align:right; font-family:var(--mono); font-weight:700; white-space:nowrap; }
   #sheet .tot td { background:#5a2a10; color:#fff; font-weight:700; border:none; }
   #sheet .totd td { background:#12233d; color:#fff; font-weight:700; border:none; }
   #sheet .fn { font-size:8.5px; color:#888; border-top:1px solid #ddd; padding-top:4px; margin-top:10px; }
@@ -672,35 +672,35 @@ function showSheet(s, m) {
   var colr = { lead: "#b45309", tail: "#0d7a6f", shoetrack: "#6d28d9", rathole: "#be185d" };
   var items = m.items.map(function (z) {
     return '<tr><td style="color:' + colr[z.slurry] + ';font-weight:700">' + z.n + "</td><td>" + esc(z.label) + '</td><td class="f">(' + de(z.dBot) + "−" + de(z.dTop) + ")×" + fx(z.cap) + "÷1000" +
-      (z.ex > 0 ? "×" + (1 + z.ex).toFixed(2) : "") + '</td><td class="r">' + fx(z.vol / 1000, 3) + "</td></tr>";
+      (z.ex > 0 ? "×" + (1 + z.ex).toFixed(2) : "") + '</td><td class="rv">' + fx(z.vol / 1000, 3) + "</td></tr>";
   }).join("");
   var addT = function (rows, base) {
     return (rows || []).filter(function (r) { return r.name; }).map(function (r) {
-      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + "×" + esc(r.factor || "—") + '</td><td class="r">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
+      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + "×" + esc(r.factor || "—") + '</td><td class="rv">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
     }).join("");
   };
   var slT = function (name, o, rows, color, basis) {
     if (!o) return "";
     return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³</td></tr>" +
-      '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="r">' + fx(o.dry) + " MT</td></tr>" +
-      '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="r">' + fx(o.mix) + " m³</td></tr>" +
-      '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="r">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
+      '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="rv">' + fx(o.dry) + " MT</td></tr>" +
+      '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="rv">' + fx(o.mix) + " m³</td></tr>" +
+      '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="rv">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
   };
   var po = P(s.outStk);
   var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(s.name) + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
     '<div class="meta">' + m.c.label + " casing · Hole " + m.h.label + "<br>TD " + de(m.TD) + " m · Shoe " + de(m.SH) + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
     '<div class="cols"><div class="left">' + schematic(m, true) +
-    '<table style="margin-top:6px"><tr><td>TOC</td><td class="r">' + de(m.TOC) + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="r">' + de(m.tTop) + " m</td></tr>" : "") +
-    (m.LT != null ? '<tr><td>Liner top</td><td class="r">' + de(m.LT) + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="r">' + de(m.FC) + " m</td></tr>" +
-    (m.PS ? '<tr><td>Prev shoe</td><td class="r">' + de(m.PS) + " m</td></tr>" : "") +
-    '<tr><td>Excess L OH/Cs</td><td class="r">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" +
-    '<tr><td>Excess T OH/Cs</td><td class="r">' + esc(s.exTailOH || 0) + "/" + esc(s.exTailCsg || 0) + "%</td></tr></table></div>" +
+    '<table style="margin-top:6px"><tr><td>TOC</td><td class="rv">' + de(m.TOC) + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="rv">' + de(m.tTop) + " m</td></tr>" : "") +
+    (m.LT != null ? '<tr><td>Liner top</td><td class="rv">' + de(m.LT) + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="rv">' + de(m.FC) + " m</td></tr>" +
+    (m.PS ? '<tr><td>Prev shoe</td><td class="rv">' + de(m.PS) + " m</td></tr>" : "") +
+    '<tr><td>Excess L OH/Cs</td><td class="rv">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" +
+    '<tr><td>Excess T OH/Cs</td><td class="rv">' + esc(s.exTailOH || 0) + "/" + esc(s.exTailCsg || 0) + "%</td></tr></table></div>" +
     '<div class="right"><h2>Volume Calculations <span class="sub" style="font-size:8.5px">(B−T)×cap÷1000×(1+ex)</span></h2><table><tr><th>#</th><th>Section</th><th>Working</th><th>m³</th></tr>' + items +
-    (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">Lead total</td><td class="r" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
-    '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="r" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
-    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="r">' + fx(m.total / 1000) + " m³</td></tr></table>" +
-    (m.dispL != null ? '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="r">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
-      '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="r">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
+    (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">Lead total</td><td class="rv" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
+    '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="rv" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
+    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
+    (m.dispL != null ? '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
+      '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="rv">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
     "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq") + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
