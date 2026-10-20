@@ -236,11 +236,13 @@ function frac(od) {
 // Same tables as the field cement sheet: capacities come from the spec
 // sheet first; anything not in a table falls back to 0.5067 × (D² − d²).
 var CSG = [
-  { id: "c1338", label: "13⅜″", od: 13.375, idIn: 12.615, cap: 80.63 },
-  { id: "c958", label: "9⅝″", od: 9.625, idIn: 8.681, cap: 39.55 },
-  { id: "c7_23", label: "7″ · 23", od: 7, idIn: 6.366, cap: 20.53 },
-  { id: "c7_29", label: "7″ · 29", od: 7, idIn: 6.184, cap: 19.4 },
-  { id: "c412", label: "4½″", od: 4.5, idIn: 4, cap: 8.11 }
+  // PDO CSG & TBG data sheet (rig): pipe ID and capacity.
+  { id: "c1338", label: "13⅜″ 54.5#", od: 13.375, idIn: 12.615, cap: 80.64 },
+  { id: "c958", label: "9⅝″ 36#", od: 9.625, idIn: 8.921, cap: 40.32 },
+  { id: "c7_23", label: "7″ 23#", od: 7, idIn: 6.366, cap: 20.55 },
+  // Not on the rig sheet; kept for liners.
+  { id: "c7_29", label: "7″ 29#", od: 7, idIn: 6.184, cap: 19.4 },
+  { id: "c412", label: "4½″ 11.6#", od: 4.5, idIn: 4, cap: 8.11 }
 ];
 var HOLE = [
   { id: "h16", label: "16″", d: 16, cap: 129.7 },
@@ -250,12 +252,14 @@ var HOLE = [
   { id: "h618", label: "6⅛″", d: 6.125, cap: 19 }
 ];
 var DP = [
+  { id: "tbg412", label: "4½″ TBG 12.75#", cap: 7.929 }, { id: "tbg312", label: "3½″ TBG 9.3#", cap: 4.538 }, { id: "tbg238", label: "2⅜″ TBG 4.6#", cap: 2.02 },
   { id: "dc814", label: "8¼″ DC", cap: 4 }, { id: "dc612", label: "6½″ DC", cap: 4 },
   { id: "dp5n", label: "5″ DP (New)", cap: 9 }, { id: "dp5p", label: "5″ DP (Premium)", cap: 9.2 }, { id: "hwdp5", label: "5″ HWDP", cap: 4.6 },
   { id: "dc434", label: "4¾″ DC", cap: 2.6 }, { id: "dp4n", label: "4″ DP (New)", cap: 5.2 }, { id: "dp4p", label: "4″ DP (Premium)", cap: 5.3 }, { id: "hwdp4", label: "4″ HWDP", cap: 3.3 }
 ];
 var OH_ANN = { h16: { c1338: 39.1 }, h1214: { c958: 28.94 }, h812: { c7_23: 11.71, c7_29: 11.71 }, h618: { c412: 8.7 } };
-var CC_ANN = { c1338: { c958: 33.53 }, c958: { c7_23: 14.65, c7_29: 14.65 }, c7_23: { c412: 10.23 }, c7_29: { c412: 9.12 } };
+// Casing-in-casing annuli follow from the rig IDs above, so none are tabled.
+var CC_ANN = {};
 function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0] || null; }
 function ohAnn(hId, cId) {
   if (OH_ANN[hId] && OH_ANN[hId][cId] != null) return { v: OH_ANN[hId][cId], src: "table" };
