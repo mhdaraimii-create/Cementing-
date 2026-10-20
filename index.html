@@ -170,6 +170,9 @@
   .pchip:active { background:var(--accent-bg); }
 
   .tag.plain::before { display:none; }
+  .useg { display:inline-flex; background:#e3e3e8; border-radius:9px; padding:2px; gap:2px; }
+  .useg button { border:none; background:transparent; border-radius:7px; padding:5px 14px; font-size:14px; font-weight:600; color:var(--sub); cursor:pointer; }
+  .useg button.on { background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.15); }
   .brand { display:flex; align-items:center; gap:12px; margin-top:6px; }
   .brand img { height:46px; width:auto; }
   .kicker { font-size:12px; font-weight:700; letter-spacing:.2em; color:var(--accent); }
@@ -349,6 +352,11 @@ function addVal(r, base) {
 }
 function addFmt(v, u) { return v == null ? "—" : v.toFixed(u === "MT" || u === "m3" ? 3 : 2); }
 function unitLabel(u) { return u === "m3" ? "m³" : u; }
+// Volume display unit for the cement page, remembered on the phone: m³ or litres.
+function volUnit() { return load("vu", "m3") === "L" ? "L" : "m3"; }
+function vNum(litres) { return volUnit() === "L" ? fi(litres) : fx(litres / 1000); }
+function vUnit() { return volUnit() === "L" ? " L" : " m³"; }
+function unitSeg() { var u = volUnit(); return '<span class="useg"><button data-unit="m3" class="' + (u === "m3" ? "on" : "") + '">m³</button><button data-unit="L" class="' + (u === "L" ? "on" : "") + '">L</button></span>'; }
 
 /* ───────────────────────── view helpers ───────────────────────── */
 function grp(title, body, right) {
@@ -590,8 +598,8 @@ function CementPage(root, s) {
       '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTailOH", s, "%", "0") + num(lt ? "Tail Cased" : "Cased", "exTailCsg", s, "%", "0") +
       '<p class="note" style="padding-bottom:12px">' + (lt ? "Lead/Tail × OH/Cased, as in the proposal. Rat hole takes Tail OH." : "Open hole = excess on the annulus and rat hole. Cased = inside a previous casing.") + ' Blank = 0%. Shoe track has no excess.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
-    o += grp("Cement volumes", '<div id="o-vol"></div>');
-    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>');
+    o += grp("Cement volumes", '<div id="o-vol"></div>', unitSeg());
+    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
     if (lt) o += grp("Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") +
       '<div id="o-lead"></div>' + addRows("Lead additives", "leadAdd", s.leadAdd, "Equiv dry", "var(--lead)"));
     o += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
@@ -618,17 +626,17 @@ function CementPage(root, s) {
         var g = '<div class="tag" style="color:' + color + '">' + title + "</div>";
         m.items.filter(filt).forEach(function (z) {
           g += '<div class="line"><span class="k"><span class="num" style="background:' + col[z.slurry] + '">' + z.n + "</span><span>" + esc(z.label) +
-            "<small>" + fx(z.dBot - z.dTop, 1) + " m × " + fx(z.cap) + " L/m" + (z.ex > 0 ? " +" + fi(z.ex * 100) + "%" : "") + '</small></span></span><span class="v">' + fx(z.vol / 1000) + " m³</span></div>";
+            "<small>(" + de(z.dBot) + " − " + de(z.dTop) + ") = " + fx(z.dBot - z.dTop, 1) + " m × " + fx(z.cap) + " L/m" + (z.ex > 0 ? " × " + (1 + z.ex).toFixed(2) : "") + '</small></span></span><span class="v">' + vNum(z.vol) + vUnit() + "</span></div>";
         });
-        return g + '<div class="sum" style="color:' + color + '"><span>' + (title === "Slurry" ? "Slurry" : title) + ' volume</span><span>' + fx(tot / 1000) + " m³</span></div>";
+        return g + '<div class="sum" style="color:' + color + '"><span>' + (title === "Slurry" ? "Slurry" : title) + ' volume</span><span>' + vNum(tot) + vUnit() + "</span></div>";
       };
       var v = "";
       if (m.hasLead) v += block("Lead", "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol);
       v += block(m.hasLead ? "Tail" : "Slurry", "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
-      $("o-vol").innerHTML = v + big("Total Cement", fx(m.total / 1000), " m³");
+      $("o-vol").innerHTML = v + big("Total Cement", vNum(m.total), vUnit());
     } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
     if (m && m.dispL != null) {
-      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), fx(p.v / 1000) + " m³"); }).join("") + big("Displacement volume", fx(m.dispL / 1000), " m³", "blue");
+      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), vNum(p.v) + vUnit()); }).join("") + big("Displacement volume", vNum(m.dispL), vUnit(), "blue");
       var po = P(s.outStk);
       $("o-stk").innerHTML = '<div class="tiles" style="margin-bottom:14px">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") + tile("Volume", fx(m.dispL / 1000 * 6.28981, 1), "bbl") + "</div>";
     } else { $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = ""; }
@@ -646,6 +654,12 @@ function CementPage(root, s) {
     $("o-sp").innerHTML = '<p style="padding:12px 0 0;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead)</span></p>';
     amts("spacerAdd", s.spacerAdd, spm);
   }
+  root.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-unit]"); if (!b) return;
+    save("vu", b.getAttribute("data-unit"));
+    root.querySelectorAll("[data-unit]").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-unit") === volUnit()); });
+    outs();
+  });
   bind(root, s, persist, draw, outs, {
     prev: function () { s.prevOn = !s.prevOn; persist(); draw(); },
     addAdd: function (key) { s[key].push({ name: "", factor: "", unit: "kg" }); persist(); draw(); },
