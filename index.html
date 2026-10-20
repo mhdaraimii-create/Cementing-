@@ -530,26 +530,13 @@ function summary(j) {
 }
 
 /* ───────────────────────── additives ───────────────────────── */
-var PRESETS = [{ name: "WSW", unit: "L" }, { name: "CDF-1", unit: "L" }, { name: "CX-1", unit: "kg" }, { name: "Bentonite", unit: "kg" }, { name: "FL-45", unit: "L" }, { name: "CSS-1", unit: "kg" }];
-// Remembers every additive typed (name, factor, unit) so it comes back as a one-tap chip.
-function learnAdds(j) {
-  var lib = load("addLib", {}), ch = false;
-  [["leadAdd", ""], ["tailAdd", ""], ["spacerAdd", "S:"]].forEach(function (g) {
-    (j[g[0]] || []).forEach(function (r) {
-      var nm = (r.name || "").trim(); if (!nm) return;
-      var v = { unit: r.unit, factor: r.factor };
-      if (JSON.stringify(lib[g[1] + nm]) !== JSON.stringify(v)) { lib[g[1] + nm] = v; ch = true; }
-    });
-  });
-  if (ch) save("addLib", lib);
-}
+// One-tap additives for the slurries: the products used on the rig.
+var PRESETS = [{ name: "CDF", unit: "L" }, { name: "CFL100", unit: "kg" }, { name: "CD200", unit: "kg" }, { name: "Bentonite", unit: "kg" }];
 function chipList(key, rows) {
-  var sp = key === "spacerAdd", lib = load("addLib", {}), have = {}, out = [];
+  if (key === "spacerAdd") return [];
+  var have = {};
   rows.forEach(function (r) { have[(r.name || "").trim().toLowerCase()] = 1; });
-  var push = function (nm, d) { if (!have[nm.toLowerCase()]) { have[nm.toLowerCase()] = 1; out.push({ name: nm, d: d }); } };
-  Object.keys(lib).forEach(function (k) { if ((k.indexOf("S:") === 0) === sp) push(sp ? k.slice(2) : k, lib[k]); });
-  if (!sp) PRESETS.forEach(function (p) { push(p.name, { unit: p.unit, factor: "" }); });
-  return out;
+  return PRESETS.filter(function (p) { return !have[p.name.toLowerCase()]; }).map(function (p) { return { name: p.name, d: { unit: p.unit, factor: "" } }; });
 }
 function addRows(title, key, rows, baseLabel, color) {
   var units = [["kg", "kg"], ["L", "L"], ["m3", "m³"], ["MT", "MT"]];
@@ -573,7 +560,6 @@ function CementPage(root, s) {
   function persist() { touch(s); }
   // Older screens showed the lead excess on single-slurry jobs too; move a value typed there.
   if (s.scheme !== "leadtail" && P(s.exTailOH) == null && P(s.exLeadOH) != null) { s.exTailOH = s.exLeadOH; s.exLeadOH = ""; touch(s); }
-  root.addEventListener("change", function () { learnAdds(s); });
   function opt(list) { return list.map(function (x) { return { id: x.id, label: x.label }; }); }
   function draw() {
     var lt = s.scheme === "leadtail", liner = s.jobType === "liner", k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
