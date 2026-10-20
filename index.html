@@ -559,6 +559,8 @@ function addRows(title, key, rows, baseLabel, color) {
 /* ───────────────────────── cement page ───────────────────────── */
 function CementPage(root, s) {
   function persist() { touch(s); }
+  // Older screens showed the lead excess on single-slurry jobs too; move a value typed there.
+  if (s.scheme !== "leadtail" && P(s.exTailOH) == null && P(s.exLeadOH) != null) { s.exTailOH = s.exLeadOH; s.exLeadOH = ""; touch(s); }
   root.addEventListener("change", function () { learnAdds(s); });
   function opt(list) { return list.map(function (x) { return { id: x.id, label: x.label }; }); }
   function draw() {
@@ -579,9 +581,10 @@ function CementPage(root, s) {
     if (k.ohBad || k.ccBad) o += '<div class="warn">⚠ Impossible geometry: the casing OD (' + c.label + ") is larger than the " + (k.ohBad ? "hole (" + h.label + ")" : "previous casing (" + pc.label + ")") + ". Pick a bigger hole/casing — e.g. 9⅝″ needs a 12¼″ hole, 7″ needs 8½″.</div>";
     o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore (" + h.label + ")", "capFull", s, k.auto.full) + "</div>");
     o += grp("Cement program", num(lt ? "TOC — Lead" : "TOC", "toc", s, "m") + (lt ? num("Top of Tail", "tailTop", s, "m") : "") +
-      '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLeadOH", s, "%", "25") + num("Lead Cased", "exLeadCsg", s, "%", "10") +
-      '<div class="tag" style="color:var(--tail)">Tail excess</div>' + num("Tail OH", "exTailOH", s, "%", "25") + num("Tail Cased", "exTailCsg", s, "%", "0") +
-      '<p class="note" style="padding-bottom:12px">Matches proposal: Lead/Tail × OH/Cased. Pocket follows Tail OH. Shoe track has no excess.</p>');
+      // Single slurry has one excess pair (stored as the tail's); lead/tail gets both.
+      (lt ? '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLeadOH", s, "%", "0") + num("Lead Cased", "exLeadCsg", s, "%", "0") : "") +
+      '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTailOH", s, "%", "0") + num(lt ? "Tail Cased" : "Cased", "exTailCsg", s, "%", "0") +
+      '<p class="note" style="padding-bottom:12px">' + (lt ? "Lead/Tail × OH/Cased, as in the proposal. Rat hole takes Tail OH." : "Open hole = excess on the annulus and rat hole. Cased = inside a previous casing.") + ' Blank = 0%. Shoe track has no excess.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
     o += grp("Cement volumes", '<div id="o-vol"></div>');
     o += grp("Displacement", '<div id="o-disp"></div>' + num("Pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>');
