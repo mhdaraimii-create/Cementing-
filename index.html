@@ -281,7 +281,7 @@ function newJob(name) {
     id: uid(), name: name, created: Date.now(), updated: Date.now(),
     jobType: "casing", scheme: "single", holeId: "h1214", td: "", csgId: "c958", shoe: "", fc: "", top: "",
     prevOn: false, prevId: "c1338", prevShoe: "", toc: "", tailTop: "",
-    exLeadOH: "", exLeadCsg: "", exTailOH: "", exTailCsg: "", dpTub: "dp5p", outStk: "",
+    exLeadOH: "", exLeadCsg: "", exTailOH: "", exTailCsg: "", dpTub: "dp5p", outStk: "", unitVol: "",
     capInt: "", capFull: "", capOH: "", capCC: "",
     leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
     leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: []
@@ -346,12 +346,23 @@ function slurries(s, m) {
   var sp = P(s.spacerVol), spd = P(s.spacerDead) || 0;
   return { lead: m.hasLead ? slurry(m.leadVol, s.leadYield, s.leadConc, s.leadDead) : null, tail: slurry(m.tailVol, s.tailYield, s.tailConc, s.tailDead), spMix: sp != null ? sp + spd : null };
 }
+// "pct" is % BWOC: base MT × 1000 kg × f / 100, shown in kg.
 function addVal(r, base) {
   var f = P(r.factor); if (f == null || base == null) return null;
+  if (r.unit === "pct") return base * f * 10;
   var raw = base * f; return r.unit === "MT" || r.unit === "m3" ? raw / 1000 : raw;
 }
 function addFmt(v, u) { return v == null ? "—" : v.toFixed(u === "MT" || u === "m3" ? 3 : 2); }
-function unitLabel(u) { return u === "m3" ? "m³" : u; }
+// Litres of liquid additive in a slurry, so the plain water can be split out of the mix fluid.
+function liquidL(rows, base) {
+  return (rows || []).reduce(function (t, r) { var a = addVal(r, base); return t + (a == null ? 0 : r.unit === "L" ? a : r.unit === "m3" ? a * 1000 : 0); }, 0);
+}
+function strokesOf(s, m) {
+  var po = P(s.outStk), uv = (P(s.unitVol) || 0) * 1000;
+  if (!po || !m || m.dispL == null) return null;
+  return { rigL: Math.max(0, m.dispL - uv), unitL: uv, stk: Math.max(0, m.dispL - uv) / po, po: po };
+}
+function unitLabel(u) { return u === "m3" ? "m³" : u === "pct" ? "kg" : u; }
 // Volume display unit for the cement page, remembered on the phone: m³ or litres.
 function volUnit() { return load("vu", "m3") === "L" ? "L" : "m3"; }
 function vNum(litres) { return volUnit() === "L" ? fi(litres) : fx(litres / 1000); }
@@ -531,7 +542,7 @@ function summary(j) {
 
 /* ───────────────────────── additives ───────────────────────── */
 // One-tap additives for the slurries: the products used on the rig.
-var PRESETS = [{ name: "CDF", unit: "L" }, { name: "CFL100", unit: "kg" }, { name: "CD200", unit: "kg" }, { name: "Bentonite", unit: "kg" }];
+var PRESETS = [{ name: "CDF", unit: "L" }, { name: "CFL100", unit: "pct" }, { name: "CD200", unit: "pct" }, { name: "Bentonite", unit: "pct" }];
 function chipList(key, rows) {
   if (key === "spacerAdd") return [];
   var have = {};
@@ -539,11 +550,11 @@ function chipList(key, rows) {
   return PRESETS.filter(function (p) { return !have[p.name.toLowerCase()]; }).map(function (p) { return { name: p.name, d: { unit: p.unit, factor: "" } }; });
 }
 function addRows(title, key, rows, baseLabel, color) {
-  var units = [["kg", "kg"], ["L", "L"], ["m3", "m³"], ["MT", "MT"]];
+  var units = [["kg", "kg/MT"], ["L", "L/MT"], ["pct", "% BWOC"], ["m3", "m³"], ["MT", "MT"]];
   var h = '<div class="tag plain" style="color:var(--ink)">' + title + ' <span style="font-weight:500;color:var(--sub)" data-base="' + key + '">· × ' + baseLabel + "</span></div>";
   var chips = chipList(key, rows);
   if (chips.length) h += '<div class="pchips">' + chips.map(function (c) { return '<button class="pchip" data-act="addPre" data-i="' + esc(key + "|" + c.name) + '">+ ' + esc(c.name) + "</button>"; }).join("") + "</div>";
-  h += '<p class="note">Factor is kg or L per ' + baseLabel + ". Picking m³ or MT only divides the answer by 1,000.</p>";
+  h += '<p class="note">' + (key === "spacerAdd" ? "Factor is kg or L per m³ of mix." : "Factor is kg or L per MT of " + baseLabel.toLowerCase() + ", or a % BWOC straight from the program (0.5% → 5 kg/MT).") + "</p>";
   rows.forEach(function (r, i) {
     var p = key + "." + i + ".";
     h += '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
@@ -585,7 +596,7 @@ function CementPage(root, s) {
       '<p class="note" style="padding-bottom:12px">' + (lt ? "Lead/Tail × OH/Cased, as in the proposal. Rat hole takes Tail OH." : "Open hole = excess on the annulus and rat hole. Cased = inside a previous casing.") + ' Blank = 0%. Shoe track has no excess.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
     o += grp("Cement volumes", '<div id="o-vol"></div>', unitSeg());
-    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
+    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
     if (lt) o += grp("Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") +
       '<div id="o-lead"></div>' + addRows("Lead additives", "leadAdd", s.leadAdd, "Equiv dry", "var(--lead)"));
     o += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
@@ -623,8 +634,9 @@ function CementPage(root, s) {
     } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
     if (m && m.dispL != null) {
       $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), vNum(p.v) + vUnit()); }).join("") + big("Displacement volume", vNum(m.dispL), vUnit(), "blue");
-      var po = P(s.outStk);
-      $("o-stk").innerHTML = '<div class="tiles" style="margin-bottom:14px">' + tile("Strokes", po ? fi(m.dispL / po) : "—", "stk") + tile("Volume", fx(m.dispL / 1000 * 6.28981, 1), "bbl") + "</div>";
+      var sk = strokesOf(s, m), uv = (P(s.unitVol) || 0) * 1000;
+      $("o-stk").innerHTML = (uv ? line("By rig pump", vNum(m.dispL - uv) + vUnit(), "(" + vNum(m.dispL) + " − " + vNum(uv) + " by unit)") : "") +
+        '<div class="tiles" style="margin-bottom:14px">' + tile("Rig strokes", sk ? fi(sk.stk) : "—", "stk") + tile("Volume", fx(m.dispL / 1000 * 6.28981, 1), "bbl") + "</div>";
     } else { $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = ""; }
     var vol = function (V) { return '<span style="color:var(--sub);font-size:14px">Volume ' + fx(V) + " m³</span>"; };
     var tiles = function (o) {
@@ -634,8 +646,14 @@ function CementPage(root, s) {
       rows.forEach(function (r, i) { var el = root.querySelector('[data-out="' + key + "." + i + '"]'); if (el) { var a = addVal(r, base); el.textContent = a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—"; } });
       var b = root.querySelector('[data-base="' + key + '"]'); if (b) b.textContent = "· × " + { leadAdd: "Equiv dry", tailAdd: "Dry cement", spacerAdd: "Mix vol" }[key] + (base != null ? " (" + fx(base) + ")" : "");
     };
-    if ($("o-lead")) { $("o-lv").innerHTML = vol(m ? m.leadVol / 1000 : null); $("o-lead").innerHTML = tiles(sl && sl.lead); amts("leadAdd", s.leadAdd, sl && sl.lead ? sl.lead.equiv : null); }
-    $("o-tv").innerHTML = vol(m ? m.tailVol / 1000 : null); $("o-tail").innerHTML = tiles(sl && sl.tail); amts("tailAdd", s.tailAdd, sl && sl.tail ? sl.tail.dry : null);
+    var water = function (o, rows, base) {
+      if (!o || o.mix == null) return "";
+      var fl = o.mix + o.dead, liq = liquidL(rows, base);
+      return line("Mix water", fx(fl - liq / 1000) + " m³", liq ? "mix fluid " + fx(fl) + " − " + fx(liq / 1000, 3) + " liquid additives" : "no liquid additives — all water");
+    };
+    if ($("o-lead")) { var lb = sl && sl.lead ? sl.lead.equiv : null; $("o-lv").innerHTML = vol(m ? m.leadVol / 1000 : null); $("o-lead").innerHTML = tiles(sl && sl.lead) + water(sl && sl.lead, s.leadAdd, lb); amts("leadAdd", s.leadAdd, lb); }
+    var tb = sl && sl.tail ? sl.tail.dry : null;
+    $("o-tv").innerHTML = vol(m ? m.tailVol / 1000 : null); $("o-tail").innerHTML = tiles(sl && sl.tail) + water(sl && sl.tail, s.tailAdd, tb); amts("tailAdd", s.tailAdd, tb);
     var spm = sl ? sl.spMix : (P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null);
     $("o-sp").innerHTML = '<p style="padding:12px 0 0;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead)</span></p>';
     amts("spacerAdd", s.spacerAdd, spm);
@@ -683,7 +701,7 @@ function showSheet(s, m) {
   }).join("");
   var addT = function (rows, base) {
     return (rows || []).filter(function (r) { return r.name; }).map(function (r) {
-      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + "×" + esc(r.factor || "—") + '</td><td class="rv">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
+      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + (r.unit === "pct" ? "×1000×" + esc(r.factor || "—") + "%" : "×" + esc(r.factor || "—")) + '</td><td class="rv">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
     }).join("");
   };
   var slT = function (name, o, rows, color, basis) {
@@ -691,27 +709,29 @@ function showSheet(s, m) {
     return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³</td></tr>" +
       '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="rv">' + fx(o.dry) + " MT</td></tr>" +
       '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="rv">' + fx(o.mix) + " m³</td></tr>" +
-      '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="rv">' + fx(o.equiv) + " MT</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
+      '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="rv">' + fx(o.equiv) + " MT</td></tr>" +
+      '<tr><td>Mix water</td><td class="f">fluid − liquid additives</td><td class="rv">' + fx(o.mix + o.dead - liquidL(rows, basis === "eq" ? o.equiv : o.dry) / 1000) + " m³</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
   };
-  var po = P(s.outStk);
+  var sk = strokesOf(s, m);
   var body = '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(s.name) + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
     '<div class="meta">' + m.c.label + " casing · Hole " + m.h.label + "<br>TD " + de(m.TD) + " m · Shoe " + de(m.SH) + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
     '<div class="cols"><div class="left">' + schematic(m, true) +
     '<table style="margin-top:6px"><tr><td>TOC</td><td class="rv">' + de(m.TOC) + " m</td></tr>" + (m.tTop != null ? '<tr><td>Top of tail</td><td class="rv">' + de(m.tTop) + " m</td></tr>" : "") +
     (m.LT != null ? '<tr><td>Liner top</td><td class="rv">' + de(m.LT) + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="rv">' + de(m.FC) + " m</td></tr>" +
     (m.PS ? '<tr><td>Prev shoe</td><td class="rv">' + de(m.PS) + " m</td></tr>" : "") +
-    '<tr><td>Excess L OH/Cs</td><td class="rv">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" +
-    '<tr><td>Excess T OH/Cs</td><td class="rv">' + esc(s.exTailOH || 0) + "/" + esc(s.exTailCsg || 0) + "%</td></tr></table></div>" +
+    (m.hasLead ? '<tr><td>Excess L OH/Cs</td><td class="rv">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" : "") +
+    '<tr><td>Excess ' + (m.hasLead ? "T " : "") + 'OH/Cs</td><td class="rv">' + esc(s.exTailOH || 0) + "/" + esc(s.exTailCsg || 0) + "%</td></tr></table></div>" +
     '<div class="right"><h2>Volume Calculations <span class="sub" style="font-size:8.5px">(B−T)×cap÷1000×(1+ex)</span></h2><table><tr><th>#</th><th>Section</th><th>Working</th><th>m³</th></tr>' + items +
     (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">Lead total</td><td class="rv" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
     '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="rv" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
     '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
     (m.dispL != null ? '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
-      '<tr class="totd"><td colspan=2>DISPLACEMENT' + (po ? " · " + fi(m.dispL / po) + " stk @ " + po + " L/stk" : "") + '</td><td class="rv">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
+      (sk && sk.unitL ? '<tr><td colspan=2>By cement unit</td><td class="rv">−' + fx(sk.unitL / 1000) + "</td></tr>" : "") +
+      '<tr class="totd"><td colspan=2>DISPLACEMENT' + (sk ? " · " + fi(sk.stk) + " rig stk @ " + sk.po + " L/stk" + (sk.unitL ? " (" + fx(sk.rigL / 1000) + " m³)" : "") : "") + '</td><td class="rv">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
     "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq") + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
-    '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.phone + " · verify against the cement program before execution.</p>";
+    '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
   var sh = document.getElementById("sheet");
   sh.innerHTML = '<div class="tb"><button data-a="back">‹ Back</button><b style="font-size:15px">Worksheet</b><button class="pr" data-a="print">Print / PDF</button></div><div class="doc">' + body + "</div>";
   sh.onclick = function (e) {
@@ -723,11 +743,11 @@ function showSheet(s, m) {
 }
 
 /* ───────────────────────── home ───────────────────────── */
-var OWNER = { name: "Mohammed Al Araimi", phone: "90911090" };
+var OWNER = { name: "Mohammed Al Araimi", id: "MU67673" };
 function Home(root) {
   var q = { v: "" };
   function list() {
-    if (!db.jobs.length) return '<div class="empty">No wells yet. Type a well number above and tap Create.</div>';
+    if (!db.jobs.length) return '<div class="empty">No wells yet. Type a well code name above and tap Create.</div>';
     var L = db.jobs.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
       .filter(function (j) { return !q.v || j.name.toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
     if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
@@ -739,11 +759,14 @@ function Home(root) {
   var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div>' +
     '<div class="brand"><img src="pdo-logo.png" alt="" onerror="this.remove()"><span class="kicker">FOR THE WELLSITE PE</span></div>' +
     '<h1 class="title">Cement Job</h1><p class="lede">Built for the PE position — cement volumes, displacement and the job sheet in a few taps, so the calculations take minutes, not an hour.</p>';
-  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well number (e.g. NMR-175)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+  h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
   h += '<div class="sec"><div class="sh">History<span>' + db.jobs.length + " record" + (db.jobs.length === 1 ? "" : "s") + "</span></div>" +
     (db.jobs.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px;background:#e3e3e8">' : "") +
     '<div class="grp" id="list">' + list() + "</div></div>";
-  h += '<div class="foot2">Created by ' + OWNER.name + '<br><a href="tel:+968' + OWNER.phone + '">' + OWNER.phone + "</a></div></div>";
+  h += grp("Backup", '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="padding-bottom:12px">Wells are kept on this phone only. Save a copy now and then, and use Restore to bring them back or move them to another phone.</p>');
+  h += '<div class="foot2">Created by ' + OWNER.name + "<br>" + OWNER.id + "</div></div>";
   root.innerHTML = h;
   var create = function () {
     var inp = root.querySelector("#wname"), name = inp.value.trim();
@@ -764,7 +787,33 @@ function Home(root) {
       return;
     }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
-    if (e.target.getAttribute("data-a") === "create") create();
+    var a = e.target.getAttribute("data-a");
+    if (a === "create") create();
+    if (a === "export") {
+      var data = { app: "cement-job", v: 1, at: new Date().toISOString(), jobs: db.jobs };
+      var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
+      el.href = url; el.download = "cement-job-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
+      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
+    }
+  });
+  root.addEventListener("change", function (e) {
+    if (e.target.getAttribute("data-a") !== "import") return;
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (d.app !== "cement-job" || !Array.isArray(d.jobs)) { toast("That is not a Cement Job backup."); return; }
+        var n = 0;
+        // Merge by id; a newer copy of a well replaces the older one.
+        d.jobs.forEach(function (j) {
+          var i = db.jobs.findIndex(function (x) { return x.id === j.id; });
+          if (i < 0) { db.jobs.push(j); n++; } else if ((j.updated || 0) > (db.jobs[i].updated || 0)) { db.jobs[i] = j; n++; }
+        });
+        saveDb(); toast("Restored " + n + " well" + (n === 1 ? "" : "s")); route();
+      } catch (x) { toast("Could not read that file."); }
+    };
+    rd.readAsText(f);
   });
 }
 
