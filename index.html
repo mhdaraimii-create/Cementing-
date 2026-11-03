@@ -218,12 +218,12 @@
   /* ── Precise tool look, light and dark. Light is the default; dark follows the phone
      (prefers-color-scheme) unless the user picks one (html[data-theme]). Layout and logic unchanged. ── */
   :root {
-    --bg:#f3eadb; --card:#fbf7ef; --line:#e4d6bf; --ink:#3e2212; --sub:#7a5f4b; --faint:#a08a74;
-    --field:#f4ecdf; --fieldb:#dccbb0; --accent:#3e2212; --accent-bg:#ecdfc8; --accent-ink:#8a6534; --onacc:#f6eedf;
+    --bg:#faf6ef; --card:#fffdf9; --line:#ece2d2; --ink:#3e2212; --sub:#7a5f4b; --faint:#a08a74;
+    --field:#f7f1e7; --fieldb:#e2d4bd; --accent:#3e2212; --accent-bg:#ecdfc8; --accent-ink:#8a6534; --onacc:#f6eedf;
     --gold1:#e3cba0; --gold2:#b8955f;
     --danger:#b23a2a; --danger-bg:#f7e3dc; --danger-edge:#e8c1b5; --good:#3f7a4a; --good-bg:#e4eedb;
     --lead:#c27a12; --tail:#2e7d6e; --track:#7b4bb3; --rat:#b8407a; --disp:#8a6534;
-    --seg:#ebdfcb; --segon:#fbf7ef; --chev:#c2ad92; --glow:rgba(184,149,95,.22); --hl:rgba(255,255,255,.5);
+    --seg:#f1e8da; --segon:#fffdf9; --chev:#c2ad92; --glow:rgba(184,149,95,.22); --hl:rgba(255,255,255,.5);
     --r:12px; --ease:cubic-bezier(.25,.1,.25,1); --out:cubic-bezier(.16,1,.3,1);
     --display:'Poppins','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -850,7 +850,7 @@ function themePref() { var t = load("theme", "auto"); return t === "light" || t 
 function isDark() { var t = themePref(); return t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyTheme() {
   var t = themePref(); if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
-  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#f3eadb");
+  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#faf6ef");
 }
 function wellById(id) { return db.wells.filter(function (w) { return w.id === id; })[0] || null; }
 function wellJobs(id) { return db.jobs.filter(function (j) { return j.wellId === id; }).sort(function (a, b) { return (a.created || 0) - (b.created || 0); }); }
