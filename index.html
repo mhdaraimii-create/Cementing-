@@ -1238,7 +1238,10 @@ route();
 // so opening the file straight off a phone still works.
 if ('serviceWorker' in navigator && window.isSecureContext) {
   addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js').catch(function () {});
+    // When a new version takes over, reload once so the latest page shows without a second refresh.
+    var had = !!navigator.serviceWorker.controller, done = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () { if (had && !done) { done = true; location.reload(); } });
+    navigator.serviceWorker.register('sw.js').then(function (r) { r.update(); }).catch(function () {});
   });
 }
 </script>
