@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap" />
 <script>try { var t = JSON.parse(localStorage.getItem("cmt3.theme")); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
 <style>
   /* Light, grouped-list look. Change these values and the whole app follows. */
@@ -218,12 +218,14 @@
   /* ── Precise tool look, light and dark. Light is the default; dark follows the phone
      (prefers-color-scheme) unless the user picks one (html[data-theme]). Layout and logic unchanged. ── */
   :root {
-    --bg:#f7f7f8; --card:#ffffff; --line:#e4e4e8; --ink:#0f1011; --sub:#62666d; --faint:#8a8f98;
-    --field:#f2f2f4; --fieldb:#dcdce1; --accent:#5e6ad2; --accent-bg:#eef0fd; --accent-ink:#4450c0; --onacc:#fff;
-    --danger:#d23c3c; --danger-bg:#fdeeee; --danger-edge:#f3c9c9; --good:#1f8a5b; --good-bg:#e6f5ee;
-    --lead:#d97706; --tail:#0f8a7e; --track:#7c3aed; --rat:#db2777; --disp:#4450c0;
-    --seg:#ececef; --segon:#ffffff; --chev:#b8bbc2; --glow:rgba(94,106,210,.10); --hl:rgba(255,255,255,0);
-    --r:12px; --ease:cubic-bezier(.25,.1,.25,1);
+    --bg:#f3eadb; --card:#fbf7ef; --line:#e4d6bf; --ink:#3e2212; --sub:#7a5f4b; --faint:#a08a74;
+    --field:#f4ecdf; --fieldb:#dccbb0; --accent:#3e2212; --accent-bg:#ecdfc8; --accent-ink:#8a6534; --onacc:#f6eedf;
+    --gold1:#e3cba0; --gold2:#b8955f;
+    --danger:#b23a2a; --danger-bg:#f7e3dc; --danger-edge:#e8c1b5; --good:#3f7a4a; --good-bg:#e4eedb;
+    --lead:#c27a12; --tail:#2e7d6e; --track:#7b4bb3; --rat:#b8407a; --disp:#8a6534;
+    --seg:#ebdfcb; --segon:#fbf7ef; --chev:#c2ad92; --glow:rgba(184,149,95,.22); --hl:rgba(255,255,255,.5);
+    --r:12px; --ease:cubic-bezier(.25,.1,.25,1); --out:cubic-bezier(.16,1,.3,1);
+    --display:'Poppins','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     color-scheme:light;
   }
@@ -331,6 +333,28 @@
   @keyframes rise { from { transform:translateY(10px); opacity:0; } to { transform:none; opacity:1; } }
   @media (hover:hover) { .btn:hover { filter:brightness(1.08); } .btn.sec2:hover, .pchip:hover { border-color:var(--fieldb); } }
   @media (prefers-reduced-motion: reduce) { *, .modal .sheetbox, .modal .dlg { animation:none !important; transition:none !important; } }
+
+  /* Display face (wide-tracked caps) for the brand line, section labels, well names and job chips — sizes unchanged */
+  .kicker, .sh, .brand + .title, .wt, #list .item .nm, .jchips .pchip { font-family:var(--display); }
+  .brand + .title { text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
+  .wt { text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+  #list .item .nm { text-transform:uppercase; letter-spacing:.1em; font-weight:600; }
+  .jchips .pchip { text-transform:uppercase; letter-spacing:.08em; font-weight:500; }
+  .sh { letter-spacing:.16em; font-weight:600; }
+  :root:not([data-theme="dark"]) .brand + .title { background:linear-gradient(to bottom, var(--ink) 35%, #7a4a26); -webkit-background-clip:text; background-clip:text; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand + .title { background:linear-gradient(to right bottom, var(--ink) 40%, color-mix(in srgb, var(--ink) 55%, transparent)); -webkit-background-clip:text; background-clip:text; } }
+  :root:not([data-theme="dark"]) .btn:not(.sec2):not(.danger):not(.ghost) { background:linear-gradient(180deg,#4a2a17,#3a1f10); }
+  :root:not([data-theme="dark"]) .item .ic { background:linear-gradient(135deg,var(--gold1),var(--gold2)) !important; color:#3e2212 !important; }
+  /* Entrance: content rises out of a soft blur, one block after another (only when a page opens) */
+  @keyframes enter { from { opacity:0; transform:translateY(10px); filter:blur(8px); } to { opacity:1; transform:none; filter:blur(0); } }
+  .entering .page > * { animation:enter 700ms var(--out) both; }
+  .entering .page > :nth-child(2) { animation-delay:60ms; } .entering .page > :nth-child(3) { animation-delay:120ms; }
+  .entering .page > :nth-child(4) { animation-delay:180ms; } .entering .page > :nth-child(5) { animation-delay:240ms; }
+  .entering .page > :nth-child(6) { animation-delay:300ms; } .entering .page > :nth-child(7) { animation-delay:360ms; }
+  .entering .page > :nth-child(n+8) { animation-delay:420ms; }
+  .entering .brand, .entering .brand + .title, .entering .brand + .title + .lede { animation:enter 1000ms var(--out) both; }
+  .entering .brand + .title { animation-delay:120ms; } .entering .brand + .title + .lede { animation-delay:240ms; }
+  @media (prefers-reduced-motion: reduce) { .entering .page > *, .entering .brand, .entering .title, .entering .lede { animation:none !important; } }
 </style>
 </head>
 <body>
@@ -826,7 +850,7 @@ function themePref() { var t = load("theme", "auto"); return t === "light" || t 
 function isDark() { var t = themePref(); return t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyTheme() {
   var t = themePref(); if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
-  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#f7f7f8");
+  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#f3eadb");
 }
 function wellById(id) { return db.wells.filter(function (w) { return w.id === id; })[0] || null; }
 function wellJobs(id) { return db.jobs.filter(function (j) { return j.wellId === id; }).sort(function (a, b) { return (a.created || 0) - (b.created || 0); }); }
@@ -1221,8 +1245,8 @@ var TCOL = { casing: "var(--accent)", liner: "#0d7a6f", twostage: "#6d28d9", plu
 function WellPage(root, w) {
   function draw() {
     var J = wellJobs(w.id);
-    var h = '<div class="page"><h1 class="title">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
-    if (J.length) h += '<div class="pchips" style="margin:4px 0 14px">' + J.map(function (j) {
+    var h = '<div class="page"><h1 class="title wt">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
+    if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
       return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
     h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
@@ -1339,6 +1363,8 @@ function route() {
   document.body.classList.remove("sheet");
   // A fresh node each time so listeners from the last page are dropped.
   var fresh = root.cloneNode(false); root.parentNode.replaceChild(fresh, root); root = fresh;
+  // Play the entrance once per page open; later redraws (typing, toggles) stay still.
+  root.classList.add("entering"); clearTimeout(route.t); route.t = setTimeout(function () { root.classList.remove("entering"); }, 1400);
   window.scrollTo(0, 0);
   var j = parts[0] === "job" ? jobById(parts[1]) : null, w = parts[0] === "well" ? wellById(parts[1]) : j ? wellById(j.wellId) : null, body = document.createElement("div");
   var back = function (label, hash) {
