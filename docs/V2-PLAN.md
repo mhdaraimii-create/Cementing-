@@ -53,6 +53,8 @@ Holes: 36, 26, 17½, 16, 12¼, 10 (new), 8½, 6⅛. 8½″ × 7″ = 11.78 (fix 
 
 ## Build order
 
+Status: phases 1–5 built on `v2-dev` and checked against the cases above (liner 23,946 L / TOC with DP 3398 m / Δp 4,982 kPa; two-stage 18,139 L / Δp 6,737 kPa; plug 24.16 bbl, TOC 7205 ft; 9⅝″ PE sheet exact). Next: user review, then merge to `main`.
+
 1. Data tables (booklet sizes/weights, strings, holes) + stick-up, mud = disp − spacer behind, liner extras.
 2. Two-stage page.
 3. Balanced plug page.

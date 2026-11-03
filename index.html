@@ -282,7 +282,8 @@ function newJob(name) {
     capInt: "", capFull: "", capOH: "", capCC: "",
     leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
     leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: [], stickUp: "", spacerBehind: "", stCol: "", toc1: "",
-    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: "", tankSize: "", tankDead: "", leadWater: "", tailWater: ""
+    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: "", tankSize: "", tankDead: "", leadWater: "", tailWater: "",
+    mudGr: "", spGr: "", leadGr: "", tailGr: "", gasDepth: "", gasP: "", fsGr: ""
   };
 }
 function hasPrev(s) { return s.prevOn || s.jobType === "liner"; }
@@ -399,6 +400,47 @@ function model(s) {
     minVol: items.reduce(function (a, z) { return a + z.vol0; }, 0),
     halfShoe: k.int != null && SH > FC ? (SH - FC) * k.int / 2 : null,
     LT: TOP > 0 ? TOP : null, tTop: tTop, PS: PS, hasLead: lt || two, c: c, h: h, warn: warn };
+}
+/* ── pressures (kPa, gradients in kPa/m) ──
+   Annulus: mud | spacer ahead | cement, heights from the annular capacity
+   (liner: casing − DP CED above the liner top, DP still in). Inside: mud |
+   spacer behind | float collar. Differential = annulus − inside at the FC
+   (stage tool for stage 2). Gas check counts the cement as water (it loses
+   hydrostatic as it sets); shoe check compares the annulus HH with the
+   formation strength at the previous shoe. */
+function hp(layers, D) {
+  return layers.reduce(function (t, l) { var a = Math.max(0, l.from), z = Math.min(D, l.to); return t + (z > a ? (z - a) * l.g : 0); }, 0);
+}
+function pressures(s, m) {
+  if (!m || m.plug) return null;
+  var mud = P(s.mudGr), sp = P(s.spGr) != null ? P(s.spGr) : 9.81, cT = P(s.tailGr), cL = m.hasLead ? P(s.leadGr) : cT;
+  if (mud == null || cT == null || (m.hasLead && cL == null)) return null;
+  var k = caps(s), liner = s.jobType === "liner", TOP = m.LT || 0, PS = m.PS, sa = (P(s.spAhead) || 0) * 1000;
+  var annCap = function (d) { return liner && d < TOP ? k.prevInt - k.ced : PS != null && d < PS ? k.cc : k.oh; };
+  var inCap = function (d) { return liner && d < TOP ? k.dp : k.int; };
+  var bps = [TOP, PS || 0];
+  // one cement stage: [top, bottom, gradient] bands in the annulus, pumped down to depth "to"
+  var stage = function (name, bands, to, below) {
+    var toc = bands[0][0], tos = walkUp(toc, sa, bps, annCap);
+    var ann = [{ from: 0, to: tos, g: mud }, { from: tos, to: toc, g: sp }].concat(bands.map(function (b) { return { from: b[0], to: b[1], g: b[2], cmt: true }; })).concat(below || []);
+    var tsi = walkUp(to, m.spB, [TOP], inCap), ins = [{ from: 0, to: tsi, g: mud }, { from: tsi, to: to, g: sp }];
+    return { name: name, to: to, ann: ann, pa: hp(ann, to), pi: hp(ins, to), diff: hp(ann, to) - hp(ins, to), tos: tos };
+  };
+  var st = [], tocA = m.tocDp != null ? m.tocDp : m.TOC;
+  if (m.two) {
+    var s1 = stage("Stage 1", [[m.TOC1, m.SH, cT]], m.FC);
+    st.push(s1, stage("Stage 2", [[m.TOC, m.ST, cL]], m.ST, [{ from: m.ST, to: m.TOC1, g: mud }, { from: m.TOC1, to: m.SH, g: cT, cmt: true }]));
+  } else st.push(stage("", m.hasLead ? [[tocA, m.tTop, cL], [m.tTop, m.SH, cT]] : [[tocA, m.SH, cT]], m.FC));
+  var out = { st: st, mud: mud };
+  var gd = P(s.gasDepth), gp = P(s.gasP);
+  if (gd != null && gp != null) {
+    var mins = st.map(function (x) { return hp(x.ann.map(function (l) { return l.cmt ? { from: l.from, to: l.to, g: 9.81 } : l; }), gd); });
+    var full = st.map(function (x) { return hp(x.ann, gd); });
+    out.gas = { d: gd, p: gp, hh: Math.min.apply(null, full), min: Math.min.apply(null, mins) };
+  }
+  var fs = P(s.fsGr);
+  if (fs != null && PS != null) { var hh = Math.max.apply(null, st.map(function (x) { return hp(x.ann, PS); })); out.shoe = { d: PS, hh: hh, fs: fs * PS }; }
+  return out;
 }
 // Lead additives go on equivalent dry, tail additives on dry cement, spacer on mix volume.
 function slurry(volL, y, conc, dead) {
@@ -761,6 +803,13 @@ function CementPage(root, s) {
     o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
     o += tankGrp();
+    o += grp("Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m (SG × 9.81). Static, no friction.</p>' +
+      num("Mud", "mudGr", s, "kPa/m") + num("Spacer", "spGr", s, "kPa/m", "9.81") +
+      (lt || two ? num(two ? "Stage 2 cement" : "Lead cement", "leadGr", s, "kPa/m") : "") + num(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s, "kPa/m") +
+      num("Spacer ahead", "spAhead", s, "m³", "0") +
+      '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
+      (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + num("Formation strength", "fsGr", s, "kPa/m") : "") +
+      '<div id="o-pr"></div>');
     root.innerHTML = '<div class="page">' + o + "</div>";
     outs();
   }
@@ -773,6 +822,12 @@ function CementPage(root, s) {
     });
     if (s.jobType === "plug") outsPlug(m); else {
     // The drawing shows up once the well is filled in.
+    var pr = pressures(s, m), $pr = $("o-pr");
+    if ($pr) $pr.innerHTML = !pr ? '<div class="empty">Enter the mud and cement gradients</div>' : pr.st.map(function (x) {
+      return line("Differential before bump" + (x.name ? " · " + x.name : ""), fi(x.diff) + " kPa", "annulus " + fi(x.pa) + " − inside " + fi(x.pi) + " at " + fi(x.to) + " m");
+    }).join("") +
+      (pr.gas ? line("Gas zone overbalance", fi(pr.gas.min - pr.gas.p) + " kPa", "cement as water " + fi(pr.gas.min) + " − pore " + fi(pr.gas.p) + " (full cement " + fi(pr.gas.hh) + ")", pr.gas.min < pr.gas.p ? "var(--danger,#c0392b)" : "") : "") +
+      (pr.shoe ? line("Margin at previous shoe", fi(pr.shoe.fs - pr.shoe.hh) + " kPa", "strength " + fi(pr.shoe.fs) + " − HH " + fi(pr.shoe.hh) + " at " + fi(pr.shoe.d) + " m", pr.shoe.hh > pr.shoe.fs ? "var(--danger,#c0392b)" : "") : "");
     var ok = m && m.items.length;
     $("schSec").style.display = ok ? "" : "none";
     if (ok) $("o-sch").innerHTML = schematic(m, true);
@@ -957,6 +1012,10 @@ function showSheet(s, m) {
       m.parts2.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
       (m.spB ? '<tr><td colspan=2>Mud to pump</td><td class="rv">' + fx(m.mud2 / 1000) + "</td></tr>" : "") +
       '<tr class="totd"><td colspan=2>DISPLACEMENT' + (k2 ? " · " + fi(k2.stk) + " rig stk" : "") + '</td><td class="rv">' + fx(m.disp2 / 1000) + " m³</td></tr></table>"; })() : "") +
+    (function () { var pr = pressures(s, m); if (!pr) return ""; return '<h2>Pressures <span class="sub" style="font-size:8.5px">static, kPa</span></h2><table>' +
+      pr.st.map(function (x) { return "<tr><td>Differential before bump" + (x.name ? " · " + x.name : "") + '</td><td class="f">' + fi(x.pa) + " − " + fi(x.pi) + '</td><td class="rv">' + fi(x.diff) + "</td></tr>"; }).join("") +
+      (pr.gas ? '<tr><td>Gas zone overbalance @ ' + fi(pr.gas.d) + ' m</td><td class="f">' + fi(pr.gas.min) + " − " + fi(pr.gas.p) + '</td><td class="rv">' + fi(pr.gas.min - pr.gas.p) + "</td></tr>" : "") +
+      (pr.shoe ? '<tr><td>Margin at prev shoe</td><td class="f">' + fi(pr.shoe.fs) + " − " + fi(pr.shoe.hh) + '</td><td class="rv">' + fi(pr.shoe.fs - pr.shoe.hh) + "</td></tr>" : "") + "</table>"; })() +
     "<h2>Slurry Design</h2><table>" + (m.two ? "" : slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq", s.leadWater)) + slT(m.two ? "Stage 1" : m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry", s.tailWater) + (m.two ? slT("Stage 2", sl.lead, s.leadAdd, "#b45309", "dry", s.leadWater) : "") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
