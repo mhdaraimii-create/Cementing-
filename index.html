@@ -6,14 +6,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Cement Job" />
-<meta name="theme-color" content="#f5f5f7" />
+<meta name="theme-color" content="#f6f3ec" />
 <title>Cement Job</title>
 <link rel="apple-touch-icon" href="icon-180.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap" />
-<script>try { var t = JSON.parse(localStorage.getItem("cmt3.theme")); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
+<script>(function () { var t = null; try { t = JSON.parse(localStorage.getItem("cmt3.theme")); } catch (e) {}
+  if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  var dark = t === "dark" || (t !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+  if (!dark) document.documentElement.classList.add("lt"); })();</script>
 <style>
   /* Light, grouped-list look. Change these values and the whole app follows. */
   :root {
@@ -351,6 +354,31 @@
   .entering .brand, .entering .brand + .title, .entering .brand + .title + .lede { animation:enter 1000ms var(--out) both; }
   .entering .brand + .title { animation-delay:120ms; } .entering .brand + .title + .lede { animation-delay:240ms; }
   @media (prefers-reduced-motion: reduce) { .entering .page > *, .entering .brand, .entering .title, .entering .lede { animation:none !important; } }
+
+  /* Light mode in the icon's palette: cream canvas, PDO green actions and labels, gold (#E5B323) for rules and highlights.
+     Dark mode is not touched. Gold never carries text (too little contrast on cream). */
+  :root:not([data-theme="dark"]) {
+    --bg:#f6f3ec; --card:#fffefb; --line:#e7e1d4; --ink:#14251a; --sub:#5f6b62; --faint:#8f998f;
+    --field:#f3efe6; --fieldb:#ddd5c4; --accent:#0e7a3c; --accent-bg:#e4f2e8; --accent-ink:#0b5e2f; --onacc:#fff;
+    --lead:#e8930c; --tail:#0e7a3c; --disp:#0b5e2f; --seg:#ece7dc; --segon:#fffefb; --glow:rgba(229,179,35,.22); --gold:#E5B323;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#08090a; --card:#101113; --line:#23252a; --ink:#f7f8f8; --sub:#8a8f98; --faint:#62666d;
+    --field:#16171a; --fieldb:#2a2c31; --accent:#5e6ad2; --accent-bg:rgba(94,106,210,.16); --accent-ink:#9ba5ff; --onacc:#fff;
+    --lead:#f2a33a; --tail:#2dd4bf; --disp:#9ba5ff; --seg:#16171a; --segon:#26282d; --glow:rgba(94,106,210,.22);
+  } }
+  .lt .sh::before { content:""; width:16px; height:3px; border-radius:2px; background:var(--gold); margin-right:8px; flex:none; }
+  .lt .btn:not(.sec2):not(.danger):not(.ghost) { background:linear-gradient(180deg,#118a45,#0b6a34); }
+  .lt .btn.sec2 { border-color:#ead79b; }
+  .lt .big { background:#fdf6e0; border:1px solid #f0dc9c; border-left:5px solid var(--gold); } .lt .big .k { color:#7a5a00; }
+  .lt .item .ic { background:linear-gradient(135deg,#119048,#0b5e2f) !important; box-shadow:inset 0 -4px 0 var(--gold); }
+  .lt .chip { color:#0b5e2f; }
+  .lt .seg button.on { box-shadow:inset 0 -3px 0 var(--gold), 0 1px 2px rgba(0,0,0,.1); }
+  .lt .jchips .pchip { border-color:var(--gold) !important; color:#0b5e2f !important; background:#fffaea; }
+  .lt .in:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(229,179,35,.28); }
+  .lt .tiles .tile { border-top:3px solid var(--gold); }
+  .lt .brand + .title { background:linear-gradient(to bottom,#0b3d20 30%,#118a45); -webkit-background-clip:text; background-clip:text; }
+  .lt .brand::after { content:""; display:block; width:84px; height:5px; border-radius:3px; margin:2px auto 0; background:var(--gold); }
 </style>
 </head>
 <body>
@@ -846,7 +874,8 @@ function themePref() { var t = load("theme", "auto"); return t === "light" || t 
 function isDark() { var t = themePref(); return t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyTheme() {
   var t = themePref(); if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
-  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#f7f7f8");
+  document.documentElement.classList.toggle("lt", !isDark());
+  var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", isDark() ? "#08090a" : "#f6f3ec");
 }
 function wellById(id) { return db.wells.filter(function (w) { return w.id === id; })[0] || null; }
 function wellJobs(id) { return db.jobs.filter(function (j) { return j.wellId === id; }).sort(function (a, b) { return (a.created || 0) - (b.created || 0); }); }
