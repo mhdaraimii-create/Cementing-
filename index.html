@@ -282,7 +282,7 @@ function newJob(name) {
     capInt: "", capFull: "", capOH: "", capCC: "",
     leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
     leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: [], stickUp: "", spacerBehind: "", stCol: "", toc1: "",
-    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: ""
+    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: "", tankSize: "", tankDead: "", leadWater: "", tailWater: ""
   };
 }
 function hasPrev(s) { return s.prevOn || s.jobType === "liner"; }
@@ -333,7 +333,7 @@ function plugModel(s) {
     var mud = integ(0, tos, bps, function (d) { return str(d).cap; });
     if (tb && stTop > T) warn.push("Plug " + (i + 1) + ": stinger is shorter than the plug — make it ≥ plug length + ~30 m.");
     var po = P(s.outStk);
-    plugs.push({ n: i + 1, B: B, T: T, Vc: Vc, tocIn: tocIn, tos: tos, spB: spB, mud: mud, pump: Math.max(0, mud - ud), stk: po ? Math.max(0, mud - ud) / po : null, stTop: tb ? stTop : null,
+    plugs.push({ n: i + 1, B: B, T: T, Vc: Vc, tocIn: tocIn, tos: tos, spB: spB, mud: mud, pump: Math.max(0, mud - ud), stk: po ? Math.ceil(Math.max(0, mud - ud) / po - 1e-9) : null, stTop: tb ? stTop : null,
       oh: B > SH ? integ(Math.max(T, SH), B, [], wc) : 0 });
     items.push({ n: i + 1, slurry: "tail", label: "Plug " + (i + 1), dTop: T, dBot: B, cap: null, ex: 0, vol: Vc });
   });
@@ -362,13 +362,13 @@ function model(s) {
       var a = Math.max(b.from, g.top), z = Math.min(b.to, g.bot);
       if (z > a) {
         var e = b.key === "lead" ? ex(g.kind === "oh" ? "exLeadOH" : "exLeadCsg") : ex(g.kind === "oh" ? "exTailOH" : "exTailCsg");
-        items.push({ n: n++, slurry: b.key, label: b.label + " · " + g.name, dTop: a, dBot: z, cap: g.cap, ex: e, vol: (z - a) * g.cap * (1 + e), full: !!g.full });
+        items.push({ n: n++, slurry: b.key, label: b.label + " · " + g.name, dTop: a, dBot: z, cap: g.cap, ex: e, vol: (z - a) * g.cap * (1 + e), vol0: (z - a) * g.cap, full: !!g.full });
       }
     });
   });
   var c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
-  if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int });
-  if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")) });
+  if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int, vol0: (SH - FC) * k.int });
+  if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")), vol0: (TD - SH) * k.full });
   var dispL = null, parts = [];
   var suT = SU ? " (+" + de(SU) + " m stick-up)" : "";
   if (!liner) { if (k.int != null && FC > 0) { dispL = (FC + SU) * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC) + suT, v: dispL }]; } }
@@ -396,6 +396,8 @@ function model(s) {
   if (liner && PS != null && TOP >= PS) warn.push("Liner top should be above the previous shoe.");
   return { items: items, total: leadV + tailV, leadVol: leadV, tailVol: tailV, dispL: dispL, parts: parts, spB: spB, mudL: mudL, tocDp: tocDp, two: two, ST: ST, TOC1: TOC1, disp2: disp2, parts2: parts2, mud2: mud2,
     names: two ? { lead: "Stage 2", tail: "Stage 1" } : { lead: "Lead", tail: lt ? "Tail" : "Slurry" }, TD: TD, SH: SH, FC: FC, TOC: TOC,
+    minVol: items.reduce(function (a, z) { return a + z.vol0; }, 0),
+    halfShoe: k.int != null && SH > FC ? (SH - FC) * k.int / 2 : null,
     LT: TOP > 0 ? TOP : null, tTop: tTop, PS: PS, hasLead: lt || two, c: c, h: h, warn: warn };
 }
 // Lead additives go on equivalent dry, tail additives on dry cement, spacer on mix volume.
@@ -417,6 +419,23 @@ function addVal(r, base) {
   if (r.unit === "pct") return base * f * 10;
   var raw = base * f; return r.unit === "MT" || r.unit === "m3" ? raw / 1000 : raw;
 }
+// Pack sizes (drum/sack) in the additive's own unit; editable per row.
+var PACKS = { cdf: 20, cfl100: 25, cd200: 25, bentonite: 25 };
+function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[(r.name || "").replace(/[\s-]/g, "").toLowerCase()] || null; }
+function packTxt(r, a) { var p = packOf(r); return p && a != null && r.unit !== "m3" && r.unit !== "MT" ? " · " + Math.ceil(a / p - 1e-9) + " pk" : ""; }
+// Mix fluid is batched in tanks: each holds tankSize, of which tankDead stays behind.
+function tanksOf(s, fluid) {
+  if (fluid == null || !(fluid > 0)) return null;
+  var size = P(s.tankSize) || 5, dead = P(s.tankDead) != null ? P(s.tankDead) : 0.5, use = size - dead;
+  if (use <= 0) return null;
+  var n = Math.ceil(fluid / use - 1e-9); return { n: n, prep: fluid + n * dead, size: size, dead: dead };
+}
+// Plain water in a slurry's mix fluid: from the lab water ratio (m³/MT) if given, else mix fluid − liquid additives.
+function waterOf(o, ratio, liqL) {
+  if (!o || o.mix == null) return null;
+  var w = P(ratio), fl = o.mix + o.dead, cc = o.mix / o.dry;
+  return w != null && cc > 0 ? { v: fl * w / cc, lab: true, fl: fl } : { v: fl - liqL / 1000, lab: false, fl: fl, liq: liqL };
+}
 function addFmt(v, u) { return v == null ? "—" : v.toFixed(u === "MT" || u === "m3" ? 3 : 2); }
 // Litres of liquid additive in a slurry, so the plain water can be split out of the mix fluid.
 function liquidL(rows, base) {
@@ -425,7 +444,7 @@ function liquidL(rows, base) {
 function strokesOf(s, m, dl) {
   var po = P(s.outStk), uv = (P(s.unitVol) || 0) * 1000, d = dl != null ? dl : m && m.dispL;
   if (!po || !m || d == null) return null;
-  return { rigL: Math.max(0, d - uv), unitL: uv, stk: Math.max(0, d - uv) / po, po: po };
+  return { rigL: Math.max(0, d - uv), unitL: uv, stk: Math.ceil(Math.max(0, d - uv) / po - 1e-9), po: po };
 }
 function unitLabel(u) { return u === "m3" ? "m³" : u === "pct" ? "kg" : u; }
 // Volume display unit for the cement page, remembered on the phone: m³ or litres.
@@ -651,7 +670,9 @@ function addRows(title, key, rows, baseLabel, color) {
   h += '<p class="note">' + (key === "spacerAdd" ? "Factor is kg or L per m³ of mix." : "Factor is kg or L per MT of " + baseLabel.toLowerCase() + ", or a % BWOC straight from the program (0.5% → 5 kg/MT).") + "</p>";
   rows.forEach(function (r, i) {
     var p = key + "." + i + ".";
-    h += '<div class="add"><input class="in" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
+    var dp = packOf({ name: r.name });
+    h += '<div class="add"><div class="rw" style="margin-top:0"><input class="in" style="flex:2.2" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
+      (key === "spacerAdd" ? "" : '<input class="in" style="flex:1" inputmode="decimal" data-k="' + p + 'pack" value="' + esc(r.pack || "") + '" placeholder="pack ' + (dp || "—") + '">') + "</div>" +
       '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'factor" value="' + esc(r.factor) + '" placeholder="factor">' +
       '<select class="chip" data-k="' + p + 'unit">' + units.map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
@@ -675,6 +696,9 @@ function CementPage(root, s) {
       sel("Weight", k, s, CSG.filter(function (c) { return c.od === cur.od; }).map(function (c) { return { id: c.id, label: c.w + "# · ID " + c.idIn.toFixed(3) }; }), true);
   }
   function pnum(label, i, f) { var o = {}; o["plugs." + i + "." + f] = s.plugs[i][f]; return num(label, "plugs." + i + "." + f, o, "m"); }
+  function tankGrp() {
+    return grp("Mix tanks", num("Tank size", "tankSize", s, "m³", "5") + num("Dead per tank", "tankDead", s, "m³", "0.5") + '<div id="o-tank"></div>');
+  }
   function plugForm(o, k, c, h) {
     o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + "</div>");
     o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Full bore (" + h.label + ")", "capFull", s, k.auto.full) + "</div>" +
@@ -689,10 +713,11 @@ function CementPage(root, s) {
       '<p class="note" style="padding-bottom:12px">Under-displace 0.3–0.5 m³ so the plug balances as the string is pulled.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "plug depths to scale") + "</div>";
     o += grp("Plug results", '<div id="o-plug"></div>', unitSeg());
-    o += grp("Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
+    o += grp("Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") + num("Water ratio (lab)", "tailWater", s, "m³/MT", "optional") +
       '<div id="o-tail"></div>' + addRows("Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
     o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
+    o += tankGrp();
     return o;
   }
   function draw() {
@@ -727,14 +752,15 @@ function CementPage(root, s) {
     o += grp("Cement volumes", '<div id="o-vol"></div>', unitSeg());
     o += grp(two ? "Displacement · stage 1" : "Displacement", '<div id="o-disp"></div>' + num("Stick-up", "stickUp", s, "m", "0") + num("Spacer behind", "spacerBehind", s, "m³", "0") + '<div id="o-mud"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
     if (two) o += grp("Displacement · stage 2", '<div id="o-disp2"></div>', "to stage tool");
-    var leadG = function () { return grp(two ? "Stage 2 slurry" : "Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") +
+    var leadG = function () { return grp(two ? "Stage 2 slurry" : "Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") + num("Water ratio (lab)", "leadWater", s, "m³/MT", "optional") +
       '<div id="o-lead"></div>' + addRows(two ? "Stage 2 additives" : "Lead additives", "leadAdd", s.leadAdd, two ? "Dry cement" : "Equiv dry", "var(--lead)")); };
     if (lt) o += leadG();
-    o += grp(two ? "Stage 1 slurry" : lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
+    o += grp(two ? "Stage 1 slurry" : lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") + num("Water ratio (lab)", "tailWater", s, "m³/MT", "optional") +
       '<div id="o-tail"></div>' + addRows(two ? "Stage 1 additives" : lt ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
     if (two) o += leadG();
     o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
+    o += tankGrp();
     root.innerHTML = '<div class="page">' + o + "</div>";
     outs();
   }
@@ -765,10 +791,11 @@ function CementPage(root, s) {
       if (m.hasLead && !m.two) v += bl();
       v += block(m.names.tail, "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
       if (m.two) v += bl();
-      $("o-vol").innerHTML = v + big("Total Cement", vNum(m.total), vUnit());
+      $("o-vol").innerHTML = v + big("Total Cement", vNum(m.total), vUnit()) + line("Minimum cement (no excess)", vNum(m.minVol) + vUnit(), "gauge hole — the least that must go in");
     } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
     if (m && m.dispL != null) {
-      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), vNum(p.v) + vUnit()); }).join("") + big("Displacement volume", vNum(m.dispL), vUnit(), "blue");
+      $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), vNum(p.v) + vUnit()); }).join("") + big("Displacement volume", vNum(m.dispL), vUnit(), "blue") +
+        (m.halfShoe != null ? line("Max over-displacement", vNum(m.halfShoe) + vUnit(), "½ shoe track — do not pump past this") : "");
       $("o-mud").innerHTML = (m.spB ? line("Spacer behind", vNum(m.spB) + vUnit()) + line("Mud to pump", vNum(m.mudL) + vUnit(), "displacement − spacer behind") : "") +
         (m.tocDp != null ? line("TOC with DP still in", fi(m.tocDp) + " m", "above-TOL cement ÷ (casing − DP CED)") : "");
       var sk = strokesOf(s, m), uv = (P(s.unitVol) || 0) * 1000;
@@ -791,20 +818,31 @@ function CementPage(root, s) {
       return '<div class="tiles">' + tile("Dry cement", o ? fx(o.dry) : "—", "MT") + tile("Mix fluid", o ? fx(o.mix) : "—", "m³") + tile("Equiv dry", o ? fx(o.equiv) : "—", "MT") + "</div>";
     };
     var amts = function (key, rows, base) {
-      rows.forEach(function (r, i) { var el = root.querySelector('[data-out="' + key + "." + i + '"]'); if (el) { var a = addVal(r, base); el.textContent = a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—"; } });
+      rows.forEach(function (r, i) { var el = root.querySelector('[data-out="' + key + "." + i + '"]'); if (el) { var a = addVal(r, base); el.textContent = a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) + packTxt(r, a) : "—"; } });
       var b = root.querySelector('[data-base="' + key + '"]'); if (b) b.textContent = "· × " + { leadAdd: m && m.two ? "Dry cement" : "Equiv dry", tailAdd: "Dry cement", spacerAdd: "Mix vol" }[key] + (base != null ? " (" + fx(base) + ")" : "");
     };
-    var water = function (o, rows, base) {
-      if (!o || o.mix == null) return "";
-      var fl = o.mix + o.dead, liq = liquidL(rows, base);
-      return line("Mix water", fx(fl - liq / 1000) + " m³", liq ? "mix fluid " + fx(fl) + " − " + fx(liq / 1000, 3) + " liquid additives" : "no liquid additives — all water");
+    var water = function (o, rows, base, ratio) {
+      var w = waterOf(o, ratio, liquidL(rows, base)); if (!w) return "";
+      return line("Mix water", fx(w.v) + " m³", w.lab ? "lab ratio " + esc(ratio) + " m³/MT × equiv dry" : w.liq ? "mix fluid " + fx(w.fl) + " − " + fx(w.liq / 1000, 3) + " liquid additives" : "no liquid additives — all water");
     };
-    if ($("o-lead")) { var lb = sl ? leadBase(m, sl.lead) : null; $("o-lv").innerHTML = vol(m ? m.leadVol / 1000 : null); $("o-lead").innerHTML = tiles(sl && sl.lead) + water(sl && sl.lead, s.leadAdd, lb); amts("leadAdd", s.leadAdd, lb); }
+    if ($("o-lead")) { var lb = sl ? leadBase(m, sl.lead) : null; $("o-lv").innerHTML = vol(m ? m.leadVol / 1000 : null); $("o-lead").innerHTML = tiles(sl && sl.lead) + water(sl && sl.lead, s.leadAdd, lb, s.leadWater); amts("leadAdd", s.leadAdd, lb); }
     var tb = sl && sl.tail ? sl.tail.dry : null;
-    $("o-tv").innerHTML = vol(m ? m.tailVol / 1000 : null); $("o-tail").innerHTML = tiles(sl && sl.tail) + water(sl && sl.tail, s.tailAdd, tb); amts("tailAdd", s.tailAdd, tb);
+    $("o-tv").innerHTML = vol(m ? m.tailVol / 1000 : null); $("o-tail").innerHTML = tiles(sl && sl.tail) + water(sl && sl.tail, s.tailAdd, tb, s.tailWater); amts("tailAdd", s.tailAdd, tb);
     var spm = sl ? sl.spMix : (P(s.spacerVol) != null ? P(s.spacerVol) + (P(s.spacerDead) || 0) : null);
     $("o-sp").innerHTML = '<p style="padding:12px 0 0;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead)</span></p>';
     amts("spacerAdd", s.spacerAdd, spm);
+    var spLiq = liquidL(s.spacerAdd, spm);
+    if (spm != null) $("o-sp").innerHTML += line("Spacer water", fx(spm - spLiq / 1000) + " m³", spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives" : "");
+    // tanks
+    var tk = "", ttl = 0, tn = 0, row = function (name, fl) {
+      var t = tanksOf(s, fl); if (!t) return;
+      ttl += t.prep; tn += t.n;
+      tk += line(name, t.n + " tank" + (t.n > 1 ? "s" : "") + " · " + fx(t.prep) + " m³", "needs " + fx(fl) + " + " + t.n + " × " + fx(t.dead) + " dead");
+    };
+    if (sl && sl.lead && sl.lead.mix != null) row((m.two ? "Stage 2" : "Lead") + " mix fluid", sl.lead.mix + sl.lead.dead);
+    if (sl && sl.tail && sl.tail.mix != null) row((m.two ? "Stage 1" : m.hasLead ? "Tail" : "Slurry") + " mix fluid", sl.tail.mix + sl.tail.dead);
+    row("Spacer", spm);
+    $("o-tank").innerHTML = tk ? tk + '<div class="sum"><span>Total prepared · ' + tn + " tanks</span><span>" + fx(ttl) + " m³</span></div>" : '<div class="empty">Fill in the slurry and spacer</div>';
   }
   function outsPlug(m) {
     var $ = function (id) { return root.querySelector("#" + id); }, ok = m && m.plugs.length;
@@ -869,7 +907,7 @@ function plugBody(s, m, sl, slT, addT) {
         r("Top of spacer (string in)", fi(p.tos) + " m") + r("Mud displacement", fx(p.mud / 1000) + " m³") +
         (m.ud ? r("Mud to pump (− " + fx(m.ud / 1000) + " under-displace)", fx(p.pump / 1000) + " m³") : "") + (p.stk != null ? r("Rig strokes", fi(p.stk)) : "") + "</table>";
     }).join("") + '<table><tr class="tot"><td>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
-    "<h2>Slurry Design</h2><table>" + slT("Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
+    "<h2>Slurry Design</h2><table>" + slT("Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry", s.tailWater) + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" + '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
 }
@@ -882,16 +920,17 @@ function showSheet(s, m) {
   }).join("");
   var addT = function (rows, base) {
     return (rows || []).filter(function (r) { return r.name; }).map(function (r) {
-      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + (r.unit === "pct" ? "×1000×" + esc(r.factor || "—") + "%" : "×" + esc(r.factor || "—")) + '</td><td class="rv">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) : "—") + "</td></tr>";
+      var a = addVal(r, base); return "<tr><td>" + esc(r.name) + '</td><td class="f">' + fx(base) + (r.unit === "pct" ? "×1000×" + esc(r.factor || "—") + "%" : "×" + esc(r.factor || "—")) + '</td><td class="rv">' + (a != null ? addFmt(a, r.unit) + " " + unitLabel(r.unit) + packTxt(r, a) : "—") + "</td></tr>";
     }).join("");
   };
-  var slT = function (name, o, rows, color, basis) {
+  var slT = function (name, o, rows, color, basis, ratio) {
     if (!o) return "";
     return '<tr><td colspan=3 style="padding-top:5px;font-weight:700;color:' + color + '">' + name + " · " + fx(o.V) + " m³</td></tr>" +
       '<tr><td>Dry cement</td><td class="f">' + fx(o.V) + '÷yield</td><td class="rv">' + fx(o.dry) + " MT</td></tr>" +
       '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="rv">' + fx(o.mix) + " m³</td></tr>" +
       '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="rv">' + fx(o.equiv) + " MT</td></tr>" +
-      '<tr><td>Mix water</td><td class="f">fluid − liquid additives</td><td class="rv">' + fx(o.mix + o.dead - liquidL(rows, basis === "eq" ? o.equiv : o.dry) / 1000) + " m³</td></tr>" + addT(rows, basis === "eq" ? o.equiv : o.dry);
+      '<tr><td>Mix water</td><td class="f">' + (P(ratio) != null ? "lab ratio " + esc(ratio) : "fluid − liquid additives") + '</td><td class="rv">' + fx(waterOf(o, ratio, liquidL(rows, basis === "eq" ? o.equiv : o.dry)).v) + " m³</td></tr>" +
+      (function () { var t = tanksOf(s, o.mix + o.dead); return t ? '<tr><td>Mix tanks</td><td class="f">' + fx(t.size) + " m³, " + fx(t.dead) + ' dead</td><td class="rv">' + t.n + " · " + fx(t.prep) + " m³</td></tr>" : ""; })() + addT(rows, basis === "eq" ? o.equiv : o.dry);
   };
   var sk = strokesOf(s, m);
   var body = m.plug ? plugBody(s, m, sl, slT, addT) : '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(s.name) + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.two ? "Two-stage" : m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
@@ -906,8 +945,10 @@ function showSheet(s, m) {
     '<div class="right"><h2>Volume Calculations <span class="sub" style="font-size:8.5px">(B−T)×cap÷1000×(1+ex)</span></h2><table><tr><th>#</th><th>Section</th><th>Working</th><th>m³</th></tr>' + items +
     (m.hasLead ? '<tr><td></td><td colspan=2 style="font-weight:700;color:#b45309">' + m.names.lead + ' total</td><td class="rv" style="color:#b45309">' + fx(m.leadVol / 1000, 3) + "</td></tr>" : "") +
     '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + m.names.tail + ' total</td><td class="rv" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
-    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
+    '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr>" +
+    '<tr><td></td><td colspan=2>Minimum, no excess</td><td class="rv">' + fx(m.minVol / 1000, 3) + "</td></tr></table>" +
     (m.dispL != null ? '<h2>' + (m.two ? "Stage 1 displacement" : "Displacement") + ' <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
+      (m.halfShoe != null ? '<tr><td colspan=2>Max over-displacement (½ shoe track)</td><td class="rv">' + fx(m.halfShoe / 1000, 3) + "</td></tr>" : "") +
       (m.spB ? '<tr><td colspan=2>Spacer behind / mud to pump</td><td class="rv">' + fx(m.spB / 1000) + " / " + fx(m.mudL / 1000) + "</td></tr>" : "") +
       (m.tocDp != null ? '<tr><td colspan=2>TOC with DP still in</td><td class="rv">' + fi(m.tocDp) + " m</td></tr>" : "") +
       (sk && sk.unitL ? '<tr><td colspan=2>By cement unit</td><td class="rv">−' + fx(sk.unitL / 1000) + "</td></tr>" : "") +
@@ -916,7 +957,7 @@ function showSheet(s, m) {
       m.parts2.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
       (m.spB ? '<tr><td colspan=2>Mud to pump</td><td class="rv">' + fx(m.mud2 / 1000) + "</td></tr>" : "") +
       '<tr class="totd"><td colspan=2>DISPLACEMENT' + (k2 ? " · " + fi(k2.stk) + " rig stk" : "") + '</td><td class="rv">' + fx(m.disp2 / 1000) + " m³</td></tr></table>"; })() : "") +
-    "<h2>Slurry Design</h2><table>" + (m.two ? "" : slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq")) + slT(m.two ? "Stage 1" : m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + (m.two ? slT("Stage 2", sl.lead, s.leadAdd, "#b45309", "dry") : "") + "</table>" +
+    "<h2>Slurry Design</h2><table>" + (m.two ? "" : slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq", s.leadWater)) + slT(m.two ? "Stage 1" : m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry", s.tailWater) + (m.two ? slT("Stage 2", sl.lead, s.leadAdd, "#b45309", "dry", s.leadWater) : "") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
     '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
