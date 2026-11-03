@@ -235,44 +235,41 @@ function frac(od) {
   var key = Math.round(r * 8) / 8; return w + (map[key] != null ? map[key] : r.toFixed(3).slice(1)) + "″";
 }
 
-/* ───────────────────────── rig spec-sheet capacities (L/m) ───────────────────────── */
-// Same tables as the field cement sheet: capacities come from the spec
-// sheet first; anything not in a table falls back to 0.5067 × (D² − d²).
+/* ───────────────────────── pipe & hole data (L/m) ───────────────────────── */
+// PDO OCTG booklet: size → weight → ID. Capacity = 0.5067 × ID²,
+// annulus = outer capacity − 0.5067 × OD². Every card can be overridden.
+var K = 0.5067;
+function mkCsg(id, od, w, idIn) { return { id: id, od: od, w: w, idIn: idIn, cap: K * idIn * idIn, label: frac(od) + " " + w + "#" }; }
 var CSG = [
-  // PDO CSG & TBG data sheet (rig): pipe ID and capacity.
-  { id: "c1338", label: "13⅜″ 54.5#", od: 13.375, idIn: 12.615, cap: 80.64 },
-  { id: "c958", label: "9⅝″ 36#", od: 9.625, idIn: 8.921, cap: 40.32 },
-  { id: "c7_23", label: "7″ 23#", od: 7, idIn: 6.366, cap: 20.55 },
-  // Not on the rig sheet; kept for liners.
-  { id: "c7_29", label: "7″ 29#", od: 7, idIn: 6.184, cap: 19.4 },
-  { id: "c412", label: "4½″ 11.6#", od: 4.5, idIn: 4, cap: 8.11 }
+  mkCsg("c20", 20, 133, 18.730), mkCsg("c1858", 18.625, 87.5, 17.755),
+  mkCsg("c1338", 13.375, 54.5, 12.615), mkCsg("c1338_72", 13.375, 72, 12.347),
+  mkCsg("c978", 9.875, 68.9, 8.475),
+  mkCsg("c958", 9.625, 40, 8.835), mkCsg("c958_47", 9.625, 47, 8.681), mkCsg("c958_535", 9.625, 53.5, 8.535), mkCsg("c958_58", 9.625, 58, 8.475),
+  mkCsg("c7_23", 7, 23, 6.366), mkCsg("c7_29", 7, 29, 6.184), mkCsg("c7_35", 7, 35, 6.004), mkCsg("c7_41", 7, 41, 5.820),
+  mkCsg("c512", 5.5, 17, 4.862), mkCsg("c512_23", 5.5, 23, 4.670),
+  mkCsg("c5", 5, 15, 4.408), mkCsg("c5_203", 5, 20.3, 4.184),
+  mkCsg("c412", 4.5, 11.6, 4.000), mkCsg("c412_1275", 4.5, 12.75, 3.958), mkCsg("c412_135", 4.5, 13.5, 3.920), mkCsg("c412_17", 4.5, 17, 3.740)
 ];
-var HOLE = [
-  { id: "h16", label: "16″", d: 16, cap: 129.7 },
-  { id: "h1712", label: "17½″", d: 17.5, cap: 155.2 },
-  { id: "h1214", label: "12¼″", d: 12.25, cap: 76.04 },
-  { id: "h812", label: "8½″", d: 8.5, cap: 36.61 },
-  { id: "h618", label: "6⅛″", d: 6.125, cap: 19 }
-];
+function csgFor(od) { return CSG.filter(function (c) { return c.od === od; })[0]; }
+function sizes() { var o = []; CSG.forEach(function (c) { if (o.indexOf(c.od) < 0) o.push(c.od); }); return o; }
+function mkHole(id, d) { return { id: id, label: frac(d), d: d, cap: K * d * d }; }
+var HOLE = [mkHole("h26", 26), mkHole("h1712", 17.5), mkHole("h16", 16), mkHole("h1214", 12.25), mkHole("h10", 10), mkHole("h812", 8.5), mkHole("h618", 6.125)];
+// Running strings: capacity and closed-end displacement (CED), L/m.
+function mkStr(id, label, idIn, od) { return { id: id, label: label, cap: K * idIn * idIn, ced: K * od * od }; }
 var DP = [
-  { id: "tbg412", label: "4½″ TBG 12.75#", cap: 7.929 }, { id: "tbg312", label: "3½″ TBG 9.3#", cap: 4.538 }, { id: "tbg238", label: "2⅜″ TBG 4.6#", cap: 2.02 },
-  { id: "dc814", label: "8¼″ DC", cap: 4 }, { id: "dc612", label: "6½″ DC", cap: 4 },
-  { id: "dp5n", label: "5″ DP (New)", cap: 9 }, { id: "dp5p", label: "5″ DP (Premium)", cap: 9.2 }, { id: "hwdp5", label: "5″ HWDP", cap: 4.6 },
-  { id: "dc434", label: "4¾″ DC", cap: 2.6 }, { id: "dp4n", label: "4″ DP (New)", cap: 5.2 }, { id: "dp4p", label: "4″ DP (Premium)", cap: 5.3 }, { id: "hwdp4", label: "4″ HWDP", cap: 3.3 }
+  { id: "dp5p", label: "5″ DP 19.5#", cap: 9.05, ced: 13.24 },
+  mkStr("dp4", "4″ DP 14#", 3.34, 4), mkStr("tbg412", "4½″ TBG 12.75#", 3.958, 4.5), mkStr("tbg312", "3½″ TBG 9.3#", 2.992, 3.5),
+  mkStr("tbg278", "2⅞″ TBG 6.5#", 2.441, 2.875), mkStr("tbg238", "2⅜″ TBG 4.6#", 1.995, 2.375)
 ];
-var OH_ANN = { h16: { c1338: 39.1 }, h1214: { c958: 28.94 }, h812: { c7_23: 11.71, c7_29: 11.71 }, h618: { c412: 8.7 } };
-// Casing-in-casing annuli follow from the rig IDs above, so none are tabled.
-var CC_ANN = {};
 function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0] || null; }
+function dpOf(id) { return byId(DP, id) || DP[0]; }
 function ohAnn(hId, cId) {
-  if (OH_ANN[hId] && OH_ANN[hId][cId] != null) return { v: OH_ANN[hId][cId], src: "table" };
   var h = byId(HOLE, hId), c = byId(CSG, cId); if (!h || !c) return null;
-  var v = 0.5067 * (h.d * h.d - c.od * c.od); return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
+  var v = h.cap - K * c.od * c.od; return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
 }
 function ccAnn(pId, cId) {
-  if (CC_ANN[pId] && CC_ANN[pId][cId] != null) return { v: CC_ANN[pId][cId], src: "table" };
   var p = byId(CSG, pId), c = byId(CSG, cId); if (!p || !c) return null;
-  var v = 0.5067 * (p.idIn * p.idIn - c.od * c.od); return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
+  var v = p.cap - K * c.od * c.od; return v > 0 ? { v: v, src: "calc" } : { v: null, bad: true };
 }
 
 /* ───────────────────────── the job model ───────────────────────── */
@@ -284,24 +281,27 @@ function newJob(name) {
     exLeadOH: "", exLeadCsg: "", exTailOH: "", exTailCsg: "", dpTub: "dp5p", outStk: "", unitVol: "",
     capInt: "", capFull: "", capOH: "", capCC: "",
     leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
-    leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: []
+    leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: [], stickUp: "", spacerBehind: ""
   };
 }
+function hasPrev(s) { return s.prevOn || s.jobType === "liner"; }
 function caps(s) {
-  var oh = ohAnn(s.holeId, s.csgId), cc = s.prevOn ? ccAnn(s.prevId, s.csgId) : null;
+  var oh = ohAnn(s.holeId, s.csgId), cc = hasPrev(s) ? ccAnn(s.prevId, s.csgId) : null;
   var auto = { int: (byId(CSG, s.csgId) || {}).cap, full: (byId(HOLE, s.holeId) || {}).cap, oh: oh && oh.v, cc: cc && cc.v };
   var pick = function (k, a) { var o = P(s[k]); return o != null ? o : a; };
   return { auto: auto, ohSrc: oh && oh.src, ccSrc: cc && cc.src, ohBad: !!(oh && oh.bad), ccBad: !!(cc && cc.bad),
     int: pick("capInt", auto.int), full: pick("capFull", auto.full), oh: pick("capOH", auto.oh), cc: pick("capCC", auto.cc),
-    dp: (byId(DP, s.dpTub) || {}).cap };
+    dp: dpOf(s.dpTub).cap, ced: dpOf(s.dpTub).ced, prevInt: (byId(CSG, s.prevId) || {}).cap };
 }
 function model(s) {
   var k = caps(s), TD = P(s.td), SH = P(s.shoe), FC = P(s.fc), TOC = P(s.toc);
   var TOP = s.jobType === "liner" ? (P(s.top) || 0) : 0, lt = s.scheme === "leadtail", tTop = lt ? P(s.tailTop) : null;
-  var PS = s.prevOn ? P(s.prevShoe) : null;
+  var PS = hasPrev(s) ? P(s.prevShoe) : null, liner = s.jobType === "liner", SU = P(s.stickUp) || 0;
   if ([TD, SH, FC, TOC].some(function (v) { return v == null; }) || (lt && tTop == null)) return null;
   var ex = function (key) { return (P(s[key]) || 0) / 100; };
   var geo = [];
+  // Liner: cement left above the liner top once the DP is out fills the full previous-casing bore.
+  if (liner && TOP > 0 && TOC < TOP && k.prevInt != null) geo.push({ name: "Above liner top", kind: "csg", top: TOC, bot: TOP, cap: k.prevInt, full: true });
   if (PS != null && PS > 0 && k.cc != null) { var q = Math.max(TOC, TOP), g = Math.min(PS, SH); if (g > q) geo.push({ name: "Csg-Csg", kind: "csg", top: q, bot: g, cap: k.cc }); }
   if (k.oh != null) { var q2 = Math.max(TOC, PS || 0, TOP); if (SH > q2) geo.push({ name: "OH-Csg", kind: "oh", top: q2, bot: SH, cap: k.oh }); }
   var bands = lt ? [{ key: "lead", label: "Lead", from: TOC, to: tTop }, { key: "tail", label: "Tail", from: tTop, to: SH }] : [{ key: "tail", label: "Slurry", from: TOC, to: SH }];
@@ -311,7 +311,7 @@ function model(s) {
       var a = Math.max(b.from, g.top), z = Math.min(b.to, g.bot);
       if (z > a) {
         var e = b.key === "lead" ? ex(g.kind === "oh" ? "exLeadOH" : "exLeadCsg") : ex(g.kind === "oh" ? "exTailOH" : "exTailCsg");
-        items.push({ n: n++, slurry: b.key, label: b.label + " · " + g.name, dTop: a, dBot: z, cap: g.cap, ex: e, vol: (z - a) * g.cap * (1 + e) });
+        items.push({ n: n++, slurry: b.key, label: b.label + " · " + g.name, dTop: a, dBot: z, cap: g.cap, ex: e, vol: (z - a) * g.cap * (1 + e), full: !!g.full });
       }
     });
   });
@@ -319,19 +319,27 @@ function model(s) {
   if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int });
   if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")) });
   var dispL = null, parts = [];
-  if (s.jobType === "casing") { if (k.int != null && FC > 0) { dispL = FC * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC), v: dispL }]; } }
+  var suT = SU ? " (+" + de(SU) + " m stick-up)" : "";
+  if (!liner) { if (k.int != null && FC > 0) { dispL = (FC + SU) * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC) + suT, v: dispL }]; } }
   else if (k.dp != null && k.int != null && FC > TOP) {
-    var a1 = TOP * k.dp, a2 = (FC - TOP) * k.int; dispL = a1 + a2;
-    parts = [{ t: "DP · 0→" + de(TOP), v: a1 }, { t: c.label + " · " + de(TOP) + "→" + de(FC), v: a2 }];
+    var a1 = (TOP + SU) * k.dp, a2 = (FC - TOP) * k.int; dispL = a1 + a2;
+    parts = [{ t: dpOf(s.dpTub).label + " · 0→" + de(TOP) + suT, v: a1 }, { t: c.label + " · " + de(TOP) + "→" + de(FC), v: a2 }];
   }
+  var spB = (P(s.spacerBehind) || 0) * 1000, mudL = dispL != null ? Math.max(0, dispL - spB) : null;
+  // TOC while the DP is still in the liner hanger: the volume above the TOL squeezed into casing − DP CED.
+  var tocDp = null, aboveL = 0;
+  items.forEach(function (z) { if (z.full) aboveL += z.vol; });
+  if (aboveL > 0 && k.prevInt > k.ced) tocDp = TOP - aboveL / (k.prevInt - k.ced);
   var leadV = 0, tailV = 0; items.forEach(function (z) { if (z.slurry === "lead") leadV += z.vol; else tailV += z.vol; });
   var warn = [];
   if (FC >= SH) warn.push("Float collar should be above the shoe.");
   if (SH > TD) warn.push("Shoe is deeper than TD.");
   if (TOC >= SH) warn.push("TOC should be above the shoe.");
   if (lt && (tTop <= TOC || tTop >= SH)) warn.push("Top of tail should sit between TOC and the shoe.");
-  if (s.jobType === "liner" && !TOP) warn.push("Enter the liner top.");
-  return { items: items, total: leadV + tailV, leadVol: leadV, tailVol: tailV, dispL: dispL, parts: parts, TD: TD, SH: SH, FC: FC, TOC: TOC,
+  if (liner && !TOP) warn.push("Enter the liner top.");
+  if (liner && PS == null) warn.push("Enter the previous casing shoe (the liner hangs inside it).");
+  if (liner && PS != null && TOP >= PS) warn.push("Liner top should be above the previous shoe.");
+  return { items: items, total: leadV + tailV, leadVol: leadV, tailVol: tailV, dispL: dispL, parts: parts, spB: spB, mudL: mudL, tocDp: tocDp, TD: TD, SH: SH, FC: FC, TOC: TOC,
     LT: TOP > 0 ? TOP : null, tTop: tTop, PS: PS, hasLead: lt, c: c, h: h, warn: warn };
 }
 // Lead additives go on equivalent dry, tail additives on dry cement, spacer on mix volume.
@@ -446,6 +454,7 @@ function when(t) { var d = new Date(t); return d.toLocaleDateString(undefined, {
 // (segments, flagged selects, buttons) redraw the whole page.
 function bind(root, st, persist, draw, outs, acts) {
   root.addEventListener("input", function (e) {
+    var z = e.target.getAttribute("data-csz"); if (z) { st[z] = csgFor(+e.target.value).id; persist(); draw(); return; }
     var k = e.target.getAttribute("data-k"); if (!k) return;
     setPath(st, k, e.target.value); persist();
     if (e.target.hasAttribute("data-re")) draw(); else outs();
@@ -476,6 +485,7 @@ function schematic(m, light) {
   m.items.forEach(function (z) {
     var y1 = Y(z.dTop), y2 = Math.max(Y(z.dBot), y1 + 3), c = col[z.slurry];
     if (z.slurry === "shoetrack") o += '<rect x="' + (cx - w + 3) + '" y="' + y1 + '" width="' + (2 * w - 6) + '" height="' + (y2 - y1) + '" fill="' + c + '" opacity=".9"/>';
+    else if (z.full) o += '<rect x="' + (cx - Pw) + '" y="' + y1 + '" width="' + 2 * Pw + '" height="' + (y2 - y1) + '" fill="' + c + '" opacity=".9"/>';
     else if (z.slurry === "rathole") o += '<rect x="' + (cx - U) + '" y="' + y1 + '" width="' + 2 * U + '" height="' + (y2 - y1) + '" fill="' + c + '" opacity=".9"/>';
     else {
       var oo = m.PS && z.dBot <= m.PS ? Pw : U;
@@ -572,19 +582,26 @@ function CementPage(root, s) {
   // Older screens showed the lead excess on single-slurry jobs too; move a value typed there.
   if (s.scheme !== "leadtail" && P(s.exTailOH) == null && P(s.exLeadOH) != null) { s.exTailOH = s.exLeadOH; s.exLeadOH = ""; touch(s); }
   function opt(list) { return list.map(function (x) { return { id: x.id, label: x.label }; }); }
+  // Casing picker: size, then weight (ID shown) from the OCTG booklet.
+  function csgRows(k) {
+    var cur = byId(CSG, s[k]) || CSG[0];
+    return '<label class="r"><span class="l">Size</span><select class="chip" data-csz="' + k + '">' + sizes().map(function (od) {
+      return '<option value="' + od + '"' + (od === cur.od ? " selected" : "") + ">" + frac(od) + "</option>"; }).join("") + "</select></label>" +
+      sel("Weight", k, s, CSG.filter(function (c) { return c.od === cur.od; }).map(function (c) { return { id: c.id, label: c.w + "# · ID " + c.idIn.toFixed(3) }; }), true);
+  }
   function draw() {
-    var lt = s.scheme === "leadtail", liner = s.jobType === "liner", k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
+    var lt = s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var o = '<h1 class="title" id="o-title">' + esc(s.name) + '</h1><p class="lede">Cement job · ' + when(s.created) + "</p>";
     o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn sec2" data-act="dup">Duplicate</button><button class="btn danger" data-act="del">Delete</button></div>';
     o += '<div id="warnBox"></div>';
     o += grp("Job type", '<div class="pad" style="padding-top:0">' + seg("jobType", s, [["casing", "Casing · surface"], ["liner", "Liner · hung"]]) + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
-    o += grp("Previous casing", s.prevOn ?
-      sel("Size", "prevId", s, opt(CSG), true) + num("Shoe depth", "prevShoe", s, "m") +
+    o += grp("Previous casing", prevOn ?
+      csgRows("prevId") + num("Shoe depth", "prevShoe", s, "m") +
       '<div class="ccrow">' + capCard("Csg-Csg ann (" + pc.label + "×" + c.label + ")", "capCC", s, k.auto.cc) + "</div>" :
       '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add if TOC lands inside a previous casing.</p>',
-      '<button class="pill' + (s.prevOn ? " on" : "") + '" data-act="prev">' + (s.prevOn ? "present ✓" : "none") + "</button>");
+      liner ? '<span class="pill on">required</span>' : '<button class="pill' + (s.prevOn ? " on" : "") + '" data-act="prev">' + (s.prevOn ? "present ✓" : "none") + "</button>");
     o += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
-      sel("Size", "csgId", s, opt(CSG), true) + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
+      csgRows("csgId") + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar", "fc", s, "m") +
       (liner ? sel("Running string", "dpTub", s, opt(DP), true) : "") +
       '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + capCard("OH ann (" + h.label + "×" + c.label + ")", "capOH", s, k.auto.oh) + "</div>");
     if (k.ohBad || k.ccBad) o += '<div class="warn">⚠ Impossible geometry: the casing OD (' + c.label + ") is larger than the " + (k.ohBad ? "hole (" + h.label + ")" : "previous casing (" + pc.label + ")") + ". Pick a bigger hole/casing — e.g. 9⅝″ needs a 12¼″ hole, 7″ needs 8½″.</div>";
@@ -596,7 +613,7 @@ function CementPage(root, s) {
       '<p class="note" style="padding-bottom:12px">' + (lt ? "Lead/Tail × OH/Cased, as in the proposal. Rat hole takes Tail OH." : "Open hole = excess on the annulus and rat hole. Cased = inside a previous casing.") + ' Blank = 0%. Shoe track has no excess.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
     o += grp("Cement volumes", '<div id="o-vol"></div>', unitSeg());
-    o += grp("Displacement", '<div id="o-disp"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
+    o += grp("Displacement", '<div id="o-disp"></div>' + num("Stick-up", "stickUp", s, "m", "0") + num("Spacer behind", "spacerBehind", s, "m³", "0") + '<div id="o-mud"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk") + '<div id="o-stk"></div>', unitSeg());
     if (lt) o += grp("Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid conc", "leadConc", s) + num("Dead volume", "leadDead", s, "m³") +
       '<div id="o-lead"></div>' + addRows("Lead additives", "leadAdd", s.leadAdd, "Equiv dry", "var(--lead)"));
     o += grp(lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid conc", "tailConc", s) + num("Dead volume", "tailDead", s, "m³") +
@@ -634,10 +651,12 @@ function CementPage(root, s) {
     } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
     if (m && m.dispL != null) {
       $("o-disp").innerHTML = m.parts.map(function (p) { return line(esc(p.t), vNum(p.v) + vUnit()); }).join("") + big("Displacement volume", vNum(m.dispL), vUnit(), "blue");
+      $("o-mud").innerHTML = (m.spB ? line("Spacer behind", vNum(m.spB) + vUnit()) + line("Mud to pump", vNum(m.mudL) + vUnit(), "displacement − spacer behind") : "") +
+        (m.tocDp != null ? line("TOC with DP still in", fi(m.tocDp) + " m", "above-TOL cement ÷ (casing − DP CED)") : "");
       var sk = strokesOf(s, m), uv = (P(s.unitVol) || 0) * 1000;
       $("o-stk").innerHTML = (uv ? line("By rig pump", vNum(m.dispL - uv) + vUnit(), "(" + vNum(m.dispL) + " − " + vNum(uv) + " by unit)") : "") +
         '<div class="tiles" style="margin-bottom:14px">' + tile("Rig strokes", sk ? fi(sk.stk) : "—", "stk") + tile("Volume", fx(m.dispL / 1000 * 6.28981, 1), "bbl") + "</div>";
-    } else { $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = ""; }
+    } else { $("o-disp").innerHTML = '<div class="empty">—</div>'; $("o-stk").innerHTML = ""; $("o-mud").innerHTML = ""; }
     var vol = function (V) { return '<span style="color:var(--sub);font-size:14px">Volume ' + fx(V) + " m³</span>"; };
     var tiles = function (o) {
       return '<div class="tiles">' + tile("Dry cement", o ? fx(o.dry) : "—", "MT") + tile("Mix fluid", o ? fx(o.mix) : "—", "m³") + tile("Equiv dry", o ? fx(o.equiv) : "—", "MT") + "</div>";
@@ -726,6 +745,8 @@ function showSheet(s, m) {
     '<tr><td></td><td colspan=2 style="font-weight:700;color:#0d7a6f">' + (m.hasLead ? "Tail" : "Slurry") + ' total</td><td class="rv" style="color:#0d7a6f">' + fx(m.tailVol / 1000, 3) + "</td></tr>" +
     '<tr class="tot"><td></td><td colspan=2>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
     (m.dispL != null ? '<h2>Displacement <span class="sub" style="font-size:8.5px">to float collar</span></h2><table>' + m.parts.map(function (p) { return "<tr><td colspan=2>" + esc(p.t) + '</td><td class="rv">' + fx(p.v / 1000) + "</td></tr>"; }).join("") +
+      (m.spB ? '<tr><td colspan=2>Spacer behind / mud to pump</td><td class="rv">' + fx(m.spB / 1000) + " / " + fx(m.mudL / 1000) + "</td></tr>" : "") +
+      (m.tocDp != null ? '<tr><td colspan=2>TOC with DP still in</td><td class="rv">' + fi(m.tocDp) + " m</td></tr>" : "") +
       (sk && sk.unitL ? '<tr><td colspan=2>By cement unit</td><td class="rv">−' + fx(sk.unitL / 1000) + "</td></tr>" : "") +
       '<tr class="totd"><td colspan=2>DISPLACEMENT' + (sk ? " · " + fi(sk.stk) + " rig stk @ " + sk.po + " L/stk" + (sk.unitL ? " (" + fx(sk.rigL / 1000) + " m³)" : "") : "") + '</td><td class="rv">' + fx(m.dispL / 1000) + " m³</td></tr></table>" : "") +
     "<h2>Slurry Design</h2><table>" + slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq") + slT(m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
