@@ -228,8 +228,9 @@
   .title { font-size:40px; font-weight:600; letter-spacing:-.028em; line-height:1.07; margin:26px 0 6px; }
   .lede { font-size:17px; line-height:1.47; color:var(--sub); letter-spacing:-.022em; }
   .sec { margin-top:34px; }
-  .sh { font-size:22px; font-weight:600; color:var(--ink); text-transform:none; letter-spacing:-.02em; padding:0 4px 10px; align-items:center; }
-  .sh span { font-size:14px; color:var(--sub); font-weight:400; letter-spacing:-.01em; }
+  /* Section titles: small caps-style label with wide tracking, in the accent color */
+  .sh { font-size:13.5px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.14em; padding:0 6px 10px; align-items:center; }
+  .sh span { font-size:13px; color:var(--sub); font-weight:500; letter-spacing:.02em; text-transform:none; }
   .grp { border-radius:var(--r); padding:0 18px; }
   .r { border-bottom-color:var(--line); }
   .r .l i, .l i { color:var(--sub); }
@@ -884,7 +885,7 @@ function CementPage(root, s) {
     var two = s.jobType === "twostage", lt = !two && s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var wl = wellById(s.wellId);
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
-    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn sec2" data-act="dup">Duplicate</button><button class="btn danger" data-act="del">Delete</button></div>';
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn danger" data-act="del">Delete</button></div>';
     o += '<div id="warnBox"></div>';
     if (!two && s.jobType !== "plug") o += grp("Slurries", '<div class="pad" style="padding-top:0">' + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + "</div>"; outs(); return; }
@@ -1195,7 +1196,6 @@ function WellPage(root, w) {
       menu(jobTitle(j), [
         { label: "Open", fn: function () { location.hash = "job/" + j.id; } },
         { label: "Rename", fn: function () { form("Job name", [{ label: "Job name", value: j.name }], "Save", function (v) { if (!v[0]) return; j.name = v[0]; touch(j); draw(); }); } },
-        { label: "Duplicate", fn: function () { dupJob(j); draw(); toast("Duplicated"); } },
         { label: "Delete", danger: true, fn: function () { delJob(j, draw); } }]);
       return;
     }
