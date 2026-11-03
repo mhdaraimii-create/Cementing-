@@ -8,15 +8,15 @@
   :root {
     --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   }
-  /* A · PDO blue */
-  body[data-t="blue"] { --bg:#eef3f7; --card:#fff; --line:#dde6ee; --ink:#0d1b2a; --sub:#5b6b7b; --field:#e8eef4;
-    --acc:#0b4f7c; --acc2:#0f9d9a; --accbg:#e3f1f8; --hero1:#0b3d63; --hero2:#0f7f8c; --heroInk:#fff; --good:#13895f; --lead:#e08a14; --tail:#0f9d9a; --rat:#c2417a; --track:#6d4bd8; }
+  /* A · PDO green (logo green + red) */
+  body[data-t="green"] { --bg:#f1f6f2; --card:#fff; --line:#dce8df; --ink:#0f1f15; --sub:#5d6f63; --field:#e8f0ea;
+    --acc:#14853f; --acc2:#1fa24f; --accbg:#e4f4e9; --hero1:#0d5c2c; --hero2:#1b9a4a; --heroInk:#fff; --good:#14853f; --red:#e2232a; --lead:#e08a14; --tail:#0f8a7e; --rat:#e2232a; --track:#6d4bd8; }
   /* B · Desert */
   body[data-t="sand"] { --bg:#f6f1ea; --card:#fffdf9; --line:#ebe2d6; --ink:#24180f; --sub:#7a6a5c; --field:#f1e9de;
     --acc:#9a4a17; --acc2:#c9772b; --accbg:#fbeedf; --hero1:#5a2e12; --hero2:#a5511f; --heroInk:#fff; --good:#2f7d4f; --lead:#d97706; --tail:#0f8a7e; --rat:#db2777; --track:#7c3aed; }
   /* C · Night */
   body[data-t="night"] { --bg:#0e141b; --card:#17202a; --line:#25313d; --ink:#e8eef4; --sub:#8b9aa9; --field:#1f2a36;
-    --acc:#4fb3d9; --acc2:#2dd4bf; --accbg:#16303d; --hero1:#123247; --hero2:#0f4f57; --heroInk:#e8f6ff; --good:#34d399; --lead:#f5a524; --tail:#2dd4bf; --rat:#f472b6; --track:#a78bfa; }
+    --acc:#3ecf74; --acc2:#2dd4bf; --accbg:#16301f; --hero1:#0f3a22; --hero2:#16603a; --heroInk:#e8f6ff; --good:#34d399; --lead:#f5a524; --tail:#2dd4bf; --rat:#f472b6; --track:#a78bfa; }
 
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); font-variant-numeric:tabular-nums; transition:background .3s,color .3s; }
@@ -33,6 +33,7 @@
   .hd { display:flex; align-items:center; gap:12px; margin:18px 0 12px; }
   .ico { width:46px; height:46px; border-radius:13px; background:linear-gradient(135deg,var(--hero1),var(--hero2)); display:grid; place-items:center; flex:none; }
   .hd h1 { margin:0; font-size:26px; letter-spacing:-.02em; }
+  .ico { position:relative; } .ico::after { content:""; position:absolute; right:-3px; top:-3px; width:12px; height:12px; border-radius:50%; background:var(--red,#e2232a); border:2px solid var(--bg); }
   .hd p { margin:2px 0 0; color:var(--sub); font-size:14px; }
 
   /* sticky results bar */
@@ -97,11 +98,11 @@
   .ar { text-align:center; color:var(--sub); font-size:13px; margin-top:30px; line-height:1.6; direction:rtl; }
 </style>
 </head>
-<body data-t="blue">
+<body data-t="green">
 <div class="pick">
   <p>Look preview — pick a style (sample numbers)</p>
   <div class="seg">
-    <button data-t="blue" class="on">A · PDO blue</button>
+    <button data-t="green" class="on">A · PDO green</button>
     <button data-t="sand">B · Desert</button>
     <button data-t="night">C · Night</button>
   </div>
