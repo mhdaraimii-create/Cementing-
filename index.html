@@ -980,11 +980,13 @@ function CementPage(root, s) {
     o += '<div id="warnBox"></div>';
     if (!two && s.jobType !== "plug") o += grp("Slurries", '<div class="pad" style="padding-top:0">' + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + "</div>"; outs(); return; }
-    o += grp("Previous casing", prevOn ?
+    // No previous casing yet (first section of the well): a single small button instead of a whole section.
+    if (!prevOn) o += '<button class="btn ghost" style="margin-top:22px" data-act="prev">+ Previous casing <span style="opacity:.7;font-weight:400">· only if TOC is inside one</span></button>';
+    else o += grp("Previous casing", prevOn ?
       csgRows("prevId") + num("Shoe depth", "prevShoe", s, "m") +
       '<div class="ccrow">' + capCard("Csg-Csg annulus", "capCC", s, k.auto.cc) + "</div>" :
       '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add if TOC lands inside a previous casing.</p>',
-      liner ? '<span class="pill on">required</span>' : '<button class="pill' + (s.prevOn ? " on" : "") + '" data-act="prev">' + (s.prevOn ? "present ✓" : "none") + "</button>");
+      liner ? '<span class="pill on">required</span>' : '<button class="pill" data-act="prev">' + (s.prevOn ? "remove" : "none") + "</button>");
     o += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
       csgRows("csgId") + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar depth", "fc", s, "m") +
       (liner ? sel("Running string", "dpTub", s, opt(DP), true) : "") +
