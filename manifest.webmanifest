@@ -1,6 +1,6 @@
 {
-  "name": "Cement Job",
-  "short_name": "Cement Job",
+  "name": "Cement Tool",
+  "short_name": "Cement Tool",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
