@@ -424,6 +424,34 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hm-wave { opacity:.55; } }
   :root[data-theme="dark"] .hm-wave { opacity:.55; }
   @media (min-width:640px) { .hm-hero { margin:4px 0 0; border-radius:0 0 20px 20px; padding-left:4px; } }
+  /* Wells page */
+  :root { --avbg:#F0E5D0; --avink:#174A32; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --avbg:rgba(255,255,255,.06); --avink:var(--ink); } }
+  :root[data-theme="dark"] { --avbg:rgba(255,255,255,.06); --avink:var(--ink); }
+  .wl-title { font-family:var(--display); font-weight:600; font-size:clamp(32px, 9vw, 40px); letter-spacing:-.025em; line-height:1.1; color:var(--hm-ink); margin:22px 0 4px; }
+  .wl-count { font-size:15.5px; color:var(--sub); margin:0; }
+  .wl .grp { border-radius:16px; box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); }
+  .wl .btn[data-a="create"] { background:linear-gradient(180deg,#11653a,#0b4f2c); }
+  .wl-lock { display:flex; gap:9px; align-items:flex-start; padding:0 6px; margin:10px 0 0; font-size:13.5px; line-height:1.45; color:var(--sub); }
+  .wl-lock svg { width:17px; height:17px; flex:none; margin-top:1px; fill:none; stroke:var(--icink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .wl-sort { position:relative; display:inline-flex; align-items:center; margin-left:auto; text-transform:none; letter-spacing:0; }
+  .wl-sort select { appearance:none; -webkit-appearance:none; background:transparent; border:0; font:inherit; font-family:var(--font, inherit); font-size:14px; font-weight:500; color:var(--sub); padding:4px 22px 4px 6px; cursor:pointer; text-align:right; }
+  .wl-sort svg { position:absolute; right:0; width:16px; height:16px; fill:none; stroke:var(--sub); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+  .wl .sh { display:flex; }
+  .wlist { display:flex; flex-direction:column; gap:12px; }
+  .wcard { display:flex; align-items:center; gap:14px; padding:14px 10px 14px 14px; background:var(--card); border:1px solid var(--line); border-radius:16px; cursor:pointer;
+    box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); -webkit-tap-highlight-color:transparent; transition:transform .15s var(--ease); }
+  .wcard:active { transform:scale(.99); }
+  .wav { width:52px; height:52px; flex:none; border-radius:13px; background:var(--avbg); color:var(--avink); display:flex; align-items:center; justify-content:center;
+    font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.02em; }
+  .wdiv { width:1px; align-self:stretch; background:var(--line); flex:none; margin:2px 0; }
+  .wtx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .wnm { font-family:var(--display); font-weight:600; font-size:17px; letter-spacing:.01em; color:var(--hm-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wsb { font-size:14px; color:var(--sub); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+  .wdt { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--sub); }
+  .wdt svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; }
+  .wcard .more { margin-left:0; } .wcard .ch { color:var(--hm-ink); opacity:.75; font-size:22px; }
+  .wlist .empty { background:var(--card); border:1px dashed var(--fieldb); border-radius:16px; padding:22px 16px; text-align:center; }
   /* v3: contrast + touch targets */
   :root:not([data-theme="dark"]) { --faint:#6b766c; }
   .useg button { min-height:36px; min-width:48px; font-size:14.5px; }
@@ -1658,13 +1686,20 @@ function Home(root, wellsMode) {
   var q = { v: "" };
   function list() {
     if (!db.wells.length) return '<div class="empty">No wells yet. Type a well code name above and tap Create.</div>';
-    var L = db.wells.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
+    var srt = load("wsort", "new"), by = {
+      "new": function (a, b) { return (b.updated || 0) - (a.updated || 0); },
+      old: function (a, b) { return (a.created || 0) - (b.created || 0); },
+      name: function (a, b) { return String(a.name).localeCompare(String(b.name)); } };
+    var L = db.wells.slice().sort(by[srt] || by["new"])
       .filter(function (w) { return !q.v || w.name.toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
     if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
+    var cal = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
     return L.map(function (w) {
-      var J = wellJobs(w.id);
-      return item('data-go="well/' + w.id + '"', "var(--accent)", esc((w.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(w.name),
-        (J.length ? esc(J.map(function (j) { return j.name; }).join(" · ")) : "no jobs yet") + "<br>" + when(w.updated || w.created), "well:" + w.id);
+      var J = wellJobs(w.id), ini = (w.name || "?").replace(/[^A-Za-z0-9\u0600-\u06FF]/g, "").slice(0, 2).toUpperCase() || "W";
+      return '<div class="wcard" role="button" data-go="well/' + w.id + '"><span class="wav">' + esc(ini) + '</span><span class="wdiv"></span>' +
+        '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wsb">' + (J.length ? esc(J.map(function (j) { return j.name; }).join(" · ")) : "No jobs yet") + "</span>" +
+        '<span class="wdt">' + cal + when(w.updated || w.created) + "</span></span>" +
+        '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>';
     }).join("");
   }
   var tp = themePref(), nW = db.wells.length;
@@ -1693,12 +1728,15 @@ function Home(root, wellsMode) {
   var h;
   if (wellsMode) {
     // Wells page: new well + the list (opened from the Wells card on Home).
-    h = '<div class="page"><h1 class="title">Wells</h1><p class="lede">' + nW + " well" + (nW === 1 ? "" : "s") + " on this phone</p>";
+    var ws = load("wsort", "new");
+    h = '<div class="page wl"><h1 class="wl-title">Wells</h1><p class="wl-count">' + nW + " well" + (nW === 1 ? "" : "s") + " on this phone</p>";
     h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
-    h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
-    h += '<div class="sec"><div class="sh">Wells<span>newest first</span></div>' +
+    h += '<p class="wl-lock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.5" r="1.2"/></svg><span>Use a code name for the well, not its real name, to keep company information private.</span></p>';
+    h += '<div class="sec"><div class="sh">Wells<label class="wl-sort"><select id="wsort" aria-label="Sort wells">' +
+      [["new", "Newest first"], ["old", "Oldest first"], ["name", "Name A–Z"]].map(function (o) { return '<option value="' + o[0] + '"' + (ws === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+      '</select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></label></div>' +
       (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
-      '<div class="grp" id="list">' + list() + "</div></div></div>";
+      '<div class="wlist" id="list">' + list() + "</div></div></div>";
   } else {
   h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
     '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
@@ -1726,6 +1764,7 @@ function Home(root, wellsMode) {
     location.hash = "well/" + w.id; setTimeout(function () { pickType(w); }, 60);
   };
   var wn = root.querySelector("#wname"); if (wn) wn.addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
+  var so = root.querySelector("#wsort"); if (so) so.addEventListener("change", function () { save("wsort", so.value); root.querySelector("#list").innerHTML = list(); });
   var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
   root.addEventListener("click", function (e) {
     var mo = e.target.closest("[data-more]");
