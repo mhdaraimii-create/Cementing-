@@ -1347,14 +1347,14 @@ function WellPage(root, w) {
     if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
       return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
     h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
-    h += '<div class="sec"><div class="sh">Well status</div><div class="grp"><label class="r"><span class="l">Planned TD <i>· m</i></span><input class="in" inputmode="decimal" autocomplete="off" data-wptd value="' + esc(w.ptd || "") + '" placeholder="from the well program"></label>' +
-      '<div id="wstat" style="padding:4px 0 12px">' + wellStatusHtml(w) + "</div></div></div>";
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
       return '<div class="item" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
         '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
         '<button class="pill' + (j.done ? " on" : "") + '" data-done="' + j.id + '" style="flex:none">' + (j.done ? "✓ Done" : "Mark done") + '</button>' +
         '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span><span class="ch">›</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
+    h += '<div class="sec"><div class="sh">Well status</div><div class="grp"><label class="r"><span class="l">Planned TD <i>· m</i></span><input class="in" inputmode="decimal" autocomplete="off" data-wptd value="' + esc(w.ptd || "") + '" placeholder="from the well program"></label>' +
+      '<div id="wstat" style="padding:4px 0 12px">' + wellStatusHtml(w) + "</div></div></div>";
     h += '<p class="note" style="padding:0 16px">A new job takes the previous casing (size and shoe) from the last job in this well. Well PDF puts every job on its own page.</p></div>';
     root.innerHTML = h;
   }
