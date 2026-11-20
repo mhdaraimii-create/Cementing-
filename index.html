@@ -412,9 +412,13 @@
   .hm-seg { display:flex; margin-top:6px; border-radius:999px; padding:2px; }
   .hm-seg button { flex:1; border-radius:999px; min-height:32px; font-size:13.5px; }
   .hm-ap { align-items:flex-start; } .hm-ap .hm-ic { margin-top:2px; }
-  .hm-wave { position:fixed; left:0; right:0; bottom:0; width:100%; height:clamp(70px, 14vh, 120px); z-index:0; pointer-events:none; }
+  .hm-wave { position:absolute !important; left:calc(50% - 50vw); bottom:0; width:100vw; height:clamp(70px, 14vh, 120px); z-index:0 !important; pointer-events:none; }
+  body { overflow-x:clip; }
   .hm-wave .g { fill:var(--gold); } .hm-wave .n { fill:#0e6b36; }
   .hm > * { position:relative; z-index:1; }
+  .page.hm { position:relative; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; padding-bottom:calc(env(safe-area-inset-bottom) + 30px); }
+  .hm-foot { margin-top:auto; padding-top:36px; text-align:left; font-size:12px; line-height:1.55; color:var(--sub); max-width:74%; }
+  .hm-fb { font-size:13px; font-weight:500; color:var(--hm-ink); margin-bottom:2px; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hm-wave { opacity:.55; } }
   :root[data-theme="dark"] .hm-wave { opacity:.55; }
   @media (min-width:640px) { .hm-hero { margin:4px 0 0; border-radius:0 0 20px 20px; padding-left:4px; } }
@@ -1586,8 +1590,8 @@ function Home(root, wellsMode) {
     '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
       return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
   h += installCard();
-  h += '<div class="foot2">Created by ' + OWNER.name + "<br>" + OWNER.id + "</div></div>";
-  h += '<svg class="hm-wave" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true"><path class="g" d="M70 110C190 104 320 74 400 14v96z"/><path class="n" d="M110 110C220 104 330 84 400 34v76z"/></svg>';
+  h += '<div class="hm-foot"><div class="hm-fb">For feedback, please get in touch.</div>Created by ' + OWNER.name + "<br>" + OWNER.id + "</div>" +
+    '<svg class="hm-wave" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true"><path class="g" d="M70 110C190 104 320 74 400 14v96z"/><path class="n" d="M110 110C220 104 330 84 400 34v76z"/></svg></div>';
   }
   root.innerHTML = h;
   var create = function () {
