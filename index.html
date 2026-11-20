@@ -409,6 +409,7 @@
   .hm-panel { display:none; padding:0 0 12px 52px; border-bottom:1px solid var(--line); }
   .hm-panel.open { display:block; }
   #bkRow.open { border-bottom:0; }
+  .hm-bk { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; } .hm-bk .btn { width:100%; }
   .hm-seg { display:flex; margin-top:6px; border-radius:999px; padding:2px; }
   .hm-seg button { flex:1; border-radius:999px; min-height:32px; font-size:13.5px; }
   .hm-ap { align-items:flex-start; } .hm-ap .hm-ic { margin-top:2px; }
@@ -1502,7 +1503,7 @@ function WellPage(root, w) {
     var a = e.target.getAttribute("data-a");
     if (a === "new") pickType(w);
     if (a === "pdf") wellSheet(w);
-    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }]);
+    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Download a copy", fn: function () { downloadWells([w], w.name); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }]);
   });
   draw();
 }
@@ -1534,6 +1535,14 @@ function installHelp() {
     (ios ? '<p class="note" style="margin-top:14px">Use Safari: other iPhone browsers may not show this option.</p>' : "") +
     '</div><div class="bt"><button data-v="1">Got it</button></div></div>', true);
   m.onclick = function (ev) { if (ev.target.closest("button") || ev.target === m) m.remove(); };
+}
+// Backup file: the given wells and their jobs, in the same format Restore reads.
+function downloadWells(wells, fname) {
+  var ids = {}; wells.forEach(function (w) { ids[w.id] = 1; });
+  var data = { app: "cement-job", v: 2, at: new Date().toISOString(), wells: wells, jobs: db.jobs.filter(function (j) { return ids[j.wellId]; }) };
+  var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
+  el.href = url; el.download = fname.replace(/[^A-Za-z0-9._-]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
+  setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
 }
 function Home(root, wellsMode) {
   var q = { v: "" };
@@ -1584,8 +1593,8 @@ function Home(root, wellsMode) {
   h += '<div class="hm-nav">' +
     row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
     row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
-    '<div class="hm-panel" id="bkPanel"><div class="bar2" style="margin:0 0 10px"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note" style="margin:0">Wells are kept on this phone only. Save a copy now and then, and use Restore to bring them back or move them to another phone.</p></div>' +
+    '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><button class="btn sec2" data-a="export">Download all wells' + (nW ? " (" + nW + ")" : "") + '</button><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="margin:0">Wells are kept on this phone only. For one well: Wells → ⋯ → Download a copy. Restore adds the wells in a file, on this phone or another.</p></div>' +
     '<div class="hm-row hm-ap"><span class="hm-ic">' + ico.sun + '</span><span class="hm-tx"><span class="hm-nm">Appearance</span>' +
     '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
       return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
@@ -1609,6 +1618,7 @@ function Home(root, wellsMode) {
       menu(w.name, [
         { label: "Open", fn: function () { location.hash = "well/" + w.id; } },
         { label: "Rename", fn: function () { renameWell(w); } },
+        { label: "Download a copy", fn: function () { downloadWells([w], w.name); } },
         { label: "Delete", danger: true, fn: function () { delWell(w, route); } }]);
       return;
     }
@@ -1619,19 +1629,14 @@ function Home(root, wellsMode) {
     if (a === "goWells") { location.hash = "wells"; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
     if (a === "settings") {
-      var acts = [{ label: "Save a backup copy", fn: function () { root.querySelector('[data-a="export"]').click(); } },
+      var acts = [{ label: "Download all wells", fn: function () { root.querySelector('[data-a="export"]').click(); } },
         { label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
       if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
       menu("Settings", acts); return;
     }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
-    if (a === "export") {
-      var data = { app: "cement-job", v: 2, at: new Date().toISOString(), wells: db.wells, jobs: db.jobs };
-      var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
-      el.href = url; el.download = "cement-job-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
-      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
-    }
+    if (a === "export") { if (!db.wells.length) { toast("No wells to download yet."); return; } downloadWells(db.wells, "cement-tool-all-wells"); }
   });
   root.addEventListener("change", function (e) {
     if (e.target.getAttribute("data-a") !== "import") return;
