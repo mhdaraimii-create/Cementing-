@@ -1,6 +1,6 @@
 // Cache-first so the toolkit opens on the rig with no signal.
 // Bump VERSION whenever index.html changes so phones pick up the update.
-var VERSION = 'cementing-v30';
+var VERSION = 'cementing-v31';
 var FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {

@@ -404,14 +404,6 @@
   .rbar .c + .c { border-left:1px solid var(--line); }
   .lt .rbar { border-top:3px solid var(--gold); }
   .toast.up { bottom:calc(env(safe-area-inset-bottom) + 96px); }
-  /* v3: snackbar with Undo + Next tag */
-  .snack { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 24px); z-index:9999; display:flex; align-items:center; gap:14px;
-    background:var(--ink); color:var(--bg); padding:8px 8px 8px 18px; border-radius:999px; font-size:15px; font-weight:500; box-shadow:0 6px 24px rgba(0,0,0,.25); white-space:nowrap; }
-  .snack button { background:transparent; border:0; color:var(--gold, #E5B323); font-weight:700; font-size:15px; padding:8px 12px; min-height:38px; cursor:pointer; }
-  .lt .snack button { color:#ffd257; }
-  .ntag { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:999px; margin-left:6px; vertical-align:2px;
-    background:var(--gold, #E5B323); color:#1a1400; }
-  .item.next { box-shadow:inset 3px 0 0 var(--gold, #E5B323); }
 </style>
 </head>
 <body>
@@ -751,14 +743,6 @@ function item(go, color, letter, name, sub, more) {
 function toast(msg) {
   var t = document.createElement("div"); t.className = "toast" + (document.getElementById("rbar") ? " up" : ""); t.textContent = msg; document.body.appendChild(t);
   setTimeout(function () { t.remove(); }, 1800);
-}
-// Message with an Undo button, gone after a few seconds.
-function snack(msg, undo) {
-  var old = document.querySelector(".snack"); if (old) old.remove();
-  var t = document.createElement("div"); t.className = "snack"; t.innerHTML = "<span>" + esc(msg) + '</span><button type="button">Undo</button>';
-  document.body.appendChild(t);
-  var tm = setTimeout(function () { t.remove(); }, 5000);
-  t.querySelector("button").onclick = function () { clearTimeout(tm); t.remove(); undo(); };
 }
 // In-page dialogs: the browser's confirm/prompt are blocked in some
 // viewers (and look out of place), so the app draws its own.
@@ -1156,7 +1140,7 @@ function CementPage(root, s) {
     amts("spacerAdd", s.spacerAdd, spm);
     var spLiq = liquidL(s.spacerAdd, spm);
     if (spm != null) $("o-sp").innerHTML += line("Spacer water", fx(spm - spLiq / 1000) + " m³", spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives" : "");
-    var hs = $("h-sp"); if (hs) hs.textContent = spm != null ? "mix " + fx(spm) + " m³" : "";
+    var hs = $("h-sp"); if (hs) hs.textContent = spm != null ? "mix " + fx(spm) + " m³" : "optional";
     var hp = $("h-pr"); if (hp) { var pr2 = s.jobType === "plug" ? null : pressures(s, m); hp.textContent = pr2 && pr2.st && pr2.st.length ? "Δ " + fi(pr2.st[0].diff) + " kPa" : "optional"; }
     rbar(m, sl);
   }
@@ -1439,14 +1423,14 @@ function wellStatusHtml(w) {
 }
 function WellPage(root, w) {
   function draw() {
-    var J = wellJobs(w.id), nx = wellState(w).next;
+    var J = wellJobs(w.id);
     var h = '<div class="page"><h1 class="title wt">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
     if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
       return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
     h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
-      return '<div class="item' + (nx && nx.id === j.id ? " next" : "") + '" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
-        '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + (nx && nx.id === j.id ? '<span class="ntag">Next</span>' : "") + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
+      return '<div class="item" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
+        '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
         '<button class="pill' + (j.done ? " on" : "") + '" data-done="' + j.id + '" style="flex:none">' + (j.done ? "✓ Done" : "Mark done") + '</button>' +
         '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span><span class="ch">›</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
@@ -1461,13 +1445,7 @@ function WellPage(root, w) {
   });
   root.addEventListener("click", function (e) {
     var dn = e.target.closest("[data-done]");
-    if (dn) {
-      var dj = jobById(dn.getAttribute("data-done")); if (!dj) return;
-      var was = { done: dj.done, doneAt: dj.doneAt };
-      dj.done = !dj.done; dj.doneAt = dj.done ? Date.now() : null; touch(dj); draw();
-      snack(dj.done ? "Marked done" : "Marked not done", function () { dj.done = was.done; dj.doneAt = was.doneAt; touch(dj); draw(); });
-      return;
-    }
+    if (dn) { var dj = jobById(dn.getAttribute("data-done")); if (dj) { dj.done = !dj.done; dj.doneAt = dj.done ? Date.now() : null; touch(dj); draw(); } return; }
     var mo = e.target.closest("[data-more]");
     if (mo) {
       var j = jobById(mo.getAttribute("data-more").split(":")[1]); if (!j) return;
