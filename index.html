@@ -1593,8 +1593,8 @@ function Home(root, wellsMode) {
   h += '<div class="hm-nav">' +
     row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
     row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
-    '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><button class="btn sec2" data-a="export">Download all wells' + (nW ? " (" + nW + ")" : "") + '</button><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note" style="margin:0">Wells are kept on this phone only. For one well: Wells → ⋯ → Download a copy. Restore adds the wells in a file, on this phone or another.</p></div>' +
+    '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="margin:0">Wells are kept on this phone only. To save a well: Wells → ⋯ next to it → Download a copy. Restore adds a saved well back, on this phone or another.</p></div>' +
     '<div class="hm-row hm-ap"><span class="hm-ic">' + ico.sun + '</span><span class="hm-tx"><span class="hm-nm">Appearance</span>' +
     '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
       return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
@@ -1629,14 +1629,12 @@ function Home(root, wellsMode) {
     if (a === "goWells") { location.hash = "wells"; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
     if (a === "settings") {
-      var acts = [{ label: "Download all wells", fn: function () { root.querySelector('[data-a="export"]').click(); } },
-        { label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
+      var acts = [{ label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
       if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
       menu("Settings", acts); return;
     }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
-    if (a === "export") { if (!db.wells.length) { toast("No wells to download yet."); return; } downloadWells(db.wells, "cement-tool-all-wells"); }
   });
   root.addEventListener("change", function (e) {
     if (e.target.getAttribute("data-a") !== "import") return;
