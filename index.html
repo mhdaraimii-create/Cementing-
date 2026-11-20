@@ -451,6 +451,17 @@
   .wdt { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--sub); }
   .wdt svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; }
   .wcard .more { margin-left:0; } .wcard .ch { color:var(--hm-ink); opacity:.75; font-size:22px; }
+  .wcard.wa { flex-direction:column; align-items:stretch; gap:0; padding:14px 14px 13px; }
+  .wtop { display:flex; align-items:center; gap:12px; min-width:0; }
+  .wa .wav { width:46px; height:46px; font-size:16.5px; border-radius:12px; }
+  .wrel { font-size:13px; color:var(--sub); }
+  .wchips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .wchip { font-size:12.5px; font-weight:600; padding:4px 9px; border-radius:999px; background:var(--avbg); color:var(--avink); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .wchip.d { background:var(--good-bg); color:var(--good); } .wchip.d::before { content:"✓ "; }
+  .wchip.e { font-weight:500; color:var(--sub); }
+  .wprog { height:6px; border-radius:9px; background:var(--avbg); overflow:hidden; margin-top:12px; }
+  .wprog i { display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,#11653a,#2f8f57); }
+  .wmeta { display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--sub); margin-top:6px; }
   .wlist .empty { background:var(--card); border:1px dashed var(--fieldb); border-radius:16px; padding:22px 16px; text-align:center; }
   /* v3: contrast + touch targets */
   :root:not([data-theme="dark"]) { --faint:#6b766c; }
@@ -1682,6 +1693,12 @@ function downloadWells(wells, fname) {
   el.href = url; el.download = fname.replace(/[^A-Za-z0-9._-]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
   setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
 }
+function relTime(t) {
+  var s = (Date.now() - (t || 0)) / 1000;
+  if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago";
+  if (s < 172800) return "yesterday"; if (s < 86400 * 30) return Math.floor(s / 86400) + " days ago";
+  return new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
 function Home(root, wellsMode) {
   var q = { v: "" };
   function list() {
@@ -1693,13 +1710,16 @@ function Home(root, wellsMode) {
     var L = db.wells.slice().sort(by[srt] || by["new"])
       .filter(function (w) { return !q.v || w.name.toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
     if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
-    var cal = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
     return L.map(function (w) {
-      var J = wellJobs(w.id), ini = (w.name || "?").replace(/[^A-Za-z0-9\u0600-\u06FF]/g, "").slice(0, 2).toUpperCase() || "W";
-      return '<div class="wcard" role="button" data-go="well/' + w.id + '"><span class="wav">' + esc(ini) + '</span><span class="wdiv"></span>' +
-        '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wsb">' + (J.length ? esc(J.map(function (j) { return j.name; }).join(" · ")) : "No jobs yet") + "</span>" +
-        '<span class="wdt">' + cal + when(w.updated || w.created) + "</span></span>" +
-        '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>';
+      var st = wellState(w), J = st.J, ini = (w.name || "?").replace(/[^A-Za-z0-9\u0600-\u06FF]/g, "").slice(0, 2).toUpperCase() || "W";
+      var chips = J.length ? J.map(function (j) { return '<span class="wchip' + (j.done ? " d" : "") + '">' + esc(jobTitle(j)) + "</span>"; }).join("") : '<span class="wchip e">No jobs yet</span>';
+      var bar = "";
+      if (st.ptd) bar = '<div class="wprog"><i style="width:' + Math.round(Math.min(1, st.cur / st.ptd) * 100) + '%"></i></div><div class="wmeta"><span>' + (st.cur ? "Now " + fi(st.cur) + " m" : "Not started") + "</span><span>Planned TD " + fi(st.ptd) + " m</span></div>";
+      else if (st.cur) bar = '<div class="wmeta"><span>Now ' + fi(st.cur) + " m</span><span>No planned TD yet</span></div>";
+      return '<div class="wcard wa" role="button" data-go="well/' + w.id + '"><div class="wtop"><span class="wav">' + esc(ini) + '</span>' +
+        '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wrel">Updated ' + relTime(w.updated || w.created) + "</span></span>" +
+        '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>' +
+        '<div class="wchips">' + chips + "</div>" + bar + "</div>";
     }).join("");
   }
   var tp = themePref(), nW = db.wells.length;
