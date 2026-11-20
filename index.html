@@ -379,6 +379,40 @@
   .lt .tiles .tile { border-top:3px solid var(--gold); }
   .lt .brand + .title { background:linear-gradient(to bottom,#0b3d20 30%,#118a45); -webkit-background-clip:text; background-clip:text; }
   .lt .brand::after { content:""; display:block; width:84px; height:5px; border-radius:3px; margin:2px auto 0; background:var(--gold); }
+  /* Home page */
+  :root { --hm-ink:#0f3d24; --sand1:#efe2cc; --sand2:#e7d5b7; --sandpj:#cfb48b; --icbg:#f3eadb; --icink:#7a5a2e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; } }
+  :root[data-theme="dark"] { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; }
+  .hm-top { display:flex; justify-content:flex-end; padding-top:calc(env(safe-area-inset-top) + 10px); }
+  .hm-gear { width:44px; height:44px; border:0; background:transparent; border-radius:12px; color:var(--hm-ink); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:-6px; }
+  .hm-gear:active { background:var(--icbg); }
+  .hm-gear svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; }
+  .hm-hero { position:relative; margin:4px -16px 0; padding:18px 20px 112px; overflow:hidden; }
+  .hm-title { font-family:var(--display); font-weight:600; font-size:clamp(36px, 10.5vw, 50px); line-height:1.05; letter-spacing:-.025em; color:var(--hm-ink); margin:0; }
+  .hm-rule { display:block; width:58px; height:4px; border-radius:3px; background:var(--gold); margin:16px 0 18px; }
+  .hm-lede { font-size:17px; line-height:1.5; color:var(--sub); max-width:30ch; margin:0; position:relative; z-index:1; }
+  .hm-land { position:absolute; left:0; right:0; bottom:0; width:100%; height:150px; -webkit-mask-image:linear-gradient(to bottom, #000 62%, transparent); mask-image:linear-gradient(to bottom, #000 62%, transparent); }
+  .hm-land .d1 { fill:var(--sand1); } .hm-land .d2 { fill:var(--sand2); } .hm-land .pj { fill:var(--sandpj); }
+  .hm-nav { position:relative; margin-top:-26px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:4px 16px;
+    box-shadow:0 1px 2px rgba(60,40,10,.04), 0 10px 30px rgba(60,40,10,.07); }
+  .hm-row { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .hm-row:last-child, .hm-ap { border-bottom:0; cursor:default; }
+  .hm-row[role="button"]:active .hm-ic { transform:scale(.96); }
+  .hm-ic { width:52px; height:52px; flex:none; border-radius:14px; background:var(--icbg); display:flex; align-items:center; justify-content:center; color:var(--icink); transition:transform .15s var(--ease); }
+  .hm-ic svg { width:28px; height:28px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .hm-row:first-child .hm-ic { color:var(--accent); }
+  .hm-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .hm-nm { font-family:var(--display); font-weight:600; font-size:18px; letter-spacing:-.01em; color:var(--hm-ink); }
+  .hm-sb { font-size:14px; color:var(--sub); line-height:1.35; }
+  .hm-chev { width:22px; height:22px; flex:none; fill:none; stroke:var(--hm-ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.75; transition:transform .2s var(--ease); }
+  #bkRow.open .hm-chev { transform:rotate(90deg); }
+  .hm-panel { display:none; padding:2px 0 14px 66px; border-bottom:1px solid var(--line); }
+  .hm-panel.open { display:block; }
+  #bkRow.open { border-bottom:0; }
+  .hm-seg { display:flex; margin-top:8px; border-radius:999px; }
+  .hm-seg button { flex:1; border-radius:999px; min-height:38px; }
+  #wellsSec { scroll-margin-top:12px; }
+  @media (min-width:640px) { .hm-hero { margin:4px 0 0; border-radius:0 0 20px 20px; padding-left:4px; } }
   /* v3: contrast + touch targets */
   :root:not([data-theme="dark"]) { --faint:#6b766c; }
   .useg button { min-height:36px; min-width:48px; font-size:14.5px; }
@@ -1505,19 +1539,42 @@ function Home(root) {
         (J.length ? esc(J.map(function (j) { return j.name; }).join(" · ")) : "no jobs yet") + "<br>" + when(w.updated || w.created), "well:" + w.id);
     }).join("");
   }
-  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div>' +
-    '<div class="brand"><img src="pdo-logo.png" alt="" onerror="this.remove()"></div>' +
-    '<h1 class="title">Cement Tool</h1><p class="lede">Built for the WSWE position — cement volumes, displacement and the job sheet in a few taps, so the calculations take minutes, not an hour.</p>';
-  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+  var tp = themePref(), nW = db.wells.length;
+  var ico = {
+    well: '<svg viewBox="0 0 24 24"><circle cx="12" cy="4.2" r="1.7"/><path d="M11 5.8 6.5 20.5M13 5.8l4.5 14.7M9 13h6M10.2 9.2h3.6M7.6 16.8h8.8M4 20.5h16M9 13l6.4 3.8M15 13l-6.4 3.8"/></svg>',
+    data: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7" ry="2.6"/><path d="M5 5.5v6.5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V5.5M5 12v6.3c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V12"/></svg>',
+    sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
+    gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>',
+    chev: '<svg class="hm-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>'
+  };
+  // Sand dunes with a pumpjack, drawn in two sand tones (no image file).
+  var land = '<svg class="hm-land" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path class="d1" d="M0 104C48 88 92 70 150 78s96 30 150 22 70-24 100-26v76H0z"/>' +
+    '<path class="d2" d="M0 122c60-14 120-20 190-12s130 18 210 4v36H0z"/></svg>' +
+    '<svg class="hm-land" viewBox="0 0 400 150" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><g class="pj"><path d="M246 130h58v-6h-58z"/><path d="M252 124h30v-16h-30z"/><circle cx="267" cy="104" r="9"/>' +
+    '<path d="M300 130 318 63h4l18 67h-6l-14-54-14 54z"/><path d="M309 104h22v3h-22zM312 92h16v3h-16z"/>' +
+    '<path d="M256 76 360 53l1.6 7L258 83z"/><path d="M262 80l6 26-3 .8-6-26z"/>' +
+    '<path d="M354 45c13 1 21 9 22 22l-8 3c-1-9-6-14-13-16z"/><path d="M370.5 69h1.8v57h-1.8z"/><path d="M364 122h15v8h-15z"/></g>' +
+    '<path class="d2" d="M180 130c70-10 150-12 220-14v34H180z"/></svg>';
+  var row = function (attr, icon, name, sub, right) {
+    return '<div class="hm-row"' + attr + '><span class="hm-ic">' + icon + '</span><span class="hm-tx"><span class="hm-nm">' + name + '</span><span class="hm-sb">' + sub + "</span></span>" + (right || "") + "</div>";
+  };
+  var h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
+    '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
+    '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
+  h += '<div class="hm-nav">' +
+    row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
+    row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
+    '<div class="hm-panel" id="bkPanel"><div class="bar2" style="margin:0 0 10px"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="margin:0">Wells are kept on this phone only. Save a copy now and then, and use Restore to bring them back or move them to another phone.</p></div>' +
+    '<div class="hm-row hm-ap"><span class="hm-ic">' + ico.sun + '</span><span class="hm-tx"><span class="hm-nm">Appearance</span>' +
+    '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
+      return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
+  h += '<div id="wellsSec">' + grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
   h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
-  h += '<div class="sec"><div class="sh">Wells<span>' + db.wells.length + " well" + (db.wells.length === 1 ? "" : "s") + "</span></div>" +
-    (db.wells.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
-    '<div class="grp" id="list">' + list() + "</div></div>";
-  h += grp("Backup", '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note" style="padding-bottom:12px">Wells are kept on this phone only. Save a copy now and then, and use Restore to bring them back or move them to another phone.</p>');
-  var tp = themePref();
-  h += grp("Appearance", '<div class="seg" style="margin:12px 0">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
-    return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + '</div><p class="note" style="padding-bottom:12px">Auto follows the phone: light by day, dark at night.</p>');
+  h += '<div class="sec"><div class="sh">Wells<span>' + nW + " well" + (nW === 1 ? "" : "s") + "</span></div>" +
+    (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
+    '<div class="grp" id="list">' + list() + "</div></div></div>";
   h += installCard();
   h += '<div class="foot2">Created by ' + OWNER.name + "<br>" + OWNER.id + "</div></div>";
   root.innerHTML = h;
@@ -1541,8 +1598,16 @@ function Home(root) {
     }
     var th = e.target.closest("[data-th]"); if (th) { save("theme", th.getAttribute("data-th")); applyTheme(); route(); return; }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
-    var a = e.target.getAttribute("data-a");
+    var ab = e.target.closest("[data-a]"), a = ab && ab.tagName !== "INPUT" ? ab.getAttribute("data-a") : null;
     if (a === "create") create();
+    if (a === "goWells") { root.querySelector("#wellsSec").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
+    if (a === "settings") {
+      var acts = [{ label: "Save a backup copy", fn: function () { root.querySelector('[data-a="export"]').click(); } },
+        { label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
+      if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
+      menu("Settings", acts); return;
+    }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
     if (a === "export") {
