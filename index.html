@@ -365,7 +365,7 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
     --bg:#08090a; --card:#101113; --line:#23252a; --ink:#f7f8f8; --sub:#8a8f98; --faint:#62666d;
     --field:#16171a; --fieldb:#2a2c31; --accent:#5e6ad2; --accent-bg:rgba(94,106,210,.16); --accent-ink:#9ba5ff; --onacc:#fff;
-    --lead:#f2a33a; --tail:#2dd4bf; --disp:#9ba5ff; --seg:#16171a; --segon:#26282d; --glow:rgba(94,106,210,.22);
+    --lead:#f2a33a; --tail:#2dd4bf; --disp:#9ba5ff; --seg:#16171a; --segon:#26282d; --glow:rgba(94,106,210,.22); --gold:#E5B323;
   } }
   .lt .sh::before { content:""; width:16px; height:3px; border-radius:2px; background:var(--gold); margin-right:8px; flex:none; }
   .lt .btn:not(.sec2):not(.danger):not(.ghost) { background:linear-gradient(180deg,#118a45,#0b6a34); }
@@ -379,6 +379,39 @@
   .lt .tiles .tile { border-top:3px solid var(--gold); }
   .lt .brand + .title { background:linear-gradient(to bottom,#0b3d20 30%,#118a45); -webkit-background-clip:text; background-clip:text; }
   .lt .brand::after { content:""; display:block; width:84px; height:5px; border-radius:3px; margin:2px auto 0; background:var(--gold); }
+  /* v3: contrast + touch targets */
+  :root:not([data-theme="dark"]) { --faint:#6b766c; }
+  .useg button { min-height:36px; min-width:48px; font-size:14.5px; }
+  .pill { min-height:38px; }
+  .cc .ct { color:var(--ink); opacity:.85; }
+  /* v3: invalid fields */
+  .in.bad, .cc input.bad { border-color:var(--danger) !important; background:var(--danger-bg) !important; box-shadow:0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent) !important; }
+  .cc:has(input.bad) { border-color:var(--danger); }
+  .sg { font-style:normal; color:var(--accent-ink) !important; font-weight:600; margin-left:4px; }
+  /* v3: collapsible sections */
+  .sh[data-tog] { cursor:pointer; user-select:none; -webkit-user-select:none; min-height:30px; }
+  .sh[data-tog] .cv { display:inline-block; transition:transform .2s var(--ease, ease); margin-left:6px; }
+  .sec.shut .grp { display:none; } .sec.shut .sh[data-tog] .cv { transform:rotate(-90deg); }
+  /* v3: sticky results bar */
+  .rbar { position:fixed; left:0; right:0; bottom:0; z-index:80; padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);
+    background:color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line); box-shadow:0 -4px 18px rgba(0,0,0,.08); cursor:pointer; }
+  .rbar .in2 { max-width:600px; margin:0 auto; display:flex; gap:6px; }
+  .rbar .c { flex:1 1 0; min-width:0; text-align:center; }
+  .rbar .k { font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rbar .v { font-size:17px; font-weight:700; letter-spacing:-.02em; color:var(--ink); white-space:nowrap; }
+  .rbar .v small { font-size:11px; font-weight:500; color:var(--sub); margin-left:2px; }
+  .rbar .c + .c { border-left:1px solid var(--line); }
+  .lt .rbar { border-top:3px solid var(--gold); }
+  .toast.up { bottom:calc(env(safe-area-inset-bottom) + 96px); }
+  /* v3: snackbar with Undo + Next tag */
+  .snack { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 24px); z-index:9999; display:flex; align-items:center; gap:14px;
+    background:var(--ink); color:var(--bg); padding:8px 8px 8px 18px; border-radius:999px; font-size:15px; font-weight:500; box-shadow:0 6px 24px rgba(0,0,0,.25); white-space:nowrap; }
+  .snack button { background:transparent; border:0; color:var(--gold, #E5B323); font-weight:700; font-size:15px; padding:8px 12px; min-height:38px; cursor:pointer; }
+  .lt .snack button { color:#ffd257; }
+  .ntag { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:999px; margin-left:6px; vertical-align:2px;
+    background:var(--gold, #E5B323); color:#1a1400; }
+  .item.next { box-shadow:inset 3px 0 0 var(--gold, #E5B323); }
 </style>
 </head>
 <body>
@@ -676,6 +709,18 @@ function unitSeg() { var u = volUnit(); return '<span class="useg"><button data-
 function grp(title, body, right) {
   return '<div class="sec"><div class="sh">' + title + (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
 }
+function grpC(id, title, body, right) {
+  var shut = !!load("col", {})[id];
+  return '<div class="sec' + (shut ? " shut" : "") + '" data-col="' + id + '"><div class="sh" data-tog="' + id + '" role="button" aria-expanded="' + !shut + '"><span style="flex:1;display:flex;align-items:center;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit">' + title + '<b class="cv">▾</b></span>' +
+    (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
+}
+function togCol(root, e) {
+  var t = e.target.closest("[data-tog]"); if (!t) return false;
+  var id = t.getAttribute("data-tog"), c = load("col", {}), sec = t.closest(".sec");
+  c[id] = !sec.classList.contains("shut"); save("col", c); sec.classList.toggle("shut", c[id]); t.setAttribute("aria-expanded", !c[id]); return true;
+}
+// Gradient input with a live SG readout next to the label (SG = kPa/m ÷ 9.81).
+function numG(label, k, s, ph) { return num(label + ' <i class="sg" data-sg="' + k + '"></i>', k, s, "kPa/m", ph); }
 function num(label, k, s, unit, ph) {
   return '<label class="r"><span class="l">' + label + (unit ? " <i>· " + unit + "</i>" : "") + '</span><input class="in" inputmode="decimal" autocomplete="off" data-k="' + k +
     '" value="' + esc(s[k] == null ? "" : s[k]) + '" placeholder="' + esc(ph == null ? "" : ph) + '"></label>';
@@ -704,8 +749,16 @@ function item(go, color, letter, name, sub, more) {
     '</span><span class="sb">' + sub + "</span></span>" + (more ? '<span class="more" role="button" aria-label="More" data-more="' + more + '">⋯</span>' : "") + '<span class="ch">›</span></div>';
 }
 function toast(msg) {
-  var t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  var t = document.createElement("div"); t.className = "toast" + (document.getElementById("rbar") ? " up" : ""); t.textContent = msg; document.body.appendChild(t);
   setTimeout(function () { t.remove(); }, 1800);
+}
+// Message with an Undo button, gone after a few seconds.
+function snack(msg, undo) {
+  var old = document.querySelector(".snack"); if (old) old.remove();
+  var t = document.createElement("div"); t.className = "snack"; t.innerHTML = "<span>" + esc(msg) + '</span><button type="button">Undo</button>';
+  document.body.appendChild(t);
+  var tm = setTimeout(function () { t.remove(); }, 5000);
+  t.querySelector("button").onclick = function () { clearTimeout(tm); t.remove(); undo(); };
 }
 // In-page dialogs: the browser's confirm/prompt are blocked in some
 // viewers (and look out of place), so the app draws its own.
@@ -956,8 +1009,8 @@ function CementPage(root, s) {
   }
   function pnum(label, i, f) { var o = {}; o["plugs." + i + "." + f] = s.plugs[i][f]; return num(label, "plugs." + i + "." + f, o, "m"); }
   function plugForm(o, k, c, h) {
-    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + "</div>");
-    o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, k.auto.full) + "</div>" +
+    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + "</div>");
+    o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Open hole capacity", "capFull", s, k.auto.full) + "</div>" +
       '<p class="note" style="padding-bottom:12px">Only used for plug parts below the shoe.</p>');
     o += grp("Work string", sel("Drill pipe", "dpTub", s, opt(DP), true) + sel("Stinger (tail pipe)", "stgId", s, opt(DP.filter(function (x) { return x.id.indexOf("tbg") === 0; })), true) + num("Stinger length", "stgLen", s, "m", "0 = none") +
       '<p class="note" style="padding-bottom:12px">String end sits at the plug bottom. Stinger ≥ plug length + ~30 m.</p>');
@@ -971,8 +1024,8 @@ function CementPage(root, s) {
     o += grp("Plug results", '<div id="o-plug"></div>', unitSeg());
     o += grp("Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows("Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
-    o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
-      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
     return o;
   }
   function draw() {
@@ -981,20 +1034,20 @@ function CementPage(root, s) {
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
     o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn danger" data-act="del">Delete</button></div>';
     o += '<div id="warnBox"></div>';
-    if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + "</div>"; outs(); return; }
+    if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
     if (!prevOn) o += '<button class="btn ghost" style="margin-top:22px" data-act="prev">+ Previous casing <span style="opacity:.7;font-weight:400">· only if TOC is inside one</span></button>';
     else o += grp("Previous casing", prevOn ?
       csgRows("prevId") + num("Shoe depth", "prevShoe", s, "m") +
-      '<div class="ccrow">' + capCard("Csg-Csg annulus", "capCC", s, k.auto.cc) + "</div>" :
+      '<div class="ccrow">' + capCard("Csg-Csg annular capacity", "capCC", s, k.auto.cc) + "</div>" :
       '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add if TOC lands inside a previous casing.</p>',
       liner ? '<span class="pill on">required</span>' : '<button class="pill" data-act="prev">' + (s.prevOn ? "remove" : "none") + "</button>");
     o += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
       csgRows("csgId") + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar depth", "fc", s, "m") +
       (liner ? sel("Running string", "dpTub", s, opt(DP), true) : "") +
-      '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + capCard("OH annulus", "capOH", s, k.auto.oh) + "</div>");
+      '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + capCard("OH annular capacity", "capOH", s, k.auto.oh) + "</div>");
     if (k.ohBad || k.ccBad) o += '<div class="warn">⚠ Impossible geometry: the casing OD (' + c.label + ") is larger than the " + (k.ohBad ? "hole (" + h.label + ")" : "previous casing (" + pc.label + ")") + ". Pick a bigger hole/casing — e.g. 9⅝″ needs a 12¼″ hole, 7″ needs 8½″.</div>";
-    o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, k.auto.full) + "</div>");
+    o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Open hole capacity (rat hole)", "capFull", s, k.auto.full) + "</div>");
     if (two) o += grp("Cement program",
       num("Stage tool (DV)", "stCol", s, "m") + num("Stage 1 TOC", "toc1", s, "m", "= stage tool") + num("Stage 2 TOC", "toc", s, "m") +
       '<div class="tag" style="color:var(--tail)">Stage 1 excess</div>' + num("Open hole", "exTailOH", s, "%", "0") + num("Cased", "exTailCsg", s, "%", "0") +
@@ -1015,16 +1068,16 @@ function CementPage(root, s) {
     o += grp(two ? "Stage 1 slurry" : lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows(two ? "Stage 1 additives" : lt ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
     if (two) o += leadG();
-    o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
-      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
-    o += grp("Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m (SG × 9.81). Static, no friction.</p>' +
-      num("Mud", "mudGr", s, "kPa/m") + num("Spacer", "spGr", s, "kPa/m", "9.81") +
-      (lt || two ? num(two ? "Stage 2 cement" : "Lead cement", "leadGr", s, "kPa/m") : "") + num(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s, "kPa/m") +
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
+    o += grpC("pr", "Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m — the SG shows next to each (kPa/m ÷ 9.81). Static, no friction.</p>' +
+      numG("Mud", "mudGr", s) + numG("Spacer", "spGr", s, "9.81") +
+      (lt || two ? numG(two ? "Stage 2 cement" : "Lead cement", "leadGr", s) : "") + numG(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s) +
       num("Spacer ahead", "spAhead", s, "m³", "0") +
       '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
-      (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + num("Formation strength", "fsGr", s, "kPa/m") : "") +
-      '<div id="o-pr"></div>');
-    root.innerHTML = '<div class="page">' + o + "</div>";
+      (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + numG("Formation strength", "fsGr", s) : "") +
+      '<div id="o-pr"></div>', '<b id="h-pr" style="font-weight:500"></b>');
+    root.innerHTML = '<div class="page">' + o + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>';
     outs();
   }
   function outs() {
@@ -1034,6 +1087,8 @@ function CementPage(root, s) {
     root.querySelectorAll("[data-cc]").forEach(function (el) {
       var ed = P(s[el.getAttribute("data-cc")]) != null; el.classList.toggle("ed", ed); el.querySelector("b").textContent = ed ? "edited" : "auto";
     });
+    markBad(m);
+    root.querySelectorAll("[data-sg]").forEach(function (el) { var g = P(s[el.getAttribute("data-sg")]); el.textContent = g != null && g > 0 ? "= " + (g / 9.81).toFixed(2) + " SG" : ""; });
     if (s.jobType === "plug") outsPlug(m); else {
     // The drawing shows up once the well is filled in.
     var pr = pressures(s, m), $pr = $("o-pr");
@@ -1077,7 +1132,7 @@ function CementPage(root, s) {
           (m.spB ? line("Mud to pump", vNum(m.mud2) + vUnit(), "displacement − spacer behind") : "") +
           (uv2 ? line("By rig pump", vNum(m.disp2 - uv2) + vUnit()) : "") +
           '<div class="tiles" style="margin-bottom:14px">' + tile("Rig strokes", sk2 ? fi(sk2.stk) : "—", "stk") + tile("Volume", fx(m.disp2 / 1000 * 6.28981, 1), "bbl") + "</div>" +
-          '<p class="note" style="padding-bottom:12px">Same stick-up, spacer behind, cement-unit volume and pump output as stage 1.</p>';
+          '<p class="note" style="padding-bottom:12px">Same spacer behind, cement-unit volume and pump output as stage 1.</p>';
       } else $("o-disp2").innerHTML = '<div class="empty">—</div>';
     }
     }
@@ -1101,6 +1156,46 @@ function CementPage(root, s) {
     amts("spacerAdd", s.spacerAdd, spm);
     var spLiq = liquidL(s.spacerAdd, spm);
     if (spm != null) $("o-sp").innerHTML += line("Spacer water", fx(spm - spLiq / 1000) + " m³", spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives" : "");
+    var hs = $("h-sp"); if (hs) hs.textContent = spm != null ? "mix " + fx(spm) + " m³" : "";
+    var hp = $("h-pr"); if (hp) { var pr2 = s.jobType === "plug" ? null : pressures(s, m); hp.textContent = pr2 && pr2.st && pr2.st.length ? "Δ " + fi(pr2.st[0].diff) + " kPa" : "optional"; }
+    rbar(m, sl);
+  }
+  // Key results pinned to the bottom of the screen while typing; tap to jump to them.
+  function rbar(m, sl) {
+    var b = root.querySelector("#rbar"); if (!b) return;
+    var c = function (k, v, u) { return '<div class="c"><div class="k">' + k + '</div><div class="v">' + v + "<small>" + u + "</small></div></div>"; };
+    var u = vUnit().trim(), h = "";
+    if (s.jobType === "plug") {
+      if (m && m.plugs && m.plugs.length) {
+        var mud = 0, stk = 0, sOk = true;
+        m.plugs.forEach(function (p) { mud += p.pump || 0; if (p.stk == null) sOk = false; else stk += p.stk; });
+        h = c("Cement", vNum(m.total), u) + c("Mud", vNum(mud), u) + c("Strokes", sOk ? fi(stk) : "—", "stk");
+      }
+    } else if (m && m.items && m.items.length) {
+      var sk = m.dispL != null ? strokesOf(s, m) : null, dry = sl ? ((sl.tail && sl.tail.dry) || 0) + ((sl.lead && sl.lead.dry) || 0) : 0;
+      h = c("Cement", vNum(m.total), u) + c("Displ.", m.dispL != null ? vNum(m.dispL) : "—", u) + c("Strokes", sk ? fi(sk.stk) : "—", "stk") + c("Dry", dry ? fx(dry) : "—", "MT");
+    }
+    b.style.display = h ? "" : "none"; b.innerHTML = '<div class="in2">' + h + "</div>";
+  }
+  // Red outline on inputs that are not numbers, negative, or out of order.
+  function markBad(m) {
+    var bad = {}, v = function (k) { return P(s[k]); };
+    root.querySelectorAll('input[inputmode="decimal"][data-k]').forEach(function (el) {
+      var raw = String(el.value).trim(); if (!raw) return; var n = P(raw);
+      if (n == null || n < 0 || !/^-?[\d.,]+$/.test(raw)) bad[el.getAttribute("data-k")] = 1;
+    });
+    var lt2 = function (a, b) { return v(a) != null && v(b) != null && v(a) >= v(b); };
+    if (s.jobType === "plug") {
+      (s.plugs || []).forEach(function (p, i) { var B = P(p.bot), T = P(p.top); if (B != null && T != null && T >= B) { bad["plugs." + i + ".top"] = 1; bad["plugs." + i + ".bot"] = 1; } });
+    } else {
+      if (lt2("fc", "shoe")) bad.fc = 1;
+      if (v("td") != null && v("shoe") != null && v("shoe") > v("td")) bad.td = 1;
+      if (lt2("toc", "shoe")) bad.toc = 1;
+      if (s.scheme === "leadtail" && s.jobType !== "twostage" && v("tailTop") != null && ((v("toc") != null && v("tailTop") <= v("toc")) || (v("shoe") != null && v("tailTop") >= v("shoe")))) bad.tailTop = 1;
+      if (s.jobType === "liner") { if (hasPrev(s) && lt2("top", "prevShoe")) bad.top = 1; if (lt2("top", "shoe")) bad.top = 1; }
+      if (s.jobType === "twostage" && v("stCol") != null && ((v("shoe") != null && v("stCol") >= v("shoe")) || (v("toc") != null && v("stCol") <= v("toc")))) bad.stCol = 1;
+    }
+    root.querySelectorAll("input[data-k]").forEach(function (el) { el.classList.toggle("bad", !!bad[el.getAttribute("data-k")]); });
   }
   function outsPlug(m) {
     var $ = function (id) { return root.querySelector("#" + id); }, ok = m && m.plugs.length;
@@ -1119,6 +1214,8 @@ function CementPage(root, s) {
     }).join("") + big("Total cement", vNum(m.total), vUnit());
   }
   root.addEventListener("click", function (e) {
+    if (togCol(root, e)) return;
+    if (e.target.closest("#rbar")) { var tg = root.querySelector("#o-vol") || root.querySelector("#o-plug"); if (tg) tg.closest(".sec").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     var b = e.target.closest("[data-unit]"); if (!b) return;
     save("vu", b.getAttribute("data-unit"));
     root.querySelectorAll("[data-unit]").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-unit") === volUnit()); });
@@ -1342,14 +1439,14 @@ function wellStatusHtml(w) {
 }
 function WellPage(root, w) {
   function draw() {
-    var J = wellJobs(w.id);
+    var J = wellJobs(w.id), nx = wellState(w).next;
     var h = '<div class="page"><h1 class="title wt">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
     if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
       return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
     h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
-      return '<div class="item" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
-        '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
+      return '<div class="item' + (nx && nx.id === j.id ? " next" : "") + '" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
+        '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + (nx && nx.id === j.id ? '<span class="ntag">Next</span>' : "") + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
         '<button class="pill' + (j.done ? " on" : "") + '" data-done="' + j.id + '" style="flex:none">' + (j.done ? "✓ Done" : "Mark done") + '</button>' +
         '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span><span class="ch">›</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
@@ -1364,7 +1461,13 @@ function WellPage(root, w) {
   });
   root.addEventListener("click", function (e) {
     var dn = e.target.closest("[data-done]");
-    if (dn) { var dj = jobById(dn.getAttribute("data-done")); if (dj) { dj.done = !dj.done; dj.doneAt = dj.done ? Date.now() : null; touch(dj); draw(); } return; }
+    if (dn) {
+      var dj = jobById(dn.getAttribute("data-done")); if (!dj) return;
+      var was = { done: dj.done, doneAt: dj.doneAt };
+      dj.done = !dj.done; dj.doneAt = dj.done ? Date.now() : null; touch(dj); draw();
+      snack(dj.done ? "Marked done" : "Marked not done", function () { dj.done = was.done; dj.doneAt = was.doneAt; touch(dj); draw(); });
+      return;
+    }
     var mo = e.target.closest("[data-more]");
     if (mo) {
       var j = jobById(mo.getAttribute("data-more").split(":")[1]); if (!j) return;
