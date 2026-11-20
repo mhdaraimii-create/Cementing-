@@ -400,7 +400,8 @@
   .hm-row[role="button"]:active .hm-ic { transform:scale(.96); }
   .hm-ic { width:40px; height:40px; flex:none; border-radius:11px; background:var(--icbg); display:flex; align-items:center; justify-content:center; color:var(--icink); transition:transform .15s var(--ease); }
   .hm-ic svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-  .hm-row:first-child .hm-ic { color:var(--accent); }
+  .hm-row:first-child .hm-ic, .hm-row[data-go] .hm-ic { color:var(--accent); }
+  .pchip.on { background:var(--accent); border-color:var(--accent); color:var(--onacc); }
   .hm-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
   .hm-nm { font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:-.01em; color:var(--hm-ink); }
   .hm-sb { font-size:13px; color:var(--sub); line-height:1.35; }
@@ -1507,6 +1508,115 @@ function WellPage(root, w) {
   });
   draw();
 }
+/* ───────────────────────── quick calc · casing table · guide ───────────────────────── */
+// Quick calc: stand-alone conversions and volumes, no well needed. Values are kept per phone.
+function CalcPage(root) {
+  var q = load("qc", {}); if (!q.tab) q.tab = "units";
+  ["du", "vu", "lu"].forEach(function (k, i) { if (!q[k]) q[k] = ["sg", "m3", "m"][i]; });
+  if (!q.pipe) q.pipe = csgFor(9.625).id; if (!q.inner) q.inner = "none";
+  function keep() { save("qc", q); }
+  function useg(k, opts) {
+    return '<span class="useg">' + opts.map(function (o) { return '<button data-qu="' + k + '" data-v="' + o[0] + '" class="' + (q[k] === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span>";
+  }
+  function outer() { var c = byId(CSG, q.pipe); if (c) return { cap: c.cap, label: c.label, id: c.idIn }; var h = byId(HOLE, q.pipe); return h ? { cap: h.cap, label: h.label + " hole", id: h.d } : null; }
+  function innerCed() {
+    if (q.inner === "none") return 0;
+    var d = byId(DP, q.inner); if (d) return d.ced;
+    var od = parseFloat(q.inner); return isFinite(od) ? K * od * od : 0;
+  }
+  function draw() {
+    var h = '<div class="page"><h1 class="title">Quick calc</h1><p class="lede">No well needed. Answers update as you type.</p>' +
+      '<div class="seg" style="margin-top:16px">' + [["units", "Units"], ["volume", "Volume"], ["strokes", "Strokes"]].map(function (o) {
+        return '<button data-qt="' + o[0] + '" class="' + (q.tab === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</div>";
+    if (q.tab === "units") {
+      h += grp("Density / gradient", '<div class="r"><span class="l">Enter</span>' + useg("du", [["sg", "SG"], ["kpa", "kPa/m"], ["ppg", "ppg"]]) + "</div>" + num("Value", "dv", q) + '<div id="q-d"></div>');
+      h += grp("Volume", '<div class="r"><span class="l">Enter</span>' + useg("vu", [["m3", "m³"], ["bbl", "bbl"], ["L", "L"]]) + "</div>" + num("Value", "vv", q) + '<div id="q-v"></div>');
+      h += grp("Length", '<div class="r"><span class="l">Enter</span>' + useg("lu", [["m", "m"], ["ft", "ft"]]) + "</div>" + num("Value", "lv", q) + '<div id="q-l"></div>');
+    } else if (q.tab === "volume") {
+      var opts = CSG.filter(function (c) { return !c.hide || c.id === q.pipe; }).map(function (c) { return { id: c.id, label: c.label + " · ID " + c.idIn.toFixed(3) }; })
+        .concat(HOLE.map(function (x) { return { id: x.id, label: x.label + " open hole" }; }));
+      var inn = [{ id: "none", label: "Nothing (full inside)" }].concat(DP.map(function (d) { return { id: d.id, label: d.label }; }))
+        .concat(sizes().map(function (od) { return { id: String(od), label: frac(od) + " casing OD" }; }));
+      h += grp("Volume between two depths", sel("Outer (casing or hole)", "pipe", q, opts) + sel("Inside it (annulus)", "inner", q, inn) +
+        num("From", "d1", q, "m", "0") + num("To", "d2", q, "m") + num("Excess", "ex", q, "%", "0") + '<div id="q-vol"></div>' +
+        '<p class="note" style="padding-bottom:12px">Pick a pipe inside to get the annulus (drill pipe uses closed-end displacement). Capacity = 0.5067 × ID².</p>');
+    } else {
+      h += grp("Strokes for a volume", num("Volume", "sv", q, "m³") + num("Pump output", "so", q, "L/stk", "13.62") + num("Pump rate", "sr", q, "spm", "optional") + '<div id="q-s"></div>');
+    }
+    root.innerHTML = h + "</div>";
+    outs();
+  }
+  function outs() {
+    var $ = function (id) { return root.querySelector("#" + id); }, v;
+    if ($("q-d")) {
+      v = P(q.dv); var sg = v == null ? null : q.du === "sg" ? v : q.du === "kpa" ? v / 9.81 : v / 8.345;
+      $("q-d").innerHTML = line("SG", fx(sg)) + line("kPa/m", fx(sg == null ? null : sg * 9.81)) + line("ppg", fx(sg == null ? null : sg * 8.345)) + line("psi/ft", fx(sg == null ? null : sg * 0.4335, 3));
+      v = P(q.vv); var m3 = v == null ? null : q.vu === "m3" ? v : q.vu === "bbl" ? v / 6.28981 : v / 1000;
+      $("q-v").innerHTML = line("m³", fx(m3)) + line("bbl", fx(m3 == null ? null : m3 * 6.28981)) + line("L", fi(m3 == null ? null : m3 * 1000));
+      v = P(q.lv); var m = v == null ? null : q.lu === "m" ? v : v * 0.3048;
+      $("q-l").innerHTML = line("m", fx(m, 1)) + line("ft", fx(m == null ? null : m / 0.3048, 1));
+    }
+    if ($("q-vol")) {
+      var o = outer(), ced = innerCed(), cap = o ? o.cap - ced : null, L = (P(q.d2) || 0) - (P(q.d1) || 0), ex = 1 + (P(q.ex) || 0) / 100;
+      if (cap != null && cap <= 0) { $("q-vol").innerHTML = '<div class="warn">⚠ The pipe inside is bigger than the outer ID.</div>'; return; }
+      var vol = cap != null && L > 0 ? cap * L * ex : null;
+      $("q-vol").innerHTML = big("Volume", vol == null ? "—" : fx(vol / 1000), " m³") + line("Capacity", fx(cap) + " L/m", ced ? "annulus" : "full inside") +
+        line("In bbl", fx(vol == null ? null : vol / 1000 * 6.28981, 1)) + (L > 0 ? line("Length", fx(L, 1) + " m", ex > 1 ? "× " + ex.toFixed(2) + " excess" : "") : "");
+    }
+    if ($("q-s")) {
+      var V = P(q.sv), out = P(q.so) || 13.62, r = P(q.sr), stk = V != null && out > 0 ? V * 1000 / out : null;
+      $("q-s").innerHTML = '<div class="tiles" style="margin-bottom:6px">' + tile("Strokes", stk == null ? "—" : fi(stk), "stk") + tile("Volume", V == null ? "—" : fx(V * 6.28981, 1), "bbl") + "</div>" +
+        (stk != null && r ? line("Time at " + fi(r) + " spm", fx(stk / r, 1) + " min") : "") + '<div style="height:8px"></div>';
+    }
+  }
+  root.addEventListener("input", function (e) { var k = e.target.getAttribute("data-k"); if (!k) return; q[k] = e.target.value; keep(); outs(); });
+  root.addEventListener("change", function (e) { var k = e.target.getAttribute("data-k"); if (k && e.target.tagName === "SELECT") { q[k] = e.target.value; keep(); outs(); } });
+  root.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-qt]"); if (t) { q.tab = t.getAttribute("data-qt"); keep(); draw(); return; }
+    var u = e.target.closest("[data-qu]"); if (u) { q[u.getAttribute("data-qu")] = u.getAttribute("data-v"); keep(); draw(); }
+  });
+  draw();
+}
+// Casing table: the sizes and weights in the app (Green Book D9-D10), open hole and work strings.
+function TablePage(root) {
+  var f = load("tblOd", "all");
+  function draw() {
+    var ods = sizes();
+    var h = '<div class="page"><h1 class="title">Casing table</h1><p class="lede">From the Green Book (D9–D10). Capacity = 0.5067 × ID².</p>' +
+      '<div class="pchips" style="margin:14px 0 4px">' + [["all", "All"]].concat(ods.map(function (o) { return [String(o), frac(o)]; })).map(function (o) {
+        return '<button class="pchip' + (f === o[0] ? " on" : "") + '" data-od="' + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>";
+    var show = f === "all" ? ods : ods.filter(function (o) { return String(o) === f; });
+    h += '<div class="sec"><div class="grp" style="padding:4px 16px 12px">' + show.map(function (od) {
+      var r = CSG.filter(function (c) { return c.od === od && !c.hide; }).sort(function (a, b) { return a.w - b.w; });
+      return '<div class="tag" style="color:var(--accent)">' + frac(od) + ' casing</div><table class="t"><tr><th>Weight</th><th class="n">ID in</th><th class="n">bbl/m</th><th class="n">Cap L/m</th></tr>' +
+        r.map(function (c) { return "<tr><td>" + c.w + '#</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + (c.cap / 158.987).toFixed(4) + '</td><td class="n"><b>' + c.cap.toFixed(2) + "</b></td></tr>"; }).join("") + "</table>";
+    }).join('<div style="height:10px"></div>') + "</div></div>";
+    if (f === "all") {
+      h += '<div class="sec"><div class="sh">Open hole</div><div class="grp" style="padding:4px 16px 12px"><table class="t"><tr><th>Hole</th><th class="n">bbl/m</th><th class="n">Cap L/m</th></tr>' +
+        HOLE.map(function (x) { return "<tr><td>" + x.label + '</td><td class="n">' + (x.cap / 158.987).toFixed(4) + '</td><td class="n"><b>' + x.cap.toFixed(2) + "</b></td></tr>"; }).join("") + "</table></div></div>";
+      h += '<div class="sec"><div class="sh">Drill pipe &amp; tubing<span>D6–D7, D11</span></div><div class="grp" style="padding:4px 16px 12px"><table class="t"><tr><th>String</th><th class="n">Cap L/m</th><th class="n">CED L/m</th></tr>' +
+        DP.map(function (d) { return "<tr><td>" + esc(d.label) + '</td><td class="n"><b>' + fx(d.cap) + '</b></td><td class="n">' + fx(d.ced) + "</td></tr>"; }).join("") + "</table>" +
+        '<p class="note" style="margin:8px 0 0">CED = closed-end displacement (pipe + inside).</p></div></div>';
+    }
+    root.innerHTML = h + "</div>";
+  }
+  root.addEventListener("click", function (e) { var b = e.target.closest("[data-od]"); if (!b) return; f = b.getAttribute("data-od"); save("tblOd", f); draw(); });
+  draw();
+}
+function GuidePage(root) {
+  var st = [["Create a well", "Wells → type a code name (never the real name) → Create."],
+    ["Add a job", "Pick the type: Casing, Liner, Two-stage or Plug. The previous casing comes from the last job in the well."],
+    ["Fill the well", "Casing size and weight, shoe, float collar, hole size and TD. A red box means a value is not a number or is out of order."],
+    ["Cement program", "Single slurry or Lead / Tail, TOC and excess. Cement, displacement, strokes and dry cement show in the bar at the bottom."],
+    ["Slurry and spacer", "Yield and mix fluid give dry cement, mix water and additive amounts."],
+    ["PDF and Mark done", "PDF sheet makes the job sheet. Mark done on the well page updates the well status and the Well PDF."]];
+  root.innerHTML = '<div class="page"><h1 class="title">Guide</h1><p class="lede">From a new well to the job sheet in six steps.</p>' +
+    '<div class="sec"><div class="grp" style="padding:4px 16px">' + st.map(function (x, i) {
+      return '<div style="display:flex;gap:14px;padding:14px 0;' + (i < st.length - 1 ? "border-bottom:1px solid var(--line)" : "") + '"><span class="num" style="background:var(--accent)">' + (i + 1) +
+        '</span><span><b style="font-size:15.5px">' + x[0] + '</b><span style="display:block;color:var(--sub);font-size:14px;line-height:1.45;margin-top:2px">' + x[1] + "</span></span></div>";
+    }).join("") + "</div></div>" +
+    grp("Good to know", '<p class="note" style="padding:12px 0;margin:0;line-height:1.7">• Everything saves on this phone as you type.<br>• Save a well: Wells → ⋯ → Download a copy. Restore brings it back on any phone.<br>• Add to Home Screen: it opens like an app, works offline, and Safari will not clear your wells.<br>• Capacities show “auto”; type over one if the program uses a different number.<br>• Pressures and Spacer fold away when you do not need them.</p>') + "</div>";
+}
 /* ── Add to Home Screen ──
    Android/Chrome lets a page offer its own install prompt (beforeinstallprompt); iPhone does not,
    so there the button opens a two-step guide (Share → Add to Home Screen). Hidden once installed. */
@@ -1562,6 +1672,9 @@ function Home(root, wellsMode) {
     well: '<svg viewBox="0 0 24 24"><circle cx="12" cy="4.2" r="1.7"/><path d="M11 5.8 6.5 20.5M13 5.8l4.5 14.7M9 13h6M10.2 9.2h3.6M7.6 16.8h8.8M4 20.5h16M9 13l6.4 3.8M15 13l-6.4 3.8"/></svg>',
     data: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7" ry="2.6"/><path d="M5 5.5v6.5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V5.5M5 12v6.3c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V12"/></svg>',
     sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
+    calc: '<svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8 6.5h8M8.5 11h1M11.5 11h1M14.5 11h1M8.5 14h1M11.5 14h1M14.5 14h1M8.5 17h1M11.5 17h4"/></svg>',
+    table: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M3.5 14h17M9.5 9v11"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
     gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>',
     chev: '<svg class="hm-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>'
   };
@@ -1592,6 +1705,9 @@ function Home(root, wellsMode) {
     '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
   h += '<div class="hm-nav">' +
     row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
+    row(' role="button" data-go="calc"', ico.calc, "Quick calc", "Units, volumes and strokes", ico.chev) +
+    row(' role="button" data-go="table"', ico.table, "Casing table", "Sizes, ID and capacity", ico.chev) +
+    row(' role="button" data-go="guide"', ico.book, "Guide", "How to use, step by step", ico.chev) +
     row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
     '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
     '<p class="note" style="margin:0">Wells are kept on this phone only. To save a well: Wells → ⋯ next to it → Download a copy. Restore adds a saved well back, on this phone or another.</p></div>' +
@@ -1682,6 +1798,9 @@ function route() {
   if (j) { back(w ? w.name : "Home", w ? "well/" + w.id : "home"); CementPage(body, j); }
   else if (w) { back("Wells", "wells"); WellPage(body, w); }
   else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
+  else if (parts[0] === "calc") { back("Home", "home"); CalcPage(body); }
+  else if (parts[0] === "table") { back("Home", "home"); TablePage(body); }
+  else if (parts[0] === "guide") { back("Home", "home"); GuidePage(body); }
   else Home(body);
   root.appendChild(body);
 }
