@@ -411,7 +411,6 @@
   #bkRow.open { border-bottom:0; }
   .hm-seg { display:flex; margin-top:8px; border-radius:999px; }
   .hm-seg button { flex:1; border-radius:999px; min-height:38px; }
-  #wellsSec { scroll-margin-top:12px; }
   @media (min-width:640px) { .hm-hero { margin:4px 0 0; border-radius:0 0 20px 20px; padding-left:4px; } }
   /* v3: contrast + touch targets */
   :root:not([data-theme="dark"]) { --faint:#6b766c; }
@@ -1493,7 +1492,7 @@ function WellPage(root, w) {
     var a = e.target.getAttribute("data-a");
     if (a === "new") pickType(w);
     if (a === "pdf") wellSheet(w);
-    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "home"; }); } }]);
+    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }]);
   });
   draw();
 }
@@ -1526,7 +1525,7 @@ function installHelp() {
     '</div><div class="bt"><button data-v="1">Got it</button></div></div>', true);
   m.onclick = function (ev) { if (ev.target.closest("button") || ev.target === m) m.remove(); };
 }
-function Home(root) {
+function Home(root, wellsMode) {
   var q = { v: "" };
   function list() {
     if (!db.wells.length) return '<div class="empty">No wells yet. Type a well code name above and tap Create.</div>';
@@ -1559,7 +1558,17 @@ function Home(root) {
   var row = function (attr, icon, name, sub, right) {
     return '<div class="hm-row"' + attr + '><span class="hm-ic">' + icon + '</span><span class="hm-tx"><span class="hm-nm">' + name + '</span><span class="hm-sb">' + sub + "</span></span>" + (right || "") + "</div>";
   };
-  var h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
+  var h;
+  if (wellsMode) {
+    // Wells page: new well + the list (opened from the Wells card on Home).
+    h = '<div class="page"><h1 class="title">Wells</h1><p class="lede">' + nW + " well" + (nW === 1 ? "" : "s") + " on this phone</p>";
+    h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+    h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
+    h += '<div class="sec"><div class="sh">Wells<span>newest first</span></div>' +
+      (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
+      '<div class="grp" id="list">' + list() + "</div></div></div>";
+  } else {
+  h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
     '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
     '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
   h += '<div class="hm-nav">' +
@@ -1570,13 +1579,9 @@ function Home(root) {
     '<div class="hm-row hm-ap"><span class="hm-ic">' + ico.sun + '</span><span class="hm-tx"><span class="hm-nm">Appearance</span>' +
     '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
       return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
-  h += '<div id="wellsSec">' + grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
-  h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
-  h += '<div class="sec"><div class="sh">Wells<span>' + nW + " well" + (nW === 1 ? "" : "s") + "</span></div>" +
-    (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
-    '<div class="grp" id="list">' + list() + "</div></div></div>";
   h += installCard();
   h += '<div class="foot2">Created by ' + OWNER.name + "<br>" + OWNER.id + "</div></div>";
+  }
   root.innerHTML = h;
   var create = function () {
     var inp = root.querySelector("#wname"), name = inp.value.trim();
@@ -1584,7 +1589,7 @@ function Home(root) {
     var w = { id: uid(), name: name, created: Date.now(), updated: Date.now() }; db.wells.push(w); saveDb();
     location.hash = "well/" + w.id; setTimeout(function () { pickType(w); }, 60);
   };
-  root.querySelector("#wname").addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
+  var wn = root.querySelector("#wname"); if (wn) wn.addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
   var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
   root.addEventListener("click", function (e) {
     var mo = e.target.closest("[data-more]");
@@ -1600,7 +1605,7 @@ function Home(root) {
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
     var ab = e.target.closest("[data-a]"), a = ab && ab.tagName !== "INPUT" ? ab.getAttribute("data-a") : null;
     if (a === "create") create();
-    if (a === "goWells") { root.querySelector("#wellsSec").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (a === "goWells") { location.hash = "wells"; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
     if (a === "settings") {
       var acts = [{ label: "Save a backup copy", fn: function () { root.querySelector('[data-a="export"]').click(); } },
@@ -1661,7 +1666,8 @@ function route() {
     root.appendChild(top);
   };
   if (j) { back(w ? w.name : "Home", w ? "well/" + w.id : "home"); CementPage(body, j); }
-  else if (w) { back("Home", "home"); WellPage(body, w); }
+  else if (w) { back("Wells", "wells"); WellPage(body, w); }
+  else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
   else Home(body);
   root.appendChild(body);
 }
