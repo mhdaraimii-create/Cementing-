@@ -462,6 +462,16 @@
   .wprog { height:6px; border-radius:9px; background:var(--avbg); overflow:hidden; margin-top:12px; }
   .wprog i { display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,#11653a,#2f8f57); }
   .wmeta { display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--sub); margin-top:6px; }
+  .jcard { gap:12px; padding:13px 6px 13px 13px; }
+  .jcard .wav { width:46px; height:46px; font-size:18px; border-radius:12px; }
+  .jcard.dn .wav { background:var(--good-bg); color:var(--good); }
+  .jcard { align-items:flex-start; } .jcard .wav { margin-top:2px; } .jcard .more { align-self:center; }
+  .jfoot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; } .jfoot .wdt { white-space:nowrap; }
+  .jdone { flex:none; border-radius:999px; min-height:34px; padding:0 13px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
+    border:1px solid var(--fieldb); background:var(--card); color:var(--hm-ink); white-space:nowrap; }
+  .jdone.on { background:#1f7a45; border-color:#1f7a45; color:#fff; }
+  .jcard .more { width:34px; flex-basis:34px; }
+  .wl .bar2 .btn.sec2 { border-color:var(--line); }
   .wlist .empty { background:var(--card); border:1px dashed var(--fieldb); border-radius:16px; padding:22px 16px; text-align:center; }
   /* v3: contrast + touch targets */
   :root:not([data-theme="dark"]) { --faint:#6b766c; }
@@ -1524,15 +1534,17 @@ function wellStatusHtml(w) {
 function WellPage(root, w) {
   function draw() {
     var J = wellJobs(w.id);
-    var h = '<div class="page"><h1 class="title wt">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
-    if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
-      return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
-    h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
-    h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
-      return '<div class="item" role="button" data-go="job/' + j.id + '"><span class="ic" style="background:' + TCOL[j.jobType] + (j.done ? "" : ";opacity:.45") + '">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span>' +
-        '<span style="flex:1;min-width:0"><span class="nm"' + (j.done ? "" : ' style="opacity:.7"') + '>' + esc(jobTitle(j)) + '</span><span class="sb">' + esc(summary(j)) + (j.done ? " · done " + shortDate(j.doneAt || j.updated) : "") + '</span></span>' +
-        '<button class="pill' + (j.done ? " on" : "") + '" data-done="' + j.id + '" style="flex:none">' + (j.done ? "✓ Done" : "Mark done") + '</button>' +
-        '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span><span class="ch">›</span></div>';
+    var cal = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+    var h = '<div class="page wl"><h1 class="wl-title">' + esc(w.name) + '</h1><p class="wl-count">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · created " + when(w.created) + "</p>";
+    if (J.length) h += '<div class="wchips" style="margin:14px 0 4px">' + J.map(function (j) {
+      return '<button class="wchip' + (j.done ? " d" : "") + '" data-go="job/' + j.id + '" style="border:0;cursor:pointer">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
+    h += '<div class="bar2" style="margin-top:14px"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more" aria-label="More">⋯</button></div>';
+    h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="wlist">' + (J.length ? J.map(function (j) {
+      return '<div class="wcard jcard' + (j.done ? " dn" : "") + '" role="button" data-go="job/' + j.id + '"><span class="wav">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span><span class="wdiv"></span>' +
+        '<span class="wtx"><span class="wnm">' + esc(jobTitle(j)) + '</span><span class="wsb">' + esc(summary(j)) + "</span>" +
+        '<span class="jfoot"><span class="wdt">' + cal + shortDate(j.done ? (j.doneAt || j.updated) : j.created) + "</span>" +
+        '<button class="jdone' + (j.done ? " on" : "") + '" data-done="' + j.id + '">' + (j.done ? "✓ Done" : "Mark done") + "</button></span></span>" +
+        '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
     h += '<div class="sec"><div class="sh">Well status</div><div class="grp"><label class="r"><span class="l">Planned TD <i>· m</i></span><input class="in" inputmode="decimal" autocomplete="off" data-wptd value="' + esc(w.ptd || "") + '" placeholder="from the well program"></label>' +
       '<div id="wstat" style="padding:4px 0 12px">' + wellStatusHtml(w) + "</div></div></div>";
