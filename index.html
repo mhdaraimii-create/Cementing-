@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="light" class="lt">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Cement Job" />
+<meta name="apple-mobile-web-app-title" content="Cement Tool" />
 <meta name="theme-color" content="#f6f3ec" />
-<title>Cement Job</title>
+<title>Cement Tool</title>
 <link rel="apple-touch-icon" href="icon-180.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -233,18 +233,18 @@
   }
   :root[data-theme="dark"] {
     --bg:#08090a; --card:#101113; --line:#23252a; --ink:#f7f8f8; --sub:#8a8f98; --faint:#62666d;
-    --field:#16171a; --fieldb:#2a2c31; --accent:#5e6ad2; --accent-bg:rgba(94,106,210,.16); --accent-ink:#9ba5ff; --onacc:#fff;
+    --field:#16171a; --fieldb:#2a2c31; --accent:#2f9a5e; --accent-bg:rgba(47,154,94,.16); --accent-ink:#8fd3a8; --onacc:#fff;
     --danger:#eb5757; --danger-bg:rgba(235,87,87,.12); --danger-edge:rgba(235,87,87,.35); --good:#4cb782; --good-bg:rgba(76,183,130,.12);
-    --lead:#f2a33a; --tail:#2dd4bf; --track:#a78bfa; --rat:#f472b6; --disp:#9ba5ff;
-    --seg:#16171a; --segon:#26282d; --chev:#4a4d54; --glow:rgba(94,106,210,.22); --hl:rgba(255,255,255,.04);
+    --lead:#f2a33a; --tail:#2dd4bf; --track:#a78bfa; --rat:#f472b6; --disp:#8fd3a8;
+    --seg:#16171a; --segon:#26282d; --chev:#4a4d54; --glow:rgba(229,179,35,.16); --hl:rgba(255,255,255,.04);
     color-scheme:dark;
   }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
     --bg:#08090a; --card:#101113; --line:#23252a; --ink:#f7f8f8; --sub:#8a8f98; --faint:#62666d;
-    --field:#16171a; --fieldb:#2a2c31; --accent:#5e6ad2; --accent-bg:rgba(94,106,210,.16); --accent-ink:#9ba5ff; --onacc:#fff;
+    --field:#16171a; --fieldb:#2a2c31; --accent:#2f9a5e; --accent-bg:rgba(47,154,94,.16); --accent-ink:#8fd3a8; --onacc:#fff;
     --danger:#eb5757; --danger-bg:rgba(235,87,87,.12); --danger-edge:rgba(235,87,87,.35); --good:#4cb782; --good-bg:rgba(76,183,130,.12);
-    --lead:#f2a33a; --tail:#2dd4bf; --track:#a78bfa; --rat:#f472b6; --disp:#9ba5ff;
-    --seg:#16171a; --segon:#26282d; --chev:#4a4d54; --glow:rgba(94,106,210,.22); --hl:rgba(255,255,255,.04);
+    --lead:#f2a33a; --tail:#2dd4bf; --track:#a78bfa; --rat:#f472b6; --disp:#8fd3a8;
+    --seg:#16171a; --segon:#26282d; --chev:#4a4d54; --glow:rgba(229,179,35,.16); --hl:rgba(255,255,255,.04);
     color-scheme:dark;
   } }
   html { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
@@ -364,8 +364,8 @@
   }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
     --bg:#08090a; --card:#101113; --line:#23252a; --ink:#f7f8f8; --sub:#8a8f98; --faint:#62666d;
-    --field:#16171a; --fieldb:#2a2c31; --accent:#5e6ad2; --accent-bg:rgba(94,106,210,.16); --accent-ink:#9ba5ff; --onacc:#fff;
-    --lead:#f2a33a; --tail:#2dd4bf; --disp:#9ba5ff; --seg:#16171a; --segon:#26282d; --glow:rgba(94,106,210,.22);
+    --field:#16171a; --fieldb:#2a2c31; --accent:#2f9a5e; --accent-bg:rgba(47,154,94,.16); --accent-ink:#8fd3a8; --onacc:#fff;
+    --lead:#f2a33a; --tail:#2dd4bf; --disp:#8fd3a8; --seg:#16171a; --segon:#26282d; --glow:rgba(229,179,35,.16); --gold:#E5B323;
   } }
   .lt .sh::before { content:""; width:16px; height:3px; border-radius:2px; background:var(--gold); margin-right:8px; flex:none; }
   .lt .btn:not(.sec2):not(.danger):not(.ghost) { background:linear-gradient(180deg,#118a45,#0b6a34); }
@@ -379,6 +379,140 @@
   .lt .tiles .tile { border-top:3px solid var(--gold); }
   .lt .brand + .title { background:linear-gradient(to bottom,#0b3d20 30%,#118a45); -webkit-background-clip:text; background-clip:text; }
   .lt .brand::after { content:""; display:block; width:84px; height:5px; border-radius:3px; margin:2px auto 0; background:var(--gold); }
+  /* Home page */
+  :root { --hm-ink:#0f3d24; --sand1:#efe2cc; --sand2:#e7d5b7; --sandpj:#cfb48b; --icbg:#f3eadb; --icink:#7a5a2e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; } }
+  :root[data-theme="dark"] { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; }
+  .hm-top { display:flex; justify-content:flex-end; padding-top:calc(env(safe-area-inset-top) + 10px); }
+  .hm-gear { width:44px; height:44px; border:0; background:transparent; border-radius:12px; color:var(--hm-ink); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:-6px; }
+  .hm-gear:active { background:var(--icbg); }
+  .hm-gear svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; }
+  .hm-hero { position:relative; margin:4px -16px 0; padding:18px 20px 112px; overflow:hidden; }
+  .hm-title { font-family:var(--display); font-weight:600; font-size:clamp(32px, 9vw, 44px); line-height:1.05; letter-spacing:-.025em; color:var(--hm-ink); margin:0; }
+  .hm-rule { display:block; width:58px; height:4px; border-radius:3px; background:var(--gold); margin:16px 0 18px; }
+  .hm-lede { font-size:17px; line-height:1.5; color:var(--sub); max-width:30ch; margin:0; position:relative; z-index:1; }
+  .hm-land { position:absolute; left:0; right:0; bottom:0; width:100%; height:150px; -webkit-mask-image:linear-gradient(to bottom, #000 62%, transparent); mask-image:linear-gradient(to bottom, #000 62%, transparent); }
+  .hm-land .d1 { fill:var(--sand1); } .hm-land .d2 { fill:var(--sand2); } .hm-land .pj { fill:var(--sandpj); }
+  .hm-nav { position:relative; z-index:1; margin-top:-22px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:2px 14px;
+    box-shadow:0 1px 2px rgba(60,40,10,.04), 0 10px 30px rgba(60,40,10,.07); }
+  .hm-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .hm-row:last-child, .hm-ap { border-bottom:0; cursor:default; }
+  .hm-row[role="button"]:active .hm-ic { transform:scale(.96); }
+  .hm-ic { width:40px; height:40px; flex:none; border-radius:11px; background:var(--icbg); display:flex; align-items:center; justify-content:center; color:var(--icink); transition:transform .15s var(--ease); }
+  .hm-ic svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .hm-row:first-child .hm-ic, .hm-row[data-go] .hm-ic { color:var(--accent); }
+  .pchip.on { background:var(--accent); border-color:var(--accent); color:var(--onacc); }
+  .hm-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .hm-nm { font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:-.01em; color:var(--hm-ink); }
+  .hm-sb { font-size:13px; color:var(--sub); line-height:1.35; }
+  .hm-chev { width:18px; height:18px; flex:none; fill:none; stroke:var(--hm-ink); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.75; transition:transform .2s var(--ease); }
+  #bkRow.open .hm-chev { transform:rotate(90deg); }
+  .hm-panel { display:none; padding:0 0 12px 52px; border-bottom:1px solid var(--line); }
+  .hm-panel.open { display:block; }
+  #bkRow { border-bottom:0; } .hm-panel { border-bottom:0; }
+  .qrow { gap:10px; } .qrow .in { flex:1 1 auto; min-width:0; width:auto; text-align:left; } .qrow .useg { flex:none; }
+  .hm-bk { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; } .hm-bk .btn { width:100%; }
+  .hm-seg { display:flex; margin-top:6px; border-radius:999px; padding:2px; }
+  .hm-seg button { flex:1; border-radius:999px; min-height:32px; font-size:13.5px; }
+  .hm-ap { align-items:flex-start; } .hm-ap .hm-ic { margin-top:2px; }
+  .hm-wave { position:absolute !important; left:calc(50% - 50vw); bottom:0; width:100vw; height:clamp(70px, 14vh, 120px); z-index:0 !important; pointer-events:none; }
+  body { overflow-x:clip; }
+  .hm-wave .g { fill:var(--gold); } .hm-wave .n { fill:#0e6b36; }
+  .hm > * { position:relative; z-index:1; }
+  .page.hm { position:relative; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; padding-bottom:calc(env(safe-area-inset-bottom) + 30px); }
+  .hm-foot { margin-top:auto; padding-top:36px; text-align:left; font-size:12px; line-height:1.55; color:var(--sub); max-width:74%; }
+  .hm-fb { font-size:13px; font-weight:500; color:var(--hm-ink); margin-bottom:2px; }
+  html:not(.lt) .hm-wave { opacity:.9; }
+  @media (min-width:640px) { .hm-hero { margin:4px 0 0; border-radius:0 0 20px 20px; padding-left:4px; } }
+  /* Wells page */
+  :root { --avbg:#F0E5D0; --avink:#174A32; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --avbg:rgba(255,255,255,.06); --avink:var(--ink); } }
+  :root[data-theme="dark"] { --avbg:rgba(255,255,255,.06); --avink:var(--ink); }
+  .wl-title { font-family:var(--display); font-weight:600; font-size:clamp(32px, 9vw, 40px); letter-spacing:-.025em; line-height:1.1; color:var(--hm-ink); margin:22px 0 4px; }
+  .wl-count { font-size:15.5px; color:var(--sub); margin:0; }
+  .wl .grp { border-radius:16px; box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); }
+  .wl .btn[data-a="create"] { background:linear-gradient(180deg,#11653a,#0b4f2c); }
+  .wl-lock { display:flex; gap:9px; align-items:flex-start; padding:0 6px; margin:10px 0 0; font-size:13.5px; line-height:1.45; color:var(--sub); }
+  .wl-lock svg { width:17px; height:17px; flex:none; margin-top:1px; fill:none; stroke:var(--icink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .wl-sort { position:relative; display:inline-flex; align-items:center; margin-left:auto; text-transform:none; letter-spacing:0; }
+  .wl-sort select { appearance:none; -webkit-appearance:none; background:transparent; border:0; font:inherit; font-family:var(--font, inherit); font-size:14px; font-weight:500; color:var(--sub); padding:4px 22px 4px 6px; cursor:pointer; text-align:right; }
+  .wl-sort svg { position:absolute; right:0; width:16px; height:16px; fill:none; stroke:var(--sub); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+  .wl .sh { display:flex; }
+  .wlist { display:flex; flex-direction:column; gap:12px; }
+  .wcard { display:flex; align-items:center; gap:14px; padding:14px 10px 14px 14px; background:var(--card); border:1px solid var(--line); border-radius:16px; cursor:pointer;
+    box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); -webkit-tap-highlight-color:transparent; transition:transform .15s var(--ease); }
+  .wcard:active { transform:scale(.99); }
+  .wav { width:52px; height:52px; flex:none; border-radius:13px; background:var(--avbg); color:var(--avink); display:flex; align-items:center; justify-content:center;
+    font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.02em; }
+  .wdiv { width:1px; align-self:stretch; background:var(--line); flex:none; margin:2px 0; }
+  .wtx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .wnm { font-family:var(--display); font-weight:600; font-size:17px; letter-spacing:.01em; color:var(--hm-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wsb { font-size:14px; color:var(--sub); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+  .wdt { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--sub); }
+  .wdt svg { width:14px; height:14px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; }
+  .wcard .more { margin-left:0; } .wcard .ch { color:var(--hm-ink); opacity:.75; font-size:22px; }
+  .wcard.wa { flex-direction:column; align-items:stretch; gap:0; padding:14px 14px 13px; }
+  .wtop { display:flex; align-items:center; gap:12px; min-width:0; }
+  .wa .wav { width:46px; height:46px; font-size:16.5px; border-radius:12px; }
+  .wrel { font-size:13px; color:var(--sub); }
+  .wchips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .wchip { font-size:12.5px; font-weight:600; padding:4px 9px; border-radius:999px; background:var(--avbg); color:var(--avink); max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .wchip.d { background:var(--good-bg); color:var(--good); } .wchip.d::before { content:"✓ "; }
+  .wchip.e { font-weight:500; color:var(--sub); }
+  .wprog { height:6px; border-radius:9px; background:var(--avbg); overflow:hidden; margin-top:12px; }
+  .wprog i { display:block; height:100%; border-radius:9px; background:linear-gradient(90deg,#11653a,#2f8f57); }
+  .wmeta { display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--sub); margin-top:6px; }
+  .jcard { gap:12px; padding:13px 6px 13px 13px; }
+  .jcard .wav { width:46px; height:46px; font-size:18px; border-radius:12px; }
+  .jcard.dn .wav { background:var(--good-bg); color:var(--good); }
+  .jcard { align-items:flex-start; } .jcard .wav { margin-top:2px; } .jcard .more { align-self:center; }
+  .jfoot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; } .jfoot .wdt { white-space:nowrap; }
+  .jdone { flex:none; border-radius:999px; min-height:34px; padding:0 13px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
+    border:1px solid var(--fieldb); background:var(--card); color:var(--hm-ink); white-space:nowrap; }
+  .jdone.on { background:#1f7a45; border-color:#1f7a45; color:#fff; }
+  .jcard .more { width:34px; flex-basis:34px; }
+  .wl .bar2 .btn.sec2 { border-color:var(--line); }
+  .wlist .empty { background:var(--card); border:1px dashed var(--fieldb); border-radius:16px; padding:22px 16px; text-align:center; }
+  /* v3: contrast + touch targets */
+  :root:not([data-theme="dark"]) { --faint:#6b766c; }
+  .useg button { min-height:36px; min-width:48px; font-size:14.5px; }
+  .pill { min-height:38px; }
+  .cc .ct { color:var(--ink); opacity:.85; }
+  /* v3: invalid fields */
+  .in.bad, .cc input.bad { border-color:var(--danger) !important; background:var(--danger-bg) !important; box-shadow:0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent) !important; }
+  .cc:has(input.bad) { border-color:var(--danger); }
+  .sg { font-style:normal; color:var(--accent-ink) !important; font-weight:600; margin-left:4px; }
+  /* v3: collapsible sections */
+  .sh[data-tog] { cursor:pointer; user-select:none; -webkit-user-select:none; min-height:30px; }
+  .sh[data-tog] .cv { display:inline-block; transition:transform .2s var(--ease, ease); margin-left:6px; }
+  .sec.shut .grp { display:none; } .sec.shut .sh[data-tog] .cv { transform:rotate(-90deg); }
+  /* v3: sticky results bar */
+  .rbar { position:fixed; left:0; right:0; bottom:0; z-index:80; padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);
+    background:color-mix(in srgb, var(--card) 92%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line); box-shadow:0 -4px 18px rgba(0,0,0,.08); cursor:pointer; }
+  .rbar .in2 { max-width:600px; margin:0 auto; display:flex; gap:6px; }
+  .rbar .c { flex:1 1 0; min-width:0; text-align:center; }
+  .rbar .k { font-size:11px; color:var(--sub); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rbar .v { font-size:17px; font-weight:700; letter-spacing:-.02em; color:var(--ink); white-space:nowrap; }
+  .rbar .v small { font-size:11px; font-weight:500; color:var(--sub); margin-left:2px; }
+  .rbar .c + .c { border-left:1px solid var(--line); }
+  .lt .rbar { border-top:3px solid var(--gold); }
+  /* dark mode: same green + gold touches as light */
+  html:not(.lt) .sh::before { content:""; width:16px; height:3px; border-radius:2px; background:var(--gold); margin-right:8px; flex:none; }
+  html:not(.lt) .sh { color:#8fd3a8; }
+  html:not(.lt) .btn:not(.sec2):not(.danger):not(.ghost) { background:linear-gradient(180deg,#22894f,#16693b); }
+  html:not(.lt) .btn.sec2 { border-color:rgba(229,179,35,.28); }
+  html:not(.lt) .seg button.on { box-shadow:inset 0 -3px 0 var(--gold), 0 1px 2px rgba(0,0,0,.3); }
+  html:not(.lt) .in:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(229,179,35,.22); }
+  html:not(.lt) .tiles .tile { border-top:3px solid var(--gold); }
+  html:not(.lt) .big:not(.blue) { background:rgba(229,179,35,.08); border:1px solid rgba(229,179,35,.22); border-left:5px solid var(--gold); } html:not(.lt) .big:not(.blue) .k { color:#e8c35a; }
+  html:not(.lt) .rbar { border-top:3px solid var(--gold); }
+  html:not(.lt) .item .ic { box-shadow:inset 0 -4px 0 var(--gold); }
+  html:not(.lt) .jchips .pchip { border-color:rgba(229,179,35,.55) !important; }
+  html:root:not(.lt) { --sand1:rgba(201,173,132,.06); --sand2:rgba(201,173,132,.10); --sandpj:rgba(201,173,132,.30); --icbg:rgba(229,179,35,.08); --icink:#e2c58a; --avbg:rgba(229,179,35,.10); --avink:#f1dfb0; }
+  html:not(.lt) .hm-nav { border-color:#2a2c31; box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04); }
+  html:not(.lt) .wcard { border-color:#2a2c31; }
+  .toast.up { bottom:calc(env(safe-area-inset-bottom) + 96px); }
 </style>
 </head>
 <body>
@@ -409,26 +543,39 @@ function frac(od) {
 // PDO OCTG booklet: size → weight → ID. Capacity = 0.5067 × ID²,
 // annulus = outer capacity − 0.5067 × OD². Every card can be overridden.
 var K = 0.5067;
-function mkCsg(id, od, w, idIn) { return { id: id, od: od, w: w, idIn: idIn, cap: K * idIn * idIn, label: frac(od) + " " + w + "#" }; }
+function mkCsg(id, od, w, idIn, hide) { return { id: id, od: od, w: w, idIn: idIn, cap: K * idIn * idIn, label: frac(od) + " " + w + "#", hide: !!hide }; }
 var CSG = [
-  mkCsg("c20", 20, 133, 18.730), mkCsg("c1858", 18.625, 87.5, 17.755),
-  mkCsg("c1338", 13.375, 54.5, 12.615), mkCsg("c1338_72", 13.375, 72, 12.347),
-  mkCsg("c978", 9.875, 68.9, 8.475),
-  mkCsg("c958", 9.625, 40, 8.835), mkCsg("c958_47", 9.625, 47, 8.681), mkCsg("c958_535", 9.625, 53.5, 8.535), mkCsg("c958_58", 9.625, 58, 8.475),
-  mkCsg("c7_23", 7, 23, 6.366), mkCsg("c7_29", 7, 29, 6.184), mkCsg("c7_35", 7, 35, 6.004), mkCsg("c7_41", 7, 41, 5.820),
-  mkCsg("c512", 5.5, 17, 4.862), mkCsg("c512_23", 5.5, 23, 4.670),
-  mkCsg("c5", 5, 15, 4.408), mkCsg("c5_203", 5, 20.3, 4.184),
-  mkCsg("c412", 4.5, 11.6, 4.000), mkCsg("c412_1275", 4.5, 12.75, 3.958), mkCsg("c412_135", 4.5, 13.5, 3.920), mkCsg("c412_17", 4.5, 17, 3.740)
+  // PDO Green Book (Drilling Data Handbook, pages D9-D10): wall thickness gives the ID. These are the sizes and weights in use.
+  mkCsg("g20_94", 20, 94, 19.124), mkCsg("g20_106_5", 20, 106.5, 19.000), mkCsg("c20", 20, 133, 18.730),
+  mkCsg("c1858", 18.625, 87.5, 17.755), mkCsg("c1338", 13.375, 54.5, 12.615), mkCsg("g13_375_61", 13.375, 61, 12.515),
+  mkCsg("g13_375_68", 13.375, 68, 12.415), mkCsg("c1338_72", 13.375, 72, 12.347), mkCsg("c958", 9.625, 40, 8.835),
+  mkCsg("g9_625_43_5", 9.625, 43.5, 8.755), mkCsg("c958_47", 9.625, 47, 8.681), mkCsg("c958_535", 9.625, 53.5, 8.535),
+  mkCsg("c958_58", 9.625, 58.4, 8.435), mkCsg("g7_625_26_4", 7.625, 26.4, 6.969), mkCsg("g7_625_29_7", 7.625, 29.7, 6.875),
+  mkCsg("g7_625_33_7", 7.625, 33.7, 6.765), mkCsg("g7_625_39", 7.625, 39, 6.625), mkCsg("c7_23", 7, 23, 6.366),
+  mkCsg("g7_26", 7, 26, 6.276), mkCsg("c7_29", 7, 29, 6.184), mkCsg("g7_32", 7, 32, 6.094),
+  mkCsg("c7_35", 7, 35, 6.004), mkCsg("g7_38", 7, 38, 5.920), mkCsg("c7_41", 7, 41, 5.820),
+  mkCsg("c512", 5.5, 17, 4.892), mkCsg("g5_5_20", 5.5, 20, 4.778), mkCsg("c512_23", 5.5, 23, 4.670),
+  mkCsg("c5", 5, 15, 4.408), mkCsg("g5_18", 5, 18, 4.276), mkCsg("g5_21_4", 5, 21.4, 4.126),
+  mkCsg("c412", 4.5, 11.6, 4.000), mkCsg("c412_135", 4.5, 13.5, 3.920), mkCsg("g4_5_15_1", 4.5, 15.1, 3.826),
+  // Older entries kept so saved jobs still calculate; they are not offered in the lists.
+  mkCsg("c978", 9.875, 68.9, 8.475, true), mkCsg("c5_203", 5, 20.3, 4.184, true), mkCsg("c412_1275", 4.5, 12.75, 3.958, true), mkCsg("c412_17", 4.5, 17, 3.740, true)
 ];
-function csgFor(od) { return CSG.filter(function (c) { return c.od === od; })[0]; }
-function sizes() { var o = []; CSG.forEach(function (c) { if (o.indexOf(c.od) < 0) o.push(c.od); }); return o; }
+function csgFor(od) { return CSG.filter(function (c) { return c.od === od && !c.hide; })[0]; }
+// Sizes offered (biggest first); a size that only an old saved job uses is added so that job still opens.
+function sizes(cur) { var o = []; CSG.forEach(function (c) { if ((!c.hide || c.od === cur) && o.indexOf(c.od) < 0) o.push(c.od); }); return o.sort(function (a, b) { return b - a; }); }
 function mkHole(id, d) { return { id: id, label: frac(d), d: d, cap: K * d * d }; }
 var HOLE = [mkHole("h26", 26), mkHole("h1712", 17.5), mkHole("h16", 16), mkHole("h1214", 12.25), mkHole("h10", 10), mkHole("h812", 8.5), mkHole("h618", 6.125)];
 // Running strings: capacity and closed-end displacement (CED), L/m.
 function mkStr(id, label, idIn, od) { return { id: id, label: label, cap: K * idIn * idIn, ced: K * od * od }; }
 var DP = [
-  { id: "dp5p", label: "5″ DP 19.5#", cap: 9.05, ced: 13.24 },
-  mkStr("dp4", "4″ DP 14#", 3.34, 4), mkStr("tbg412", "4½″ TBG 12.75#", 3.958, 4.5), mkStr("tbg312", "3½″ TBG 9.3#", 2.992, 3.5),
+  // Drill pipe, E75, with the tool joint noted (Green Book D6-D7): capacity and closed-end displacement, L/m.
+  { id: "dp5p", label: "5″ DP 19.5# · NC50", cap: 9.15, ced: 13.11 },
+  { id: "dp35", label: "3½″ DP 13.3# · NC38", cap: 3.86, ced: 6.50 },
+  { id: "dp4", label: "4″ DP 14# · NC46", cap: 5.64, ced: 8.65 },
+  { id: "dp412", label: "4½″ DP 16.6# · NC46", cap: 7.30, ced: 10.79 },
+  { id: "dp55", label: "5½″ DP 21.9# · 5½ FH", cap: 11.37, ced: 15.88 },
+  // Tubing (Green Book D11), used as stinger
+  mkStr("tbg412", "4½″ TBG 12.75#", 3.958, 4.5), mkStr("tbg312", "3½″ TBG 9.3#", 2.992, 3.5),
   mkStr("tbg278", "2⅞″ TBG 6.5#", 2.441, 2.875), mkStr("tbg238", "2⅜″ TBG 4.6#", 1.995, 2.375)
 ];
 function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0] || null; }
@@ -451,8 +598,8 @@ function newJob(name) {
     exLeadOH: "", exLeadCsg: "", exTailOH: "", exTailCsg: "", dpTub: "dp5p", outStk: "13.62", unitVol: "",
     capInt: "", capFull: "", capOH: "", capCC: "",
     leadYield: "", leadConc: "", leadDead: "", tailYield: "", tailConc: "", tailDead: "",
-    leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: [], stickUp: "", spacerBehind: "", stCol: "", toc1: "",
-    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: "", tankSize: "", tankDead: "", leadWater: "", tailWater: "",
+    leadAdd: [], tailAdd: [], spacerVol: "", spacerDead: "", spacerAdd: [], spacerBehind: "", stCol: "", toc1: "",
+    plugs: [{ bot: "", top: "" }], stgId: "tbg312", stgLen: "", spAhead: "", underDisp: "", leadWater: "", tailWater: "",
     mudGr: "", spGr: "", leadGr: "", tailGr: "", gasDepth: "", gasP: "", fsGr: ""
   };
 }
@@ -517,17 +664,22 @@ function model(s) {
   var k = caps(s), TD = P(s.td), SH = P(s.shoe), FC = P(s.fc), TOC = P(s.toc);
   var two = s.jobType === "twostage", ST = two ? P(s.stCol) : null, TOC1 = two ? (P(s.toc1) != null ? P(s.toc1) : ST) : null;
   var TOP = s.jobType === "liner" ? (P(s.top) || 0) : 0, lt = !two && s.scheme === "leadtail", tTop = lt ? P(s.tailTop) : null;
-  var PS = hasPrev(s) ? P(s.prevShoe) : null, liner = s.jobType === "liner", SU = P(s.stickUp) || 0;
+  var PS = hasPrev(s) ? P(s.prevShoe) : null, liner = s.jobType === "liner";
   if ([TD, SH, FC, TOC].some(function (v) { return v == null; }) || (lt && tTop == null) || (two && ST == null)) return null;
   var ex = function (key) { return (P(s[key]) || 0) / 100; };
   var geo = [];
+  // Bottom-up, like the cement travels: open-hole annulus, then casing-in-casing, then above the liner top.
+  if (k.oh != null) { var q2 = Math.max(TOC, PS || 0, TOP); if (SH > q2) geo.push({ name: "OH-Csg", kind: "oh", top: q2, bot: SH, cap: k.oh }); }
+  if (PS != null && PS > 0 && k.cc != null) { var q = Math.max(TOC, TOP), g = Math.min(PS, SH); if (g > q) geo.push({ name: "Csg-Csg", kind: "csg", top: q, bot: g, cap: k.cc }); }
   // Liner: cement left above the liner top once the DP is out fills the full previous-casing bore.
   if (liner && TOP > 0 && TOC < TOP && k.prevInt != null) geo.push({ name: "Above liner top", kind: "csg", top: TOC, bot: TOP, cap: k.prevInt, full: true });
-  if (PS != null && PS > 0 && k.cc != null) { var q = Math.max(TOC, TOP), g = Math.min(PS, SH); if (g > q) geo.push({ name: "Csg-Csg", kind: "csg", top: q, bot: g, cap: k.cc }); }
-  if (k.oh != null) { var q2 = Math.max(TOC, PS || 0, TOP); if (SH > q2) geo.push({ name: "OH-Csg", kind: "oh", top: q2, bot: SH, cap: k.oh }); }
   // Two-stage: stage 1 (tail fields) from TOC1 to the shoe, stage 2 (lead fields) from TOC2 up to the stage tool.
-  var bands = two ? [{ key: "lead", label: "Stage 2", from: TOC, to: ST }, { key: "tail", label: "Stage 1", from: TOC1, to: SH }] : lt ? [{ key: "lead", label: "Lead", from: TOC, to: tTop }, { key: "tail", label: "Tail", from: tTop, to: SH }] : [{ key: "tail", label: "Slurry", from: TOC, to: SH }];
+  var bands = two ? [{ key: "tail", label: "Stage 1", from: TOC1, to: SH }, { key: "lead", label: "Stage 2", from: TOC, to: ST }]
+    : lt ? [{ key: "tail", label: "Tail", from: tTop, to: SH }, { key: "lead", label: "Lead", from: TOC, to: tTop }] : [{ key: "tail", label: "Slurry", from: TOC, to: SH }];
   var items = [], n = 1;
+  var c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
+  if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int, vol0: (SH - FC) * k.int });
+  if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")), vol0: (TD - SH) * k.full });
   bands.forEach(function (b) {
     geo.forEach(function (g) {
       var a = Math.max(b.from, g.top), z = Math.min(b.to, g.bot);
@@ -537,19 +689,15 @@ function model(s) {
       }
     });
   });
-  var c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
-  if (k.int != null && SH > FC) items.push({ n: n++, slurry: "shoetrack", label: "Shoe track (" + c.label + " intl)", dTop: FC, dBot: SH, cap: k.int, ex: 0, vol: (SH - FC) * k.int, vol0: (SH - FC) * k.int });
-  if (k.full != null && TD > SH) items.push({ n: n++, slurry: "rathole", label: "Pocket / rat hole (" + h.label + " full)", dTop: SH, dBot: TD, cap: k.full, ex: ex("exTailOH"), vol: (TD - SH) * k.full * (1 + ex("exTailOH")), vol0: (TD - SH) * k.full });
   var dispL = null, parts = [];
-  var suT = SU ? " (+" + de(SU) + " m stick-up)" : "";
-  if (!liner) { if (k.int != null && FC > 0) { dispL = (FC + SU) * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC) + suT, v: dispL }]; } }
+  if (!liner) { if (k.int != null && FC > 0) { dispL = FC * k.int; parts = [{ t: c.label + " intl · 0→" + de(FC), v: dispL }]; } }
   else if (k.dp != null && k.int != null && FC > TOP) {
-    var a1 = (TOP + SU) * k.dp, a2 = (FC - TOP) * k.int; dispL = a1 + a2;
-    parts = [{ t: dpOf(s.dpTub).label + " · 0→" + de(TOP) + suT, v: a1 }, { t: c.label + " · " + de(TOP) + "→" + de(FC), v: a2 }];
+    var a1 = TOP * k.dp, a2 = (FC - TOP) * k.int; dispL = a1 + a2;
+    parts = [{ t: dpOf(s.dpTub).label + " · 0→" + de(TOP), v: a1 }, { t: c.label + " · " + de(TOP) + "→" + de(FC), v: a2 }];
   }
   var spB = (P(s.spacerBehind) || 0) * 1000, mudL = dispL != null ? Math.max(0, dispL - spB) : null;
   var disp2 = null, parts2 = [], mud2 = null;
-  if (two && k.int != null) { disp2 = (ST + SU) * k.int; parts2 = [{ t: c.label + " intl · 0→" + de(ST) + suT, v: disp2 }]; mud2 = Math.max(0, disp2 - spB); }
+  if (two && k.int != null) { disp2 = ST * k.int; parts2 = [{ t: c.label + " intl · 0→" + de(ST), v: disp2 }]; mud2 = Math.max(0, disp2 - spB); }
   // TOC while the DP is still in the liner hanger: the volume above the TOL squeezed into casing − DP CED.
   var tocDp = null, aboveL = 0;
   items.forEach(function (z) { if (z.full) aboveL += z.vol; });
@@ -559,7 +707,7 @@ function model(s) {
   if (FC >= SH) warn.push("Float collar should be above the shoe.");
   if (SH > TD) warn.push("Shoe is deeper than TD.");
   if (TOC >= SH) warn.push("TOC should be above the shoe.");
-  if (lt && (tTop <= TOC || tTop >= SH)) warn.push("Top of tail should sit between TOC and the shoe.");
+  if (lt && (tTop <= TOC || tTop >= SH)) warn.push("Tail TOC should sit between Lead TOC and the shoe.");
   if (liner && !TOP) warn.push("Enter the liner top.");
   if (two && (ST <= TOC || ST >= FC)) warn.push("Stage tool should sit between stage 2 TOC and the float collar.");
   if (two && TOC1 < ST) warn.push("Stage 1 TOC is above the stage tool — stage 1 cement would cover it.");
@@ -635,13 +783,6 @@ function addVal(r, base) {
 var PACKS = { cdf: 20, cfl100: 25, cd200: 25, bentonite: 25 };
 function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[(r.name || "").replace(/[\s-]/g, "").toLowerCase()] || null; }
 function packTxt(r, a) { var p = packOf(r); return p && a != null && r.unit !== "m3" && r.unit !== "MT" ? " · " + Math.ceil(a / p - 1e-9) + " pk" : ""; }
-// Mix fluid is batched in tanks: each holds tankSize, of which tankDead stays behind.
-function tanksOf(s, fluid) {
-  if (fluid == null || !(fluid > 0)) return null;
-  var size = P(s.tankSize) || 5, dead = P(s.tankDead) != null ? P(s.tankDead) : 0.5, use = size - dead;
-  if (use <= 0) return null;
-  var n = Math.ceil(fluid / use - 1e-9); return { n: n, prep: fluid + n * dead, size: size, dead: dead };
-}
 // Plain water in a slurry's mix fluid: from the lab water ratio (m³/MT) if given, else mix fluid − liquid additives.
 function waterOf(o, ratio, liqL) {
   if (!o || o.mix == null) return null;
@@ -669,6 +810,18 @@ function unitSeg() { var u = volUnit(); return '<span class="useg"><button data-
 function grp(title, body, right) {
   return '<div class="sec"><div class="sh">' + title + (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
 }
+function grpC(id, title, body, right) {
+  var shut = !!load("col", {})[id];
+  return '<div class="sec' + (shut ? " shut" : "") + '" data-col="' + id + '"><div class="sh" data-tog="' + id + '" role="button" aria-expanded="' + !shut + '"><span style="flex:1;display:flex;align-items:center;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit">' + title + '<b class="cv">▾</b></span>' +
+    (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
+}
+function togCol(root, e) {
+  var t = e.target.closest("[data-tog]"); if (!t) return false;
+  var id = t.getAttribute("data-tog"), c = load("col", {}), sec = t.closest(".sec");
+  c[id] = !sec.classList.contains("shut"); save("col", c); sec.classList.toggle("shut", c[id]); t.setAttribute("aria-expanded", !c[id]); return true;
+}
+// Gradient input with a live SG readout next to the label (SG = kPa/m ÷ 9.81).
+function numG(label, k, s, ph) { return num(label + ' <i class="sg" data-sg="' + k + '"></i>', k, s, "kPa/m", ph); }
 function num(label, k, s, unit, ph) {
   return '<label class="r"><span class="l">' + label + (unit ? " <i>· " + unit + "</i>" : "") + '</span><input class="in" inputmode="decimal" autocomplete="off" data-k="' + k +
     '" value="' + esc(s[k] == null ? "" : s[k]) + '" placeholder="' + esc(ph == null ? "" : ph) + '"></label>';
@@ -697,7 +850,7 @@ function item(go, color, letter, name, sub, more) {
     '</span><span class="sb">' + sub + "</span></span>" + (more ? '<span class="more" role="button" aria-label="More" data-more="' + more + '">⋯</span>' : "") + '<span class="ch">›</span></div>';
 }
 function toast(msg) {
-  var t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  var t = document.createElement("div"); t.className = "toast" + (document.getElementById("rbar") ? " up" : ""); t.textContent = msg; document.body.appendChild(t);
   setTimeout(function () { t.remove(); }, 1800);
 }
 // In-page dialogs: the browser's confirm/prompt are blocked in some
@@ -825,8 +978,8 @@ function schematic(m, light) {
   if (m.LT != null) o += '<path d="M' + (cx - w - 7) + "," + yc + " h7 v6 z M" + (cx + w + 7) + "," + yc + ' h-7 v6 z" fill="' + steel + '"/>';
   else o += '<rect x="' + (cx - 30) + '" y="' + (T0 - 8) + '" width="60" height="8" fill="' + steel + '"/>';
   // depth labels on the left
-  var labs = [{ d: 0, s: "" }, { d: m.TOC, s: "TOC" }];
-  if (m.tTop != null) labs.push({ d: m.tTop, s: "tail top" });
+  var labs = [{ d: 0, s: "" }, { d: m.TOC, s: m.tTop != null ? "Lead TOC" : "TOC" }];
+  if (m.tTop != null) labs.push({ d: m.tTop, s: "Tail TOC" });
   if (m.ST != null) labs.push({ d: m.ST, s: "stage tool" });
   if (m.TOC1 != null && m.TOC1 !== m.ST) labs.push({ d: m.TOC1, s: "TOC stg 1" });
   if (m.LT != null) labs.push({ d: m.LT, s: "liner top" });
@@ -844,7 +997,7 @@ function schematic(m, light) {
   });
   // section numbers on the right
   var ny = [];
-  m.items.forEach(function (z) {
+  m.items.slice().sort(function (a, b) { return a.dTop - b.dTop; }).forEach(function (z) {
     var y = (Y(z.dTop) + Math.max(Y(z.dBot), Y(z.dTop) + 3)) / 2, x = z.slurry === "shoetrack" || z.slurry === "rathole" ? cx : cx + (w + U) / 2 + 2;
     if (x !== cx) { if (ny.length && y - ny[ny.length - 1] < 20) y = ny[ny.length - 1] + 20; ny.push(y); }
     o += '<circle cx="' + x + '" cy="' + y + '" r="9" fill="' + (light ? "#fff" : "#0c1119") + '" stroke="' + col[z.slurry] + '" stroke-width="2"/><text x="' + x + '" y="' + (y + 3.6) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + col[z.slurry] + '">' + z.n + "</text>";
@@ -870,7 +1023,8 @@ function migrate() {
   });
   return ch;
 }
-function themePref() { var t = load("theme", "auto"); return t === "light" || t === "dark" ? t : "auto"; }
+// Light mode only.
+function themePref() { return "light"; }
 function isDark() { var t = themePref(); return t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyTheme() {
   var t = themePref(); if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
@@ -943,19 +1097,16 @@ function CementPage(root, s) {
   // Casing picker: size, then weight (ID shown) from the OCTG booklet.
   function csgRows(k) {
     var cur = byId(CSG, s[k]) || CSG[0];
-    return '<label class="r"><span class="l">Size</span><select class="chip" data-csz="' + k + '">' + sizes().map(function (od) {
+    return '<label class="r"><span class="l">Size</span><select class="chip" data-csz="' + k + '">' + sizes(cur.od).map(function (od) {
       return '<option value="' + od + '"' + (od === cur.od ? " selected" : "") + ">" + frac(od) + "</option>"; }).join("") + "</select></label>" +
-      sel("Weight", k, s, CSG.filter(function (c) { return c.od === cur.od; }).map(function (c) { return { id: c.id, label: c.w + "# · ID " + c.idIn.toFixed(3) }; }), true);
+      sel("Weight", k, s, CSG.filter(function (c) { return c.od === cur.od && (!c.hide || c.id === s[k]); }).sort(function (a, b) { return a.w - b.w; }).map(function (c) { return { id: c.id, label: c.w + "# · ID " + c.idIn.toFixed(3) }; }), true);
   }
   function pnum(label, i, f) { var o = {}; o["plugs." + i + "." + f] = s.plugs[i][f]; return num(label, "plugs." + i + "." + f, o, "m"); }
-  function tankGrp() {
-    return grp("Mix tanks", num("Tank size", "tankSize", s, "m³", "5") + num("Dead per tank", "tankDead", s, "m³", "0.5") + '<div id="o-tank"></div>');
-  }
   function plugForm(o, k, c, h) {
-    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + "</div>");
-    o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, k.auto.full) + "</div>" +
+    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + "</div>");
+    o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Open hole capacity", "capFull", s, k.auto.full) + "</div>" +
       '<p class="note" style="padding-bottom:12px">Only used for plug parts below the shoe.</p>');
-    o += grp("Work string", sel("Drill pipe", "dpTub", s, opt(DP), true) + sel("Stinger (tail pipe)", "stgId", s, opt(DP.slice(1)), true) + num("Stinger length", "stgLen", s, "m", "0 = none") +
+    o += grp("Work string", sel("Drill pipe", "dpTub", s, opt(DP), true) + sel("Stinger (tail pipe)", "stgId", s, opt(DP.filter(function (x) { return x.id.indexOf("tbg") === 0; })), true) + num("Stinger length", "stgLen", s, "m", "0 = none") +
       '<p class="note" style="padding-bottom:12px">String end sits at the plug bottom. Stinger ≥ plug length + ~30 m.</p>');
     o += grp("Plugs", s.plugs.map(function (p, i) {
       return '<div class="tag" style="color:var(--tail)">Plug ' + (i + 1) + (s.plugs.length > 1 ? ' <button class="x" style="float:right" data-act="delPlug" data-i="' + i + '">✕</button>' : "") + "</div>" +
@@ -967,9 +1118,8 @@ function CementPage(root, s) {
     o += grp("Plug results", '<div id="o-plug"></div>', unitSeg());
     o += grp("Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows("Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
-    o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
-      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
-    o += tankGrp();
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
     return o;
   }
   function draw() {
@@ -978,34 +1128,33 @@ function CementPage(root, s) {
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
     o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn danger" data-act="del">Delete</button></div>';
     o += '<div id="warnBox"></div>';
-    if (!two && s.jobType !== "plug") o += grp("Slurries", '<div class="pad" style="padding-top:0">' + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>");
-    if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + "</div>"; outs(); return; }
+    if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
     if (!prevOn) o += '<button class="btn ghost" style="margin-top:22px" data-act="prev">+ Previous casing <span style="opacity:.7;font-weight:400">· only if TOC is inside one</span></button>';
     else o += grp("Previous casing", prevOn ?
       csgRows("prevId") + num("Shoe depth", "prevShoe", s, "m") +
-      '<div class="ccrow">' + capCard("Csg-Csg annulus", "capCC", s, k.auto.cc) + "</div>" :
+      '<div class="ccrow">' + capCard("Csg-Csg annular capacity", "capCC", s, k.auto.cc) + "</div>" :
       '<p class="note" style="padding:14px 0;margin:0">Open hole from surface. Tap “none” to add if TOC lands inside a previous casing.</p>',
       liner ? '<span class="pill on">required</span>' : '<button class="pill" data-act="prev">' + (s.prevOn ? "remove" : "none") + "</button>");
     o += grp(liner ? "Liner (being cemented)" : "Casing (being cemented)",
       csgRows("csgId") + (liner ? num("Liner top", "top", s, "m") : "") + num("Shoe depth", "shoe", s, "m") + num("Float collar depth", "fc", s, "m") +
       (liner ? sel("Running string", "dpTub", s, opt(DP), true) : "") +
-      '<div class="ccrow">' + capCard("Internal", "capInt", s, k.auto.int) + capCard("OH annulus", "capOH", s, k.auto.oh) + "</div>");
+      '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + capCard("OH annular capacity", "capOH", s, k.auto.oh) + "</div>");
     if (k.ohBad || k.ccBad) o += '<div class="warn">⚠ Impossible geometry: the casing OD (' + c.label + ") is larger than the " + (k.ohBad ? "hole (" + h.label + ")" : "previous casing (" + pc.label + ")") + ". Pick a bigger hole/casing — e.g. 9⅝″ needs a 12¼″ hole, 7″ needs 8½″.</div>";
-    o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Full bore", "capFull", s, k.auto.full) + "</div>");
+    o += grp("Open hole", sel("Size", "holeId", s, opt(HOLE), true) + num("TD", "td", s, "m") + '<div class="ccrow">' + capCard("Open hole capacity (rat hole)", "capFull", s, k.auto.full) + "</div>");
     if (two) o += grp("Cement program",
       num("Stage tool (DV)", "stCol", s, "m") + num("Stage 1 TOC", "toc1", s, "m", "= stage tool") + num("Stage 2 TOC", "toc", s, "m") +
       '<div class="tag" style="color:var(--tail)">Stage 1 excess</div>' + num("Open hole", "exTailOH", s, "%", "0") + num("Cased", "exTailCsg", s, "%", "0") +
       '<div class="tag" style="color:var(--lead)">Stage 2 excess</div>' + num("Open hole", "exLeadOH", s, "%", "0") + num("Cased", "exLeadCsg", s, "%", "0") +
       '<p class="note" style="padding-bottom:12px">Stage 1: shoe up to stage 1 TOC (blank = stage tool), displaced to the float collar. Stage 2: stage tool up to stage 2 TOC, displaced to the stage tool. Rat hole takes stage 1 OH excess.</p>');
-    else o += grp("Cement program", num(lt ? "TOC — Lead" : "TOC", "toc", s, "m") + (lt ? num("Top of Tail", "tailTop", s, "m") : "") +
+    else o += grp("Cement program", '<div class="pad" style="padding-top:0">' + seg("scheme", s, [["single", "Single slurry"], ["leadtail", "Lead / Tail"]]) + "</div>" + num(lt ? "Lead TOC" : "TOC", "toc", s, "m") + (lt ? num("Tail TOC", "tailTop", s, "m") : "") +
       // Single slurry has one excess pair (stored as the tail's); lead/tail gets both.
       (lt ? '<div class="tag" style="color:var(--lead)">Lead excess</div>' + num("Lead OH", "exLeadOH", s, "%", "0") + num("Lead Cased", "exLeadCsg", s, "%", "0") : "") +
       '<div class="tag" style="color:var(--tail)">' + (lt ? "Tail excess" : "Excess") + "</div>" + num(lt ? "Tail OH" : "Open hole", "exTailOH", s, "%", "0") + num(lt ? "Tail Cased" : "Cased", "exTailCsg", s, "%", "0") +
       '<p class="note" style="padding-bottom:12px">' + (lt ? "Lead/Tail × OH/Cased, as in the proposal. Rat hole takes Tail OH." : "Open hole = excess on the annulus and rat hole. Cased = inside a previous casing.") + ' Blank = 0%. Shoe track has no excess.</p>');
     o += '<div id="schSec" style="display:none">' + grp("Schematic", '<div class="pad" id="o-sch"></div>', "bottom expanded · not to scale") + "</div>";
     o += grp("Cement volumes", '<div id="o-vol"></div>', unitSeg());
-    o += grp(two ? "Displacement · stage 1" : "Displacement", '<div id="o-disp"></div>' + num("Stick-up", "stickUp", s, "m", "0") + num("Spacer behind", "spacerBehind", s, "m³", "0") + '<div id="o-mud"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk", "13.62") + '<div id="o-stk"></div>', unitSeg());
+    o += grp(two ? "Displacement · stage 1" : "Displacement", '<div id="o-disp"></div>' + num("Spacer behind", "spacerBehind", s, "m³", "0") + '<div id="o-mud"></div>' + num("Pumped by cement unit", "unitVol", s, "m³", "0") + num("Rig pump", "outStk", s, "L/stk", "13.62") + '<div id="o-stk"></div>', unitSeg());
     if (two) o += grp("Displacement · stage 2", '<div id="o-disp2"></div>', "to stage tool");
     var leadG = function () { return grp(two ? "Stage 2 slurry" : "Lead slurry", '<div class="pad" style="padding-bottom:0" id="o-lv"></div>' + num("Slurry yield", "leadYield", s, "m³/MT") + num("Mix fluid", "leadConc", s, "m³/MT") + num("Dead volume", "leadDead", s, "m³") +
       '<div id="o-lead"></div>' + addRows(two ? "Stage 2 additives" : "Lead additives", "leadAdd", s.leadAdd, two ? "Dry cement" : "Equiv dry", "var(--lead)")); };
@@ -1013,17 +1162,16 @@ function CementPage(root, s) {
     o += grp(two ? "Stage 1 slurry" : lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows(two ? "Stage 1 additives" : lt ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
     if (two) o += leadG();
-    o += grp("Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
-      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"));
-    o += tankGrp();
-    o += grp("Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m (SG × 9.81). Static, no friction.</p>' +
-      num("Mud", "mudGr", s, "kPa/m") + num("Spacer", "spGr", s, "kPa/m", "9.81") +
-      (lt || two ? num(two ? "Stage 2 cement" : "Lead cement", "leadGr", s, "kPa/m") : "") + num(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s, "kPa/m") +
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+      addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
+    o += grpC("pr", "Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m — the SG shows next to each (kPa/m ÷ 9.81). Static, no friction.</p>' +
+      numG("Mud", "mudGr", s) + numG("Spacer", "spGr", s, "9.81") +
+      (lt || two ? numG(two ? "Stage 2 cement" : "Lead cement", "leadGr", s) : "") + numG(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s) +
       num("Spacer ahead", "spAhead", s, "m³", "0") +
       '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
-      (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + num("Formation strength", "fsGr", s, "kPa/m") : "") +
-      '<div id="o-pr"></div>');
-    root.innerHTML = '<div class="page">' + o + "</div>";
+      (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + numG("Formation strength", "fsGr", s) : "") +
+      '<div id="o-pr"></div>', '<b id="h-pr" style="font-weight:500"></b>');
+    root.innerHTML = '<div class="page">' + o + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>';
     outs();
   }
   function outs() {
@@ -1033,6 +1181,8 @@ function CementPage(root, s) {
     root.querySelectorAll("[data-cc]").forEach(function (el) {
       var ed = P(s[el.getAttribute("data-cc")]) != null; el.classList.toggle("ed", ed); el.querySelector("b").textContent = ed ? "edited" : "auto";
     });
+    markBad(m);
+    root.querySelectorAll("[data-sg]").forEach(function (el) { var g = P(s[el.getAttribute("data-sg")]); el.textContent = g != null && g > 0 ? "= " + (g / 9.81).toFixed(2) + " SG" : ""; });
     if (s.jobType === "plug") outsPlug(m); else {
     // The drawing shows up once the well is filled in.
     var pr = pressures(s, m), $pr = $("o-pr");
@@ -1056,9 +1206,8 @@ function CementPage(root, s) {
       };
       var v = "";
       var bl = function () { return block(m.names.lead, "var(--lead)", function (z) { return z.slurry === "lead"; }, m.leadVol); };
-      if (m.hasLead && !m.two) v += bl();
       v += block(m.names.tail, "var(--tail)", function (z) { return z.slurry !== "lead"; }, m.tailVol);
-      if (m.two) v += bl();
+      if (m.hasLead) v += bl();
       $("o-vol").innerHTML = v + big("Total Cement", vNum(m.total), vUnit()) + line("Minimum cement (no excess)", vNum(m.minVol) + vUnit(), "gauge hole — the least that must go in");
     } else $("o-vol").innerHTML = '<div class="empty">Enter data above</div>';
     if (m && m.dispL != null) {
@@ -1077,7 +1226,7 @@ function CementPage(root, s) {
           (m.spB ? line("Mud to pump", vNum(m.mud2) + vUnit(), "displacement − spacer behind") : "") +
           (uv2 ? line("By rig pump", vNum(m.disp2 - uv2) + vUnit()) : "") +
           '<div class="tiles" style="margin-bottom:14px">' + tile("Rig strokes", sk2 ? fi(sk2.stk) : "—", "stk") + tile("Volume", fx(m.disp2 / 1000 * 6.28981, 1), "bbl") + "</div>" +
-          '<p class="note" style="padding-bottom:12px">Same stick-up, spacer behind, cement-unit volume and pump output as stage 1.</p>';
+          '<p class="note" style="padding-bottom:12px">Same spacer behind, cement-unit volume and pump output as stage 1.</p>';
       } else $("o-disp2").innerHTML = '<div class="empty">—</div>';
     }
     }
@@ -1101,16 +1250,46 @@ function CementPage(root, s) {
     amts("spacerAdd", s.spacerAdd, spm);
     var spLiq = liquidL(s.spacerAdd, spm);
     if (spm != null) $("o-sp").innerHTML += line("Spacer water", fx(spm - spLiq / 1000) + " m³", spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives" : "");
-    // tanks
-    var tk = "", ttl = 0, tn = 0, row = function (name, fl) {
-      var t = tanksOf(s, fl); if (!t) return;
-      ttl += t.prep; tn += t.n;
-      tk += line(name, t.n + " tank" + (t.n > 1 ? "s" : "") + " · " + fx(t.prep) + " m³", "needs " + fx(fl) + " + " + t.n + " × " + fx(t.dead) + " dead");
-    };
-    if (sl && sl.lead && sl.lead.mix != null) row((m.two ? "Stage 2" : "Lead") + " mix fluid", sl.lead.mix + sl.lead.dead);
-    if (sl && sl.tail && sl.tail.mix != null) row((m.two ? "Stage 1" : m.hasLead ? "Tail" : "Slurry") + " mix fluid", sl.tail.mix + sl.tail.dead);
-    row("Spacer", spm);
-    $("o-tank").innerHTML = tk ? tk + '<div class="sum"><span>Total prepared · ' + tn + " tanks</span><span>" + fx(ttl) + " m³</span></div>" : '<div class="empty">Fill in the slurry and spacer</div>';
+    var hs = $("h-sp"); if (hs) hs.textContent = spm != null ? "mix " + fx(spm) + " m³" : "optional";
+    var hp = $("h-pr"); if (hp) { var pr2 = s.jobType === "plug" ? null : pressures(s, m); hp.textContent = pr2 && pr2.st && pr2.st.length ? "Δ " + fi(pr2.st[0].diff) + " kPa" : "optional"; }
+    rbar(m, sl);
+  }
+  // Key results pinned to the bottom of the screen while typing; tap to jump to them.
+  function rbar(m, sl) {
+    var b = root.querySelector("#rbar"); if (!b) return;
+    var c = function (k, v, u) { return '<div class="c"><div class="k">' + k + '</div><div class="v">' + v + "<small>" + u + "</small></div></div>"; };
+    var u = vUnit().trim(), h = "";
+    if (s.jobType === "plug") {
+      if (m && m.plugs && m.plugs.length) {
+        var mud = 0, stk = 0, sOk = true;
+        m.plugs.forEach(function (p) { mud += p.pump || 0; if (p.stk == null) sOk = false; else stk += p.stk; });
+        h = c("Cement", vNum(m.total), u) + c("Mud", vNum(mud), u) + c("Strokes", sOk ? fi(stk) : "—", "stk");
+      }
+    } else if (m && m.items && m.items.length) {
+      var sk = m.dispL != null ? strokesOf(s, m) : null, dry = sl ? ((sl.tail && sl.tail.dry) || 0) + ((sl.lead && sl.lead.dry) || 0) : 0;
+      h = c("Cement", vNum(m.total), u) + c("Displ.", m.dispL != null ? vNum(m.dispL) : "—", u) + c("Strokes", sk ? fi(sk.stk) : "—", "stk") + c("Dry", dry ? fx(dry) : "—", "MT");
+    }
+    b.style.display = h ? "" : "none"; b.innerHTML = '<div class="in2">' + h + "</div>";
+  }
+  // Red outline on inputs that are not numbers, negative, or out of order.
+  function markBad(m) {
+    var bad = {}, v = function (k) { return P(s[k]); };
+    root.querySelectorAll('input[inputmode="decimal"][data-k]').forEach(function (el) {
+      var raw = String(el.value).trim(); if (!raw) return; var n = P(raw);
+      if (n == null || n < 0 || !/^-?[\d.,]+$/.test(raw)) bad[el.getAttribute("data-k")] = 1;
+    });
+    var lt2 = function (a, b) { return v(a) != null && v(b) != null && v(a) >= v(b); };
+    if (s.jobType === "plug") {
+      (s.plugs || []).forEach(function (p, i) { var B = P(p.bot), T = P(p.top); if (B != null && T != null && T >= B) { bad["plugs." + i + ".top"] = 1; bad["plugs." + i + ".bot"] = 1; } });
+    } else {
+      if (lt2("fc", "shoe")) bad.fc = 1;
+      if (v("td") != null && v("shoe") != null && v("shoe") > v("td")) bad.td = 1;
+      if (lt2("toc", "shoe")) bad.toc = 1;
+      if (s.scheme === "leadtail" && s.jobType !== "twostage" && v("tailTop") != null && ((v("toc") != null && v("tailTop") <= v("toc")) || (v("shoe") != null && v("tailTop") >= v("shoe")))) bad.tailTop = 1;
+      if (s.jobType === "liner") { if (hasPrev(s) && lt2("top", "prevShoe")) bad.top = 1; if (lt2("top", "shoe")) bad.top = 1; }
+      if (s.jobType === "twostage" && v("stCol") != null && ((v("shoe") != null && v("stCol") >= v("shoe")) || (v("toc") != null && v("stCol") <= v("toc")))) bad.stCol = 1;
+    }
+    root.querySelectorAll("input[data-k]").forEach(function (el) { el.classList.toggle("bad", !!bad[el.getAttribute("data-k")]); });
   }
   function outsPlug(m) {
     var $ = function (id) { return root.querySelector("#" + id); }, ok = m && m.plugs.length;
@@ -1129,6 +1308,8 @@ function CementPage(root, s) {
     }).join("") + big("Total cement", vNum(m.total), vUnit());
   }
   root.addEventListener("click", function (e) {
+    if (togCol(root, e)) return;
+    if (e.target.closest("#rbar")) { var tg = root.querySelector("#o-vol") || root.querySelector("#o-plug"); if (tg) tg.closest(".sec").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     var b = e.target.closest("[data-unit]"); if (!b) return;
     save("vu", b.getAttribute("data-unit"));
     root.querySelectorAll("[data-unit]").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-unit") === volUnit()); });
@@ -1177,14 +1358,24 @@ function plugBody(s, m, sl, slT, addT) {
     }).join("") + '<table><tr class="tot"><td>TOTAL CEMENT</td><td class="rv">' + fx(m.total / 1000) + " m³</td></tr></table>" +
     "<h2>Slurry Design</h2><table>" + slT("Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
-    "</div></div>" + '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
+    "</div></div>" + '<p class="fn"><b>Cement Tool · Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
 }
 function showSheet(s, m) { openSheet(sheetBody(s, m), "Worksheet"); }
 // Whole well: every filled-in job, each on its own page.
+function statusSheet(w) {
+  var st = wellState(w);
+  var rows = st.J.map(function (j) { var m = model(j); return "<tr><td>" + esc(jobTitle(j)) + '</td><td>' + TYPE_NAMES[j.jobType] + '</td><td>' + (j.done ? "Done " + shortDate(j.doneAt || j.updated) : "Planned") + '</td><td class="rv">' + (m && m.total ? fx(m.total / 1000) + " m³" : "—") + "</td></tr>"; }).join("");
+  return '<div class="hd"><div><h1>Well Status</h1><div class="sub">' + esc(w.name) + '</div></div><div class="meta">' + new Date().toLocaleDateString() + "<br>" + st.J.length + " job" + (st.J.length === 1 ? "" : "s") + " · " + st.done.length + " done</div></div>" +
+    '<div class="cols"><div class="left" style="width:300px">' + wellSvg(w, true) + '</div><div class="right"><table>' +
+    "<tr><td>Current depth</td><td class=\"rv\">" + (st.cur ? fi(st.cur) + " m" : "—") + "</td></tr>" + (st.ptd ? "<tr><td>Planned TD</td><td class=\"rv\">" + fi(st.ptd) + " m</td></tr>" : "") +
+    '<tr><td>Cement pumped (done jobs)</td><td class="rv">' + fx(st.pumped) + " m³</td></tr>" + '<tr><td>Last done</td><td class="rv">' + (st.last ? esc(jobTitle(st.last)) : "—") + "</td></tr>" + '<tr><td>Next job</td><td class="rv">' + (st.next ? esc(jobTitle(st.next)) : "—") + "</td></tr></table>" +
+    '<h2>Jobs</h2><table><tr><th>Job</th><th>Type</th><th>Status</th><th>Cement</th></tr>' + rows + "</table></div></div>" +
+    '<p class="fn"><b>Cement Tool · Created by ' + OWNER.name + "</b> · " + OWNER.id + "</p>";
+}
 function wellSheet(w) {
   var b = wellJobs(w.id).map(function (j) { var m = model(j); return m && m.items.length ? sheetBody(j, m) : null; }).filter(Boolean);
-  if (!b.length) { toast("No job in this well is filled in yet."); return; }
-  openSheet(b.join('<div class="pgbrk"></div>'), w.name);
+  if (!wellJobs(w.id).length) { toast("This well has no jobs yet."); return; }
+  openSheet([statusSheet(w)].concat(b).join('<div class="pgbrk"></div>'), w.name);
 }
 function openSheet(body, title) {
   var sh = document.getElementById("sheet");
@@ -1215,14 +1406,14 @@ function sheetBody(s, m) {
       '<tr><td>Mix fluid</td><td class="f">' + fx(o.dry) + '×conc</td><td class="rv">' + fx(o.mix) + " m³</td></tr>" +
       '<tr><td>Equiv dry</td><td class="f">(' + fx(o.mix) + "+" + fx(o.dead) + ')÷conc</td><td class="rv">' + fx(o.equiv) + " MT</td></tr>" +
       '<tr><td>Mix water</td><td class="f">' + (P(ratio) != null ? "lab ratio " + esc(ratio) : "fluid − liquid additives") + '</td><td class="rv">' + fx(waterOf(o, ratio, liquidL(rows, basis === "eq" ? o.equiv : o.dry)).v) + " m³</td></tr>" +
-      (function () { var t = tanksOf(s, o.mix + o.dead); return t ? '<tr><td>Mix tanks</td><td class="f">' + fx(t.size) + " m³, " + fx(t.dead) + ' dead</td><td class="rv">' + t.n + " · " + fx(t.prep) + " m³</td></tr>" : ""; })() + addT(rows, basis === "eq" ? o.equiv : o.dry);
+      addT(rows, basis === "eq" ? o.equiv : o.dry);
   };
   var sk = strokesOf(s, m);
   var body = m.plug ? plugBody(s, m, sl, slT, addT) : '<div class="hd"><div><h1>Cement Job Worksheet</h1><div class="sub">' + esc(fullName(s)) + " · " + (s.jobType === "liner" ? "Liner" : "Casing") + " · " + (m.two ? "Two-stage" : m.hasLead ? "Lead / Tail" : "Single slurry") + "</div></div>" +
     '<div class="meta">' + m.c.label + " casing · Hole " + m.h.label + "<br>TD " + de(m.TD) + " m · Shoe " + de(m.SH) + " m<br>" + new Date().toLocaleDateString() + "</div></div>" +
     '<div class="cols"><div class="left">' + schematic(m, true) +
-    '<table style="margin-top:6px"><tr><td>' + (m.two ? "TOC stage 2" : "TOC") + '</td><td class="rv">' + de(m.TOC) + " m</td></tr>" +
-    (m.two ? '<tr><td>Stage tool</td><td class="rv">' + de(m.ST) + ' m</td></tr><tr><td>TOC stage 1</td><td class="rv">' + de(m.TOC1) + " m</td></tr>" : "") + (m.tTop != null ? '<tr><td>Top of tail</td><td class="rv">' + de(m.tTop) + " m</td></tr>" : "") +
+    '<table style="margin-top:6px"><tr><td>' + (m.two ? "TOC stage 2" : m.tTop != null ? "Lead TOC" : "TOC") + '</td><td class="rv">' + de(m.TOC) + " m</td></tr>" +
+    (m.two ? '<tr><td>Stage tool</td><td class="rv">' + de(m.ST) + ' m</td></tr><tr><td>TOC stage 1</td><td class="rv">' + de(m.TOC1) + " m</td></tr>" : "") + (m.tTop != null ? '<tr><td>Tail TOC</td><td class="rv">' + de(m.tTop) + " m</td></tr>" : "") +
     (m.LT != null ? '<tr><td>Liner top</td><td class="rv">' + de(m.LT) + " m</td></tr>" : "") + '<tr><td>Float collar</td><td class="rv">' + de(m.FC) + " m</td></tr>" +
     (m.PS ? '<tr><td>Prev shoe</td><td class="rv">' + de(m.PS) + " m</td></tr>" : "") +
     (m.hasLead ? '<tr><td>Excess ' + (m.two ? "S2" : "L") + ' OH/Cs</td><td class="rv">' + esc(s.exLeadOH || 0) + "/" + esc(s.exLeadCsg || 0) + "%</td></tr>" : "") +
@@ -1249,7 +1440,7 @@ function sheetBody(s, m) {
     "<h2>Slurry Design</h2><table>" + (m.two ? "" : slT("Lead", sl.lead, s.leadAdd, "#b45309", "eq")) + slT(m.two ? "Stage 1" : m.hasLead ? "Tail" : "Cement", sl.tail, s.tailAdd, "#0d7a6f", "dry") + (m.two ? slT("Stage 2", sl.lead, s.leadAdd, "#b45309", "dry") : "") + "</table>" +
     (sl.spMix != null ? '<h2>Spacer <span class="sub" style="font-size:8.5px">mix ' + fx(sl.spMix) + " m³</span></h2><table>" + addT(s.spacerAdd, sl.spMix) + "</table>" : "") +
     "</div></div>" +
-    '<p class="fn"><b>Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
+    '<p class="fn"><b>Cement Tool · Created by ' + OWNER.name + "</b> · " + OWNER.id + " · verify against the cement program before execution.</p>";
   return body;
 }
 
@@ -1269,20 +1460,104 @@ function pickType(w) {
   }));
 }
 var TCOL = { casing: "var(--accent)", liner: "#0d7a6f", twostage: "#6d28d9", plug: "#be185d" };
+/* ── Well status: where the well is, from the jobs in it ──
+   A job marked Done counts as done (drawn solid, cement coloured). Any other job is planned (dashed).
+   Current depth = deepest TD of the done casing jobs; Planned TD is typed once on the well. */
+function shortDate(t) { return new Date(t).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }); }
+function wellState(w) {
+  var J = wellJobs(w.id), done = J.filter(function (j) { return j.done; }), plan = J.filter(function (j) { return !j.done; });
+  var cur = 0, pumped = 0;
+  done.forEach(function (j) {
+    if (j.jobType !== "plug") cur = Math.max(cur, P(j.td) || P(j.shoe) || 0);
+    var m = model(j); if (m && m.total) pumped += m.total / 1000;
+  });
+  var ptd = P(w.ptd); if (ptd == null) { ptd = 0; plan.forEach(function (j) { if (j.jobType !== "plug") ptd = Math.max(ptd, P(j.td) || 0); }); ptd = ptd > cur ? ptd : null; }
+  var last = done.slice().sort(function (a, b) { return (b.doneAt || 0) - (a.doneAt || 0); })[0] || null;
+  return { J: J, done: done, plan: plan, cur: cur, ptd: ptd, pumped: pumped, last: last, next: plan[0] || null };
+}
+function wellSvg(w, light) {
+  var st = wellState(w), jobs = st.J.filter(function (j) { return j.jobType !== "plug" ? P(j.shoe) != null : false; });
+  var plugs = st.J.filter(function (j) { return j.jobType === "plug"; });
+  var ink = light ? "#3a4741" : "#c9d3de", faint = light ? "#8f998f" : "#7b8794", steel = light ? "#3b4741" : "#9fb0c3", cem = light ? "#0f8a7e" : "#2dd4bf", gold = "#E5B323", dash = light ? "#b7ad97" : "#5d6b7d";
+  var maxD = Math.max(st.ptd || 0, st.cur, 1);
+  jobs.forEach(function (j) { maxD = Math.max(maxD, P(j.shoe), P(j.td) || 0); }); plugs.forEach(function (j) { (j.plugs || []).forEach(function (p) { maxD = Math.max(maxD, P(p.bot) || 0); }); });
+  var H = 270, T0 = 14, Y = function (d) { return T0 + Math.max(0, d) / maxD * H; }, cx = 178;
+  var maxOD = 4.5; jobs.forEach(function (j) { var c = byId(CSG, j.csgId); if (c) maxOD = Math.max(maxOD, c.od); });
+  var hw = function (od) { return 14 + od / maxOD * 46; };
+  var o = '<svg viewBox="0 0 358 ' + (T0 + H + 40) + '" style="width:100%;height:auto;display:block" font-family="Inter,-apple-system,sans-serif">';
+  o += '<defs><pattern id="wh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="' + dash + '" stroke-width="1.6"/></pattern></defs>';
+  // open hole still to drill: hatched, from the current depth to the planned TD
+  var inner = Infinity; st.done.forEach(function (j) { var c = byId(CSG, j.csgId); if (c && j.jobType !== "plug") inner = Math.min(inner, hw(c.od)); }); if (!isFinite(inner)) inner = 30;
+  if (st.ptd && st.ptd > st.cur) o += '<rect x="' + (cx - inner + 4) + '" y="' + Y(st.cur) + '" width="' + (2 * inner - 8) + '" height="' + (Y(st.ptd) - Y(st.cur)) + '" fill="url(#wh)" stroke="' + dash + '" stroke-dasharray="4 3"/>';
+  // casing strings, biggest first so the smaller ones sit inside
+  var labs = [{ d: 0, t: "0" }];
+  jobs.slice().sort(function (a, b) { return (byId(CSG, b.csgId) || { od: 0 }).od - (byId(CSG, a.csgId) || { od: 0 }).od; }).forEach(function (j) {
+    var c = byId(CSG, j.csgId); if (!c) return; var x = hw(c.od), top = j.jobType === "liner" ? (P(j.top) || 0) : 0, sh = P(j.shoe), toc = P(j.toc), isDone = !!j.done;
+    if (toc != null && toc < sh) {
+      if (isDone) o += '<rect x="' + (cx - x - 9) + '" y="' + Y(toc) + '" width="8" height="' + (Y(sh) - Y(toc)) + '" fill="' + cem + '" opacity=".9"/><rect x="' + (cx + x + 1) + '" y="' + Y(toc) + '" width="8" height="' + (Y(sh) - Y(toc)) + '" fill="' + cem + '" opacity=".9"/>';
+      else o += '<rect x="' + (cx - x - 9) + '" y="' + Y(toc) + '" width="8" height="' + (Y(sh) - Y(toc)) + '" fill="none" stroke="' + dash + '" stroke-dasharray="3 3"/><rect x="' + (cx + x + 1) + '" y="' + Y(toc) + '" width="8" height="' + (Y(sh) - Y(toc)) + '" fill="none" stroke="' + dash + '" stroke-dasharray="3 3"/>';
+    }
+    if (isDone) o += '<rect x="' + (cx - x - 1) + '" y="' + Y(top) + '" width="3" height="' + (Y(sh) - Y(top)) + '" fill="' + steel + '"/><rect x="' + (cx + x - 2) + '" y="' + Y(top) + '" width="3" height="' + (Y(sh) - Y(top)) + '" fill="' + steel + '"/>' +
+      '<path d="M' + (cx - x - 1) + ',' + Y(sh) + ' l-5,6 h8 z M' + (cx + x + 1) + ',' + Y(sh) + ' l5,6 h-8 z" fill="' + steel + '"/>';
+    else o += '<line x1="' + (cx - x) + '" y1="' + Y(top) + '" x2="' + (cx - x) + '" y2="' + Y(sh) + '" stroke="' + dash + '" stroke-width="2" stroke-dasharray="5 4"/><line x1="' + (cx + x) + '" y1="' + Y(top) + '" x2="' + (cx + x) + '" y2="' + Y(sh) + '" stroke="' + dash + '" stroke-width="2" stroke-dasharray="5 4"/>';
+    j.__lab = { sh: sh, done: isDone };
+    labs.push({ d: sh, t: de(sh) });
+  });
+  // plugs
+  var pw = Math.max(8, inner - 4);
+  plugs.forEach(function (j) { (j.plugs || []).forEach(function (p) { var b = P(p.bot), t = P(p.top); if (b == null || t == null || t >= b) return;
+    if (j.done) o += '<rect x="' + (cx - pw) + '" y="' + Y(t) + '" width="' + 2 * pw + '" height="' + Math.max(3, Y(b) - Y(t)) + '" fill="' + cem + '" opacity=".85"/>';
+    else o += '<rect x="' + (cx - pw) + '" y="' + Y(t) + '" width="' + 2 * pw + '" height="' + Math.max(3, Y(b) - Y(t)) + '" fill="none" stroke="#c27a12" stroke-width="1.6" stroke-dasharray="4 3"/>'; }); });
+  // job names to the right, depths to the left
+  var rx = cx + hw(maxOD) + 16, ly = [];
+  jobs.forEach(function (j) { if (!j.__lab) return; var y = Y(j.__lab.sh) - 16; while (ly.some(function (v) { return Math.abs(v - y) < 12; })) y += 12; ly.push(y);
+    o += '<text x="' + rx + '" y="' + y + '" font-size="10.5" font-weight="600" fill="' + (j.__lab.done ? "#0e7a3c" : faint) + '">' + esc(jobTitle(j)) + (j.__lab.done ? " ✓" : "") + '</text>'; delete j.__lab; });
+  // current depth marker
+  if (st.cur > 0) { var yc = Y(st.cur); o += '<line x1="46" y1="' + yc + '" x2="' + (cx + hw(maxOD) + 12) + '" y2="' + yc + '" stroke="' + gold + '" stroke-width="2.5"/><polygon points="' + (cx + hw(maxOD) + 12) + ',' + (yc - 6) + ' ' + (cx + hw(maxOD) + 24) + ',' + yc + ' ' + (cx + hw(maxOD) + 12) + ',' + (yc + 6) + '" fill="' + gold + '"/>' +
+    '<text x="' + (cx + hw(maxOD) + 28) + '" y="' + (yc + 4) + '" font-size="11" font-weight="700" fill="' + (light ? "#8a5a00" : gold) + '">Now ' + fi(st.cur) + ' m</text>'; labs.push({ d: st.cur, t: fi(st.cur) }); }
+  if (st.ptd && st.ptd > st.cur) { var yp = Y(st.ptd); o += '<line x1="' + (cx - inner + 4) + '" y1="' + yp + '" x2="' + (cx + inner - 4) + '" y2="' + yp + '" stroke="' + ink + '" stroke-width="2.5"/>' +
+    '<text x="' + (cx + inner + 4) + '" y="' + (yp + 15) + '" font-size="10.5" font-weight="700" fill="' + ink + '">Planned TD ' + fi(st.ptd) + ' m</text>'; labs.push({ d: st.ptd, t: fi(st.ptd) }); }
+  labs.sort(function (a, b) { return a.d - b.d; }); var lastY = -99;
+  labs.forEach(function (l) { var y = Y(l.d); if (y - lastY < 11) return; lastY = y; o += '<text x="40" y="' + (y + 3.5) + '" text-anchor="end" font-size="10" fill="' + faint + '">' + l.t + '</text><line x1="44" y1="' + y + '" x2="' + (cx - hw(maxOD) - 12) + '" y2="' + y + '" stroke="' + faint + '" stroke-width=".6" stroke-dasharray="2 3" opacity=".7"/>'; });
+  return o + '</svg>';
+}
+function wellStatusHtml(w) {
+  var st = wellState(w), pct = st.ptd ? Math.min(100, st.cur / st.ptd * 100) : 0, h = "";
+  if (!st.done.length && !st.ptd) return '<div class="empty" style="padding:30px 0">Mark a job as <b>Done</b> and the well drawing appears here. Type the Planned TD above to see how far you have to go.</div>';
+  if (st.ptd && st.cur) h += '<div style="display:flex;justify-content:space-between;font-size:13.5px;margin:2px 0 6px"><b>' + fi(st.cur) + " of " + fi(st.ptd) + ' m</b><span style="color:var(--sub)">' + Math.round(pct) + '% drilled · ' + fi(Math.max(0, st.ptd - st.cur)) + ' m to go</span></div>' +
+    '<div style="height:10px;background:var(--seg);border-radius:6px;overflow:hidden;margin-bottom:8px"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold,#E5B323))"></div></div>';
+  h += wellSvg(w, !isDark());
+  h += '<div class="tiles" style="margin-top:10px">' + tile("Current depth", st.cur ? fi(st.cur) : "—", st.cur ? "m" : "") + tile("Cement pumped", fx(st.pumped, 1), "m³") + "</div>" +
+    '<div class="tiles" style="margin-top:0">' + tile("Last done", st.last ? esc(st.last.name) : "—", "") + tile("Next job", st.next ? esc(st.next.name) : "Not added", "") + "</div>";
+  return h;
+}
 function WellPage(root, w) {
   function draw() {
     var J = wellJobs(w.id);
-    var h = '<div class="page"><h1 class="title wt">' + esc(w.name) + '</h1><p class="lede">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · " + when(w.created) + "</p>";
-    if (J.length) h += '<div class="pchips jchips" style="margin:4px 0 14px">' + J.map(function (j) {
-      return '<button class="pchip" data-go="job/' + j.id + '" style="border-color:' + TCOL[j.jobType] + ";color:" + TCOL[j.jobType] + '">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
-    h += '<div class="bar2"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more">⋯</button></div>';
-    h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="grp">' + (J.length ? J.map(function (j) {
-      return item('data-go="job/' + j.id + '"', TCOL[j.jobType], { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType], esc(jobTitle(j)), esc(summary(j)) + "<br>" + when(j.updated || j.created), "job:" + j.id);
+    var cal = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+    var h = '<div class="page wl"><h1 class="wl-title">' + esc(w.name) + '</h1><p class="wl-count">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · created " + when(w.created) + "</p>";
+    if (J.length) h += '<div class="wchips" style="margin:14px 0 4px">' + J.map(function (j) {
+      return '<button class="wchip' + (j.done ? " d" : "") + '" data-go="job/' + j.id + '" style="border:0;cursor:pointer">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
+    h += '<div class="bar2" style="margin-top:14px"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more" aria-label="More">⋯</button></div>';
+    h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="wlist">' + (J.length ? J.map(function (j) {
+      return '<div class="wcard jcard' + (j.done ? " dn" : "") + '" role="button" data-go="job/' + j.id + '"><span class="wav">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span><span class="wdiv"></span>' +
+        '<span class="wtx"><span class="wnm">' + esc(jobTitle(j)) + '</span><span class="wsb">' + esc(summary(j)) + "</span>" +
+        '<span class="jfoot"><span class="wdt">' + cal + shortDate(j.done ? (j.doneAt || j.updated) : j.created) + "</span>" +
+        '<button class="jdone' + (j.done ? " on" : "") + '" data-done="' + j.id + '">' + (j.done ? "✓ Done" : "Mark done") + "</button></span></span>" +
+        '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
+    h += '<div class="sec"><div class="sh">Well status</div><div class="grp"><label class="r"><span class="l">Planned TD <i>· m</i></span><input class="in" inputmode="decimal" autocomplete="off" data-wptd value="' + esc(w.ptd || "") + '" placeholder="from the well program"></label>' +
+      '<div id="wstat" style="padding:4px 0 12px">' + wellStatusHtml(w) + "</div></div></div>";
     h += '<p class="note" style="padding:0 16px">A new job takes the previous casing (size and shoe) from the last job in this well. Well PDF puts every job on its own page.</p></div>';
     root.innerHTML = h;
   }
+  root.addEventListener("input", function (e) {
+    if (!e.target.hasAttribute("data-wptd")) return;
+    w.ptd = e.target.value; w.updated = Date.now(); saveDb(); var el = root.querySelector("#wstat"); if (el) el.innerHTML = wellStatusHtml(w);
+  });
   root.addEventListener("click", function (e) {
+    var dn = e.target.closest("[data-done]");
+    if (dn) { var dj = jobById(dn.getAttribute("data-done")); if (dj) { dj.done = !dj.done; dj.doneAt = dj.done ? Date.now() : null; touch(dj); draw(); } return; }
     var mo = e.target.closest("[data-more]");
     if (mo) {
       var j = jobById(mo.getAttribute("data-more").split(":")[1]); if (!j) return;
@@ -1296,9 +1571,127 @@ function WellPage(root, w) {
     var a = e.target.getAttribute("data-a");
     if (a === "new") pickType(w);
     if (a === "pdf") wellSheet(w);
-    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "home"; }); } }]);
+    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Download a copy", fn: function () { downloadWells([w], w.name); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }]);
   });
   draw();
+}
+/* ───────────────────────── quick calc · casing table · guide ───────────────────────── */
+// Quick calc: stand-alone conversions and volumes, no well needed. Values are kept per phone.
+function CalcPage(root) {
+  var q = load("qc", {}); if (!q.tab) q.tab = "units";
+  ["du", "vu", "lu"].forEach(function (k, i) { if (!q[k]) q[k] = ["sg", "m3", "m"][i]; });
+  if (!q.pipe) q.pipe = csgFor(9.625).id; if (!q.inner) q.inner = "none";
+  function keep() { save("qc", q); }
+  function useg(k, opts) {
+    return '<span class="useg">' + opts.map(function (o) { return '<button data-qu="' + k + '" data-v="' + o[0] + '" class="' + (q[k] === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span>";
+  }
+  function outer() { var c = byId(CSG, q.pipe); if (c) return { cap: c.cap, label: c.label, id: c.idIn }; var h = byId(HOLE, q.pipe); return h ? { cap: h.cap, label: h.label + " hole", id: h.d } : null; }
+  function innerCed() {
+    if (q.inner === "none") return 0;
+    var d = byId(DP, q.inner); if (d) return d.ced;
+    var od = parseFloat(q.inner); return isFinite(od) ? K * od * od : 0;
+  }
+  function draw() {
+    var h = '<div class="page"><h1 class="title">Quick calc</h1><p class="lede">No well needed. Answers update as you type.</p>' +
+      '<div class="seg" style="margin-top:16px">' + [["units", "Units"], ["volume", "Volume"], ["strokes", "Strokes"]].map(function (o) {
+        return '<button data-qt="' + o[0] + '" class="' + (q.tab === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</div>";
+    if (q.tab === "units") {
+      // One row: the value with its unit next to it; the answers below skip the unit typed in.
+      var vrow = function (k, uk, opts) { return '<div class="r qrow"><input class="in" inputmode="decimal" autocomplete="off" data-k="' + k + '" value="' + esc(q[k] == null ? "" : q[k]) + '" placeholder="Value">' + useg(uk, opts) + "</div>"; };
+      h += grp("Density / gradient", vrow("dv", "du", [["sg", "SG"], ["kpa", "kPa/m"], ["ppg", "ppg"]]) + '<div id="q-d"></div>');
+      h += grp("Volume", vrow("vv", "vu", [["m3", "m³"], ["bbl", "bbl"], ["L", "L"]]) + '<div id="q-v"></div>');
+      h += grp("Length", vrow("lv", "lu", [["m", "m"], ["ft", "ft"]]) + '<div id="q-l"></div>');
+    } else if (q.tab === "volume") {
+      var opts = CSG.filter(function (c) { return !c.hide || c.id === q.pipe; }).map(function (c) { return { id: c.id, label: c.label + " · ID " + c.idIn.toFixed(3) }; })
+        .concat(HOLE.map(function (x) { return { id: x.id, label: x.label + " open hole" }; }));
+      var inn = [{ id: "none", label: "Nothing (full inside)" }].concat(DP.map(function (d) { return { id: d.id, label: d.label }; }))
+        .concat(sizes().map(function (od) { return { id: String(od), label: frac(od) + " casing OD" }; }));
+      h += grp("Volume between two depths", sel("Outer (casing or hole)", "pipe", q, opts) + sel("Inside it (annulus)", "inner", q, inn) +
+        num("From", "d1", q, "m", "0") + num("To", "d2", q, "m") + num("Excess", "ex", q, "%", "0") + '<div id="q-vol"></div>' +
+        '<p class="note" style="padding-bottom:12px">Pick a pipe inside to get the annulus (drill pipe uses closed-end displacement). Capacity = 0.5067 × ID².</p>');
+    } else {
+      h += grp("Strokes for a volume", num("Volume", "sv", q, "m³") + num("Pump output", "so", q, "L/stk", "13.62") + num("Pump rate", "sr", q, "spm", "optional") + '<div id="q-s"></div>');
+    }
+    root.innerHTML = h + "</div>";
+    outs();
+  }
+  function outs() {
+    var $ = function (id) { return root.querySelector("#" + id); }, v;
+    if ($("q-d")) {
+      v = P(q.dv); var sg = v == null ? null : q.du === "sg" ? v : q.du === "kpa" ? v / 9.81 : v / 8.345;
+      $("q-d").innerHTML = (q.du !== "sg" ? line("SG", fx(sg)) : "") + (q.du !== "kpa" ? line("kPa/m", fx(sg == null ? null : sg * 9.81)) : "") + (q.du !== "ppg" ? line("ppg", fx(sg == null ? null : sg * 8.345)) : "") + line("psi/ft", fx(sg == null ? null : sg * 0.4335, 3));
+      v = P(q.vv); var m3 = v == null ? null : q.vu === "m3" ? v : q.vu === "bbl" ? v / 6.28981 : v / 1000;
+      $("q-v").innerHTML = (q.vu !== "m3" ? line("m³", fx(m3)) : "") + (q.vu !== "bbl" ? line("bbl", fx(m3 == null ? null : m3 * 6.28981)) : "") + (q.vu !== "L" ? line("L", fi(m3 == null ? null : m3 * 1000)) : "");
+      v = P(q.lv); var m = v == null ? null : q.lu === "m" ? v : v * 0.3048;
+      $("q-l").innerHTML = q.lu === "m" ? line("ft", fx(m == null ? null : m / 0.3048, 1)) : line("m", fx(m, 1));
+    }
+    if ($("q-vol")) {
+      var o = outer(), ced = innerCed(), cap = o ? o.cap - ced : null, L = (P(q.d2) || 0) - (P(q.d1) || 0), ex = 1 + (P(q.ex) || 0) / 100;
+      if (cap != null && cap <= 0) { $("q-vol").innerHTML = '<div class="warn">⚠ The pipe inside is bigger than the outer ID.</div>'; return; }
+      var vol = cap != null && L > 0 ? cap * L * ex : null;
+      $("q-vol").innerHTML = big("Volume", vol == null ? "—" : fx(vol / 1000), " m³") + line("Capacity", fx(cap) + " L/m", ced ? "annulus" : "full inside") +
+        line("In bbl", fx(vol == null ? null : vol / 1000 * 6.28981, 1)) + (L > 0 ? line("Length", fx(L, 1) + " m", ex > 1 ? "× " + ex.toFixed(2) + " excess" : "") : "");
+    }
+    if ($("q-s")) {
+      var V = P(q.sv), out = P(q.so) || 13.62, r = P(q.sr), stk = V != null && out > 0 ? V * 1000 / out : null;
+      $("q-s").innerHTML = '<div class="tiles" style="margin-bottom:6px">' + tile("Strokes", stk == null ? "—" : fi(stk), "stk") + tile("Volume", V == null ? "—" : fx(V * 6.28981, 1), "bbl") + "</div>" +
+        (stk != null && r ? line("Time at " + fi(r) + " spm", fx(stk / r, 1) + " min") : "") + '<div style="height:8px"></div>';
+    }
+  }
+  root.addEventListener("input", function (e) { var k = e.target.getAttribute("data-k"); if (!k) return; q[k] = e.target.value; keep(); outs(); });
+  root.addEventListener("change", function (e) { var k = e.target.getAttribute("data-k"); if (k && e.target.tagName === "SELECT") { q[k] = e.target.value; keep(); outs(); } });
+  root.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-qt]"); if (t) { q.tab = t.getAttribute("data-qt"); keep(); draw(); return; }
+    var u = e.target.closest("[data-qu]"); if (u) {
+      // Switching the unit converts the number already typed, so the quantity stays the same.
+      var uk = u.getAttribute("data-qu"), to = u.getAttribute("data-v"), vk = { du: "dv", vu: "vv", lu: "lv" }[uk], f = {
+        du: { sg: 1, kpa: 9.81, ppg: 8.345 }, vu: { m3: 1, bbl: 6.28981, L: 1000 }, lu: { m: 1, ft: 1 / 0.3048 } }[uk];
+      var x = vk ? P(q[vk]) : null;
+      if (x != null && f && q[uk] !== to) { var y = x / f[q[uk]] * f[to]; q[vk] = String(+y.toFixed(to === "L" ? 0 : to === "ft" || to === "m" ? 1 : 3)); }
+      q[uk] = to; keep(); draw();
+    }
+  });
+  draw();
+}
+// Casing table: the sizes and weights in the app (Green Book D9-D10), open hole and work strings.
+function TablePage(root) {
+  var f = load("tblOd", "all");
+  function draw() {
+    var ods = sizes();
+    var h = '<div class="page"><h1 class="title">Casing table</h1><p class="lede">From the Green Book (D9–D10). Capacity = 0.5067 × ID².</p>' +
+      '<div class="pchips" style="margin:14px 0 4px">' + [["all", "All"]].concat(ods.map(function (o) { return [String(o), frac(o)]; })).map(function (o) {
+        return '<button class="pchip' + (f === o[0] ? " on" : "") + '" data-od="' + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>";
+    var show = f === "all" ? ods : ods.filter(function (o) { return String(o) === f; });
+    h += '<div class="sec"><div class="grp" style="padding:4px 16px 12px">' + show.map(function (od) {
+      var r = CSG.filter(function (c) { return c.od === od && !c.hide; }).sort(function (a, b) { return a.w - b.w; });
+      return '<div class="tag" style="color:var(--accent)">' + frac(od) + ' casing</div><table class="t"><tr><th>Weight</th><th class="n">ID in</th><th class="n">bbl/m</th><th class="n">Cap L/m</th></tr>' +
+        r.map(function (c) { return "<tr><td>" + c.w + '#</td><td class="n">' + c.idIn.toFixed(3) + '</td><td class="n">' + (c.cap / 158.987).toFixed(4) + '</td><td class="n"><b>' + c.cap.toFixed(2) + "</b></td></tr>"; }).join("") + "</table>";
+    }).join('<div style="height:10px"></div>') + "</div></div>";
+    if (f === "all") {
+      h += '<div class="sec"><div class="sh">Open hole</div><div class="grp" style="padding:4px 16px 12px"><table class="t"><tr><th>Hole</th><th class="n">bbl/m</th><th class="n">Cap L/m</th></tr>' +
+        HOLE.map(function (x) { return "<tr><td>" + x.label + '</td><td class="n">' + (x.cap / 158.987).toFixed(4) + '</td><td class="n"><b>' + x.cap.toFixed(2) + "</b></td></tr>"; }).join("") + "</table></div></div>";
+      h += '<div class="sec"><div class="sh">Drill pipe &amp; tubing<span>D6–D7, D11</span></div><div class="grp" style="padding:4px 16px 12px"><table class="t"><tr><th>String</th><th class="n">Cap L/m</th><th class="n">CED L/m</th></tr>' +
+        DP.map(function (d) { return "<tr><td>" + esc(d.label) + '</td><td class="n"><b>' + fx(d.cap) + '</b></td><td class="n">' + fx(d.ced) + "</td></tr>"; }).join("") + "</table>" +
+        '<p class="note" style="margin:8px 0 0">CED = closed-end displacement (pipe + inside).</p></div></div>';
+    }
+    root.innerHTML = h + "</div>";
+  }
+  root.addEventListener("click", function (e) { var b = e.target.closest("[data-od]"); if (!b) return; f = b.getAttribute("data-od"); save("tblOd", f); draw(); });
+  draw();
+}
+function GuidePage(root) {
+  var st = [["Create a well", "Wells → type a code name (never the real name) → Create."],
+    ["Add a job", "Pick the type: Casing, Liner, Two-stage or Plug. The previous casing comes from the last job in the well."],
+    ["Fill the well", "Casing size and weight, shoe, float collar, hole size and TD. A red box means a value is not a number or is out of order."],
+    ["Cement program", "Single slurry or Lead / Tail, TOC and excess. Cement, displacement, strokes and dry cement show in the bar at the bottom."],
+    ["Slurry and spacer", "Yield and mix fluid give dry cement, mix water and additive amounts."],
+    ["PDF and Mark done", "PDF sheet makes the job sheet. Mark done on the well page updates the well status and the Well PDF."]];
+  root.innerHTML = '<div class="page"><h1 class="title">Guide</h1><p class="lede">From a new well to the job sheet in six steps.</p>' +
+    '<div class="sec"><div class="grp" style="padding:4px 16px">' + st.map(function (x, i) {
+      return '<div style="display:flex;gap:14px;padding:14px 0;' + (i < st.length - 1 ? "border-bottom:1px solid var(--line)" : "") + '"><span class="num" style="background:var(--accent)">' + (i + 1) +
+        '</span><span><b style="font-size:15.5px">' + x[0] + '</b><span style="display:block;color:var(--sub);font-size:14px;line-height:1.45;margin-top:2px">' + x[1] + "</span></span></div>";
+    }).join("") + "</div></div>" +
+    grp("Good to know", '<p class="note" style="padding:12px 0;margin:0;line-height:1.7">• Everything saves on this phone as you type.<br>• Save a well: Wells → ⋯ → Download a copy. Restore brings it back on any phone.<br>• Add to Home Screen: it opens like an app, works offline, and Safari will not clear your wells.<br>• Capacities show “auto”; type over one if the program uses a different number.<br>• Pressures and Spacer fold away when you do not need them.</p>') + "</div>";
 }
 /* ── Add to Home Screen ──
    Android/Chrome lets a page offer its own install prompt (beforeinstallprompt); iPhone does not,
@@ -1321,42 +1714,103 @@ var PLUS_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stro
 function installHelp() {
   if (installEvt) { var e = installEvt; e.prompt(); e.userChoice.then(function (r) { if (r.outcome === "accepted") installEvt = null; }); return; }
   var ios = isIOS();
-  var steps = ios ? [["1", "Tap " + SHARE_SVG + " <b>Share</b> at the bottom of Safari (top right on iPad)."], ["2", "Scroll and tap " + PLUS_SVG + " <b>Add to Home Screen</b>."], ["3", "Tap <b>Add</b>. Cement Job is now on your home screen."]]
-    : [["1", "Open the browser menu <b>⋮</b> (top right)."], ["2", "Tap <b>Install app</b> or <b>Add to Home screen</b>."], ["3", "Confirm. Cement Job is now on your home screen."]];
+  var steps = ios ? [["1", "Tap " + SHARE_SVG + " <b>Share</b> at the bottom of Safari (top right on iPad)."], ["2", "Scroll and tap " + PLUS_SVG + " <b>Add to Home Screen</b>."], ["3", "Tap <b>Add</b>. Cement Tool is now on your home screen."]]
+    : [["1", "Open the browser menu <b>⋮</b> (top right)."], ["2", "Tap <b>Install app</b> or <b>Add to Home screen</b>."], ["3", "Confirm. Cement Tool is now on your home screen."]];
   var m = modal('<div class="dlg" style="text-align:left"><div class="bd"><h4 style="text-align:center">Add to Home Screen</h4>' +
     steps.map(function (x) { return '<div style="display:flex;gap:12px;align-items:flex-start;margin-top:14px"><span class="num" style="background:var(--accent)">' + x[0] + '</span><span style="font-size:15px;line-height:1.5">' + x[1] + "</span></div>"; }).join("") +
     (ios ? '<p class="note" style="margin-top:14px">Use Safari: other iPhone browsers may not show this option.</p>' : "") +
     '</div><div class="bt"><button data-v="1">Got it</button></div></div>', true);
   m.onclick = function (ev) { if (ev.target.closest("button") || ev.target === m) m.remove(); };
 }
-function Home(root) {
+// Backup file: the given wells and their jobs, in the same format Restore reads.
+function downloadWells(wells, fname) {
+  var ids = {}; wells.forEach(function (w) { ids[w.id] = 1; });
+  var data = { app: "cement-job", v: 2, at: new Date().toISOString(), wells: wells, jobs: db.jobs.filter(function (j) { return ids[j.wellId]; }) };
+  var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
+  el.href = url; el.download = fname.replace(/[^A-Za-z0-9._-]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
+  setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
+}
+function relTime(t) {
+  var s = (Date.now() - (t || 0)) / 1000;
+  if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago";
+  if (s < 172800) return "yesterday"; if (s < 86400 * 30) return Math.floor(s / 86400) + " days ago";
+  return new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+function Home(root, wellsMode) {
   var q = { v: "" };
   function list() {
     if (!db.wells.length) return '<div class="empty">No wells yet. Type a well code name above and tap Create.</div>';
-    var L = db.wells.slice().sort(function (a, b) { return (b.updated || 0) - (a.updated || 0); })
+    var srt = load("wsort", "new"), by = {
+      "new": function (a, b) { return (b.updated || 0) - (a.updated || 0); },
+      old: function (a, b) { return (a.created || 0) - (b.created || 0); },
+      name: function (a, b) { return String(a.name).localeCompare(String(b.name)); } };
+    var L = db.wells.slice().sort(by[srt] || by["new"])
       .filter(function (w) { return !q.v || w.name.toLowerCase().indexOf(q.v.toLowerCase()) >= 0; });
     if (!L.length) return '<div class="empty">No well matches “' + esc(q.v) + "”.</div>";
     return L.map(function (w) {
-      var J = wellJobs(w.id);
-      return item('data-go="well/' + w.id + '"', "var(--accent)", esc((w.name || "?").replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "W"), esc(w.name),
-        (J.length ? esc(J.map(function (j) { return j.name; }).join(" · ")) : "no jobs yet") + "<br>" + when(w.updated || w.created), "well:" + w.id);
+      var st = wellState(w), J = st.J, ini = (w.name || "?").replace(/[^A-Za-z0-9\u0600-\u06FF]/g, "").slice(0, 2).toUpperCase() || "W";
+      var chips = J.length ? J.map(function (j) { return '<span class="wchip' + (j.done ? " d" : "") + '">' + esc(jobTitle(j)) + "</span>"; }).join("") : '<span class="wchip e">No jobs yet</span>';
+      var bar = "";
+      if (st.ptd) bar = '<div class="wprog"><i style="width:' + Math.round(Math.min(1, st.cur / st.ptd) * 100) + '%"></i></div><div class="wmeta"><span>' + (st.cur ? "Now " + fi(st.cur) + " m" : "Not started") + "</span><span>Planned TD " + fi(st.ptd) + " m</span></div>";
+      else if (st.cur) bar = '<div class="wmeta"><span>Now ' + fi(st.cur) + " m</span><span>No planned TD yet</span></div>";
+      return '<div class="wcard wa" role="button" data-go="well/' + w.id + '"><div class="wtop"><span class="wav">' + esc(ini) + '</span>' +
+        '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wrel">Updated ' + relTime(w.updated || w.created) + "</span></span>" +
+        '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>' +
+        '<div class="wchips">' + chips + "</div>" + bar + "</div>";
     }).join("");
   }
-  var h = '<div class="page"><div style="height:calc(env(safe-area-inset-top) + 14px)"></div>' +
-    '<div class="brand"><img src="pdo-logo.png" alt="" onerror="this.remove()"></div>' +
-    '<h1 class="title">Cement Job</h1><p class="lede">Built for the WSWE position — cement volumes, displacement and the job sheet in a few taps, so the calculations take minutes, not an hour.</p>';
-  h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
-  h += '<p class="note" style="padding:0 16px">🔒 Use a code name for the well, not its real name, to keep company information private.</p>';
-  h += '<div class="sec"><div class="sh">Wells<span>' + db.wells.length + " well" + (db.wells.length === 1 ? "" : "s") + "</span></div>" +
-    (db.wells.length > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
-    '<div class="grp" id="list">' + list() + "</div></div>";
-  h += grp("Backup", '<div class="bar2" style="margin:12px 0"><button class="btn sec2" data-a="export">Save a copy</button><label class="btn sec2" style="text-align:center">Restore<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
-    '<p class="note" style="padding-bottom:12px">Wells are kept on this phone only. Save a copy now and then, and use Restore to bring them back or move them to another phone.</p>');
-  var tp = themePref();
-  h += grp("Appearance", '<div class="seg" style="margin:12px 0">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
-    return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + '</div><p class="note" style="padding-bottom:12px">Auto follows the phone: light by day, dark at night.</p>');
+  var tp = themePref(), nW = db.wells.length;
+  var ico = {
+    well: '<svg viewBox="0 0 24 24"><circle cx="12" cy="4.2" r="1.7"/><path d="M11 5.8 6.5 20.5M13 5.8l4.5 14.7M9 13h6M10.2 9.2h3.6M7.6 16.8h8.8M4 20.5h16M9 13l6.4 3.8M15 13l-6.4 3.8"/></svg>',
+    data: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7" ry="2.6"/><path d="M5 5.5v6.5c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V5.5M5 12v6.3c0 1.4 3.1 2.6 7 2.6s7-1.2 7-2.6V12"/></svg>',
+    sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
+    calc: '<svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M8 6.5h8M8.5 11h1M11.5 11h1M14.5 11h1M8.5 14h1M11.5 14h1M14.5 14h1M8.5 17h1M11.5 17h4"/></svg>',
+    table: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M3.5 14h17M9.5 9v11"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg>',
+    gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>',
+    chev: '<svg class="hm-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>'
+  };
+  // Sand dunes with a pumpjack, drawn in two sand tones (no image file).
+  var land = '<svg class="hm-land" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true">' +
+    '<path class="d1" d="M0 104C48 88 92 70 150 78s96 30 150 22 70-24 100-26v76H0z"/>' +
+    '<path class="d2" d="M0 122c60-14 120-20 190-12s130 18 210 4v36H0z"/></svg>' +
+    '<svg class="hm-land" viewBox="0 0 400 150" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><g class="pj"><path d="M246 130h58v-6h-58z"/><path d="M252 124h30v-16h-30z"/><circle cx="267" cy="104" r="9"/>' +
+    '<path d="M300 130 318 63h4l18 67h-6l-14-54-14 54z"/><path d="M309 104h22v3h-22zM312 92h16v3h-16z"/>' +
+    '<path d="M256 76 360 53l1.6 7L258 83z"/><path d="M262 80l6 26-3 .8-6-26z"/>' +
+    '<path d="M354 45c13 1 21 9 22 22l-8 3c-1-9-6-14-13-16z"/><path d="M370.5 69h1.8v57h-1.8z"/><path d="M364 122h15v8h-15z"/></g>' +
+    '<path class="d2" d="M180 130c70-10 150-12 220-14v34H180z"/></svg>';
+  var row = function (attr, icon, name, sub, right) {
+    return '<div class="hm-row"' + attr + '><span class="hm-ic">' + icon + '</span><span class="hm-tx"><span class="hm-nm">' + name + '</span><span class="hm-sb">' + sub + "</span></span>" + (right || "") + "</div>";
+  };
+  var h;
+  if (wellsMode) {
+    // Wells page: new well + the list (opened from the Wells card on Home).
+    var ws = load("wsort", "new");
+    h = '<div class="page wl"><h1 class="wl-title">Wells</h1><p class="wl-count">' + nW + " well" + (nW === 1 ? "" : "s") + " on this phone</p>";
+    h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+    h += '<p class="wl-lock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.5" r="1.2"/></svg><span>Use a code name for the well, not its real name, to keep company information private.</span></p>';
+    h += '<div class="sec"><div class="sh">Wells<label class="wl-sort"><select id="wsort" aria-label="Sort wells">' +
+      [["new", "Newest first"], ["old", "Oldest first"], ["name", "Name A–Z"]].map(function (o) { return '<option value="' + o[0] + '"' + (ws === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+      '</select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></label></div>' +
+      (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
+      '<div class="wlist" id="list">' + list() + "</div></div></div>";
+  } else {
+  h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
+    '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
+    '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
+  h += '<div class="hm-nav">' +
+    row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
+    row(' role="button" data-go="calc"', ico.calc, "Quick calc", "Units, volumes and strokes", ico.chev) +
+    row(' role="button" data-go="table"', ico.table, "Casing table", "Sizes, ID and capacity", ico.chev) +
+    row(' role="button" data-go="guide"', ico.book, "Guide", "How to use, step by step", ico.chev) +
+    row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
+    '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
+    '<p class="note" style="margin:0">Wells are kept on this phone only. To save a well: Wells → ⋯ next to it → Download a copy. Restore adds a saved well back, on this phone or another.</p></div>' +
+    "</div>";
   h += installCard();
-  h += '<div class="foot2">Created by ' + OWNER.name + "<br>" + OWNER.id + "</div></div>";
+  h += '<div class="hm-foot"><div class="hm-fb">For feedback, please get in touch.</div>Created by ' + OWNER.name + "<br>" + OWNER.id + "</div>" +
+    '<svg class="hm-wave" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true"><path class="g" d="M70 110C190 104 320 74 400 14v96z"/><path class="n" d="M110 110C220 104 330 84 400 34v76z"/></svg></div>';
+  }
   root.innerHTML = h;
   var create = function () {
     var inp = root.querySelector("#wname"), name = inp.value.trim();
@@ -1364,7 +1818,8 @@ function Home(root) {
     var w = { id: uid(), name: name, created: Date.now(), updated: Date.now() }; db.wells.push(w); saveDb();
     location.hash = "well/" + w.id; setTimeout(function () { pickType(w); }, 60);
   };
-  root.querySelector("#wname").addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
+  var wn = root.querySelector("#wname"); if (wn) wn.addEventListener("keydown", function (e) { if (e.key === "Enter") create(); });
+  var so = root.querySelector("#wsort"); if (so) so.addEventListener("change", function () { save("wsort", so.value); root.querySelector("#list").innerHTML = list(); });
   var qi = root.querySelector("#q"); if (qi) qi.addEventListener("input", function () { q.v = qi.value; root.querySelector("#list").innerHTML = list(); });
   root.addEventListener("click", function (e) {
     var mo = e.target.closest("[data-more]");
@@ -1373,21 +1828,23 @@ function Home(root) {
       menu(w.name, [
         { label: "Open", fn: function () { location.hash = "well/" + w.id; } },
         { label: "Rename", fn: function () { renameWell(w); } },
+        { label: "Download a copy", fn: function () { downloadWells([w], w.name); } },
         { label: "Delete", danger: true, fn: function () { delWell(w, route); } }]);
       return;
     }
     var th = e.target.closest("[data-th]"); if (th) { save("theme", th.getAttribute("data-th")); applyTheme(); route(); return; }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
-    var a = e.target.getAttribute("data-a");
+    var ab = e.target.closest("[data-a]"), a = ab && ab.tagName !== "INPUT" ? ab.getAttribute("data-a") : null;
     if (a === "create") create();
+    if (a === "goWells") { location.hash = "wells"; return; }
+    if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
+    if (a === "settings") {
+      var acts = [{ label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
+      if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
+      menu("Settings", acts); return;
+    }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
-    if (a === "export") {
-      var data = { app: "cement-job", v: 2, at: new Date().toISOString(), wells: db.wells, jobs: db.jobs };
-      var blob = new Blob([JSON.stringify(data)], { type: "application/json" }), url = URL.createObjectURL(blob), el = document.createElement("a");
-      el.href = url; el.download = "cement-job-backup-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
-      setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
-    }
   });
   root.addEventListener("change", function (e) {
     if (e.target.getAttribute("data-a") !== "import") return;
@@ -1396,7 +1853,7 @@ function Home(root) {
     rd.onload = function () {
       try {
         var d = JSON.parse(rd.result);
-        if (d.app !== "cement-job" || !Array.isArray(d.jobs)) { toast("That is not a Cement Job backup."); return; }
+        if (d.app !== "cement-job" || !Array.isArray(d.jobs)) { toast("That is not a Cement Tool backup."); return; }
         var n = 0;
         // Merge by id; a newer copy replaces the older one. Old backups (no wells) are grouped on the way in.
         (d.wells || []).forEach(function (w) {
@@ -1433,7 +1890,11 @@ function route() {
     root.appendChild(top);
   };
   if (j) { back(w ? w.name : "Home", w ? "well/" + w.id : "home"); CementPage(body, j); }
-  else if (w) { back("Home", "home"); WellPage(body, w); }
+  else if (w) { back("Wells", "wells"); WellPage(body, w); }
+  else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
+  else if (parts[0] === "calc") { back("Home", "home"); CalcPage(body); }
+  else if (parts[0] === "table") { back("Home", "home"); TablePage(body); }
+  else if (parts[0] === "guide") { back("Home", "home"); GuidePage(body); }
   else Home(body);
   root.appendChild(body);
 }
