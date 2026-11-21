@@ -2,7 +2,7 @@
 // falls back to the saved copy after 3 s or when offline (rig with no signal).
 // Other files (icons, manifest): cache first.
 // Bump VERSION whenever index.html changes.
-var VERSION = 'cementing-v42';
+var VERSION = 'cementing-v43';
 var FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {

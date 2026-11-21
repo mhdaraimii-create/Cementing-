@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="light" class="lt">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -409,7 +409,7 @@
   #bkRow.open .hm-chev { transform:rotate(90deg); }
   .hm-panel { display:none; padding:0 0 12px 52px; border-bottom:1px solid var(--line); }
   .hm-panel.open { display:block; }
-  #bkRow.open { border-bottom:0; }
+  #bkRow { border-bottom:0; } .hm-panel { border-bottom:0; }
   .hm-bk { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; } .hm-bk .btn { width:100%; }
   .hm-seg { display:flex; margin-top:6px; border-radius:999px; padding:2px; }
   .hm-seg button { flex:1; border-radius:999px; min-height:32px; font-size:13.5px; }
@@ -1012,7 +1012,8 @@ function migrate() {
   });
   return ch;
 }
-function themePref() { var t = load("theme", "auto"); return t === "light" || t === "dark" ? t : "auto"; }
+// Light mode only.
+function themePref() { return "light"; }
 function isDark() { var t = themePref(); return t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyTheme() {
   var t = themePref(); if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
@@ -1783,9 +1784,7 @@ function Home(root, wellsMode) {
     row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
     '<div class="hm-panel" id="bkPanel"><div class="hm-bk"><label class="btn sec2" style="text-align:center">Restore from a file<input type="file" accept=".json,application/json" data-a="import" style="display:none"></label></div>' +
     '<p class="note" style="margin:0">Wells are kept on this phone only. To save a well: Wells → ⋯ next to it → Download a copy. Restore adds a saved well back, on this phone or another.</p></div>' +
-    '<div class="hm-row hm-ap"><span class="hm-ic">' + ico.sun + '</span><span class="hm-tx"><span class="hm-nm">Appearance</span>' +
-    '<span class="seg hm-seg">' + [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(function (o) {
-      return '<button data-th="' + o[0] + '" class="' + (tp === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</span></span></div></div>";
+    "</div>";
   h += installCard();
   h += '<div class="hm-foot"><div class="hm-fb">For feedback, please get in touch.</div>Created by ' + OWNER.name + "<br>" + OWNER.id + "</div>" +
     '<svg class="hm-wave" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true"><path class="g" d="M70 110C190 104 320 74 400 14v96z"/><path class="n" d="M110 110C220 104 330 84 400 34v76z"/></svg></div>';
