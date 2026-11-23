@@ -383,7 +383,7 @@
   :root { --hm-ink:#0f3d24; --sand1:#efe2cc; --sand2:#e7d5b7; --sandpj:#cfb48b; --icbg:#f3eadb; --icink:#7a5a2e; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; } }
   :root[data-theme="dark"] { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; }
-  .hm-top { display:flex; justify-content:flex-end; padding-top:calc(env(safe-area-inset-top) + 10px); }
+  .hm-top { height:calc(env(safe-area-inset-top) + 36px); }
   .hm-gear { width:44px; height:44px; border:0; background:transparent; border-radius:12px; color:var(--hm-ink); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:-6px; }
   .hm-gear:active { background:var(--icbg); }
   .hm-gear svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; }
@@ -1819,7 +1819,7 @@ function Home(root, wellsMode) {
       (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
       '<div class="wlist" id="list">' + list() + "</div></div></div>";
   } else {
-  h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
+  h = '<div class="page hm"><div class="hm-top"></div>' +
     '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
     '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
   h += '<div class="hm-nav">' +
@@ -1862,11 +1862,6 @@ function Home(root, wellsMode) {
     if (a === "create") create();
     if (a === "goWells") { location.hash = "wells"; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
-    if (a === "settings") {
-      var acts = [{ label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
-      if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
-      menu("Settings", acts, ab); return;
-    }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
   });
