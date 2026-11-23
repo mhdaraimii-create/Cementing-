@@ -383,7 +383,7 @@
   :root { --hm-ink:#0f3d24; --sand1:#efe2cc; --sand2:#e7d5b7; --sandpj:#cfb48b; --icbg:#f3eadb; --icink:#7a5a2e; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; } }
   :root[data-theme="dark"] { --hm-ink:var(--ink); --sand1:rgba(255,255,255,.035); --sand2:rgba(255,255,255,.06); --sandpj:rgba(255,255,255,.13); --icbg:rgba(255,255,255,.05); --icink:#c9b48f; }
-  .hm-top { display:flex; justify-content:flex-end; padding-top:calc(env(safe-area-inset-top) + 10px); }
+  .hm-top { height:calc(env(safe-area-inset-top) + 36px); }
   .hm-gear { width:44px; height:44px; border:0; background:transparent; border-radius:12px; color:var(--hm-ink); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:-6px; }
   .hm-gear:active { background:var(--icbg); }
   .hm-gear svg { width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; }
@@ -432,6 +432,17 @@
   .wl-count { font-size:15.5px; color:var(--sub); margin:0; }
   .wl .grp { border-radius:16px; box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); }
   .wl .btn[data-a="create"] { background:linear-gradient(180deg,#11653a,#0b4f2c); }
+  .wl #wname::placeholder { font-size:14px; }
+  @media (max-width:380px) { .wl .r:has(#wname) { flex-wrap:wrap; } .wl #wname { flex-basis:100% !important; } .wl .r:has(#wname) .btn { width:100%; } }
+  .pop-ov { position:fixed; inset:0; z-index:9000; }
+  .pop { position:fixed; min-width:190px; max-width:260px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px;
+    box-shadow:0 12px 32px rgba(40,30,10,.18), 0 2px 6px rgba(40,30,10,.08); animation:popin .16s var(--out, ease-out) both; }
+  .pop button { display:block; width:100%; text-align:left; background:none; border:0; border-radius:9px; padding:11px 12px; font:inherit; font-size:15px; font-weight:500; color:var(--hm-ink, var(--ink)); cursor:pointer; }
+  .pop button:active, .pop button:hover { background:var(--icbg, var(--field)); }
+  .pop button.dg { color:var(--danger); border-top:1px solid var(--line); border-radius:0 0 9px 9px; margin-top:4px; }
+  @keyframes popin { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:none; } }
+  .pop-on { background:var(--icbg, var(--field)) !important; }
+
   .wl-lock { display:flex; gap:9px; align-items:flex-start; padding:0 6px; margin:10px 0 0; font-size:13.5px; line-height:1.45; color:var(--sub); }
   .wl-lock svg { width:17px; height:17px; flex:none; margin-top:1px; fill:none; stroke:var(--icink); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
   .wl-sort { position:relative; display:inline-flex; align-items:center; margin-left:auto; text-transform:none; letter-spacing:0; }
@@ -859,7 +870,8 @@ function modal(html, mid) {
   var m = document.createElement("div"); m.className = "modal" + (mid ? " mid" : ""); m.innerHTML = html;
   document.body.appendChild(m); return m;
 }
-function menu(title, actions) {
+function menu(title, actions, anchor) {
+  if (anchor && anchor.getBoundingClientRect) return popMenu(actions, anchor);
   var m = modal('<div class="sheetbox"><div class="grpm">' + (title ? '<div class="hdm">' + esc(title) + "</div>" : "") +
     actions.map(function (a, i) { return '<button data-i="' + i + '" class="' + (a.danger ? "dg" : "") + '">' + esc(a.label) + "</button>"; }).join("") +
     '</div><div class="grpm"><button class="cx" data-i="x">Cancel</button></div></div>');
@@ -867,6 +879,20 @@ function menu(title, actions) {
     var b = e.target.closest("button"); if (!b && e.target !== m) return;
     m.remove(); if (b && b.getAttribute("data-i") !== "x") actions[+b.getAttribute("data-i")].fn();
   };
+}
+// Small menu that opens right at the ⋯ that was tapped; tap outside to close.
+function popMenu(actions, anchor) {
+  var r = anchor.getBoundingClientRect(), ov = document.createElement("div"); ov.className = "pop-ov";
+  ov.innerHTML = '<div class="pop" role="menu">' + actions.map(function (a, i) { return '<button role="menuitem" data-i="' + i + '" class="' + (a.danger ? "dg" : "") + '">' + esc(a.label) + "</button>"; }).join("") + "</div>";
+  document.body.appendChild(ov);
+  var p = ov.firstChild, h = p.offsetHeight, w = p.offsetWidth, vw = window.innerWidth, vh = window.innerHeight;
+  var below = r.bottom + 6 + h <= vh - 12, top = below ? r.bottom + 6 : Math.max(12, r.top - 6 - h);
+  p.style.top = top + "px"; p.style.left = Math.max(12, Math.min(vw - w - 12, r.right - w)) + "px";
+  p.style.transformOrigin = (below ? "top " : "bottom ") + "right";
+  anchor.classList.add("pop-on");
+  var close = function () { ov.remove(); anchor.classList.remove("pop-on"); window.removeEventListener("scroll", close, true); };
+  window.addEventListener("scroll", close, true);
+  ov.onclick = function (e) { var b = e.target.closest("button"); close(); if (b) actions[+b.getAttribute("data-i")].fn(); };
 }
 function ask(title, msg, ok, danger, fn) {
   var m = modal('<div class="dlg"><div class="bd"><h4>' + esc(title) + "</h4><p>" + esc(msg || "") + '</p></div><div class="bt"><button data-v="0">Cancel</button><button data-v="1" class="' +
@@ -1541,7 +1567,7 @@ function WellPage(root, w) {
     h += '<div class="bar2" style="margin-top:14px"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more" aria-label="More">⋯</button></div>';
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="wlist">' + (J.length ? J.map(function (j) {
       return '<div class="wcard jcard' + (j.done ? " dn" : "") + '" role="button" data-go="job/' + j.id + '"><span class="wav">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span><span class="wdiv"></span>' +
-        '<span class="wtx"><span class="wnm">' + esc(jobTitle(j)) + '</span><span class="wsb">' + esc(summary(j)) + "</span>" +
+        '<span class="wtx"><span class="wnm">' + esc(jobTitle(j)) + "</span>" +
         '<span class="jfoot"><span class="wdt">' + cal + shortDate(j.done ? (j.doneAt || j.updated) : j.created) + "</span>" +
         '<button class="jdone' + (j.done ? " on" : "") + '" data-done="' + j.id + '">' + (j.done ? "✓ Done" : "Mark done") + "</button></span></span>" +
         '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span></div>';
@@ -1564,14 +1590,14 @@ function WellPage(root, w) {
       menu(jobTitle(j), [
         { label: "Open", fn: function () { location.hash = "job/" + j.id; } },
         { label: "Rename", fn: function () { form("Job name", [{ label: "Job name", value: j.name }], "Save", function (v) { if (!v[0]) return; j.name = v[0]; touch(j); draw(); }); } },
-        { label: "Delete", danger: true, fn: function () { delJob(j, draw); } }]);
+        { label: "Delete", danger: true, fn: function () { delJob(j, draw); } }], mo);
       return;
     }
     var g = e.target.closest("[data-go]"); if (g) { location.hash = g.getAttribute("data-go"); return; }
     var a = e.target.getAttribute("data-a");
     if (a === "new") pickType(w);
     if (a === "pdf") wellSheet(w);
-    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Download a copy", fn: function () { downloadWells([w], w.name); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }]);
+    if (a === "more") menu(w.name, [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Download a copy", fn: function () { downloadWells([w], w.name); } }, { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }], e.target.closest("[data-a]"));
   });
   draw();
 }
@@ -1592,7 +1618,7 @@ function CalcPage(root) {
     var od = parseFloat(q.inner); return isFinite(od) ? K * od * od : 0;
   }
   function draw() {
-    var h = '<div class="page"><h1 class="title">Quick calc</h1><p class="lede">No well needed. Answers update as you type.</p>' +
+    var h = '<div class="page"><h1 class="title">Quick calculation</h1><p class="lede">No well needed. Answers update as you type.</p>' +
       '<div class="seg" style="margin-top:16px">' + [["units", "Units"], ["volume", "Volume"], ["strokes", "Strokes"]].map(function (o) {
         return '<button data-qt="' + o[0] + '" class="' + (q.tab === o[0] ? "on" : "") + '">' + o[1] + "</button>"; }).join("") + "</div>";
     if (q.tab === "units") {
@@ -1751,8 +1777,6 @@ function Home(root, wellsMode) {
       var st = wellState(w), J = st.J, ini = (w.name || "?").replace(/[^A-Za-z0-9\u0600-\u06FF]/g, "").slice(0, 2).toUpperCase() || "W";
       var chips = J.length ? J.map(function (j) { return '<span class="wchip' + (j.done ? " d" : "") + '">' + esc(jobTitle(j)) + "</span>"; }).join("") : '<span class="wchip e">No jobs yet</span>';
       var bar = "";
-      if (st.ptd) bar = '<div class="wprog"><i style="width:' + Math.round(Math.min(1, st.cur / st.ptd) * 100) + '%"></i></div><div class="wmeta"><span>' + (st.cur ? "Now " + fi(st.cur) + " m" : "Not started") + "</span><span>Planned TD " + fi(st.ptd) + " m</span></div>";
-      else if (st.cur) bar = '<div class="wmeta"><span>Now ' + fi(st.cur) + " m</span><span>No planned TD yet</span></div>";
       return '<div class="wcard wa" role="button" data-go="well/' + w.id + '"><div class="wtop"><span class="wav">' + esc(ini) + '</span>' +
         '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wrel">Updated ' + relTime(w.updated || w.created) + "</span></span>" +
         '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>' +
@@ -1787,7 +1811,7 @@ function Home(root, wellsMode) {
     // Wells page: new well + the list (opened from the Wells card on Home).
     var ws = load("wsort", "new");
     h = '<div class="page wl"><h1 class="wl-title">Wells</h1><p class="wl-count">' + nW + " well" + (nW === 1 ? "" : "s") + " on this phone</p>";
-    h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Well code name (e.g. DEMO-101)" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
+    h += grp("New well", '<div class="r"><input class="in wide" id="wname" autocomplete="off" placeholder="Code name, e.g. DEMO-101" style="flex:1"><button class="btn" data-a="create">Create</button></div>');
     h += '<p class="wl-lock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.5" r="1.2"/></svg><span>Use a code name for the well, not its real name, to keep company information private.</span></p>';
     h += '<div class="sec"><div class="sh">Wells<label class="wl-sort"><select id="wsort" aria-label="Sort wells">' +
       [["new", "Newest first"], ["old", "Oldest first"], ["name", "Name A–Z"]].map(function (o) { return '<option value="' + o[0] + '"' + (ws === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
@@ -1795,12 +1819,12 @@ function Home(root, wellsMode) {
       (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
       '<div class="wlist" id="list">' + list() + "</div></div></div>";
   } else {
-  h = '<div class="page hm"><div class="hm-top"><button class="hm-gear" data-a="settings" aria-label="Settings">' + ico.gear + "</button></div>" +
+  h = '<div class="page hm"><div class="hm-top"></div>' +
     '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
     '<p class="hm-lede">Cement calculations, displacement and job sheets — all in one place.</p>' + land + "</div>";
   h += '<div class="hm-nav">' +
     row(' role="button" data-a="goWells"', ico.well, "Wells", "Manage wells and view status", ico.chev) +
-    row(' role="button" data-go="calc"', ico.calc, "Quick calc", "Units, volumes and strokes", ico.chev) +
+    row(' role="button" data-go="calc"', ico.calc, "Quick calculation", "Units, volumes and strokes", ico.chev) +
     row(' role="button" data-go="table"', ico.table, "Casing table", "Sizes, ID and capacity", ico.chev) +
     row(' role="button" data-go="guide"', ico.book, "Guide", "How to use, step by step", ico.chev) +
     row(' role="button" data-a="tgBackup" id="bkRow"', ico.data, "Backup &amp; Restore", "Save and restore data", ico.chev) +
@@ -1829,7 +1853,7 @@ function Home(root, wellsMode) {
         { label: "Open", fn: function () { location.hash = "well/" + w.id; } },
         { label: "Rename", fn: function () { renameWell(w); } },
         { label: "Download a copy", fn: function () { downloadWells([w], w.name); } },
-        { label: "Delete", danger: true, fn: function () { delWell(w, route); } }]);
+        { label: "Delete", danger: true, fn: function () { delWell(w, route); } }], mo);
       return;
     }
     var th = e.target.closest("[data-th]"); if (th) { save("theme", th.getAttribute("data-th")); applyTheme(); route(); return; }
@@ -1838,11 +1862,6 @@ function Home(root, wellsMode) {
     if (a === "create") create();
     if (a === "goWells") { location.hash = "wells"; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
-    if (a === "settings") {
-      var acts = [{ label: "Restore from a file", fn: function () { root.querySelector('[data-a="import"]').click(); } }];
-      if (!isStandalone()) acts.push({ label: "Add to Home Screen", fn: installHelp });
-      menu("Settings", acts); return;
-    }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
   });
