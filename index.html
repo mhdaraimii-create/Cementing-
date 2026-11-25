@@ -1476,9 +1476,12 @@ function programBody(s, m) {
   // cement-unit tank tally: volume split into tanks of the set size, with a running total
   var tally = function (title, total, firstW) {
     if (!(total > 0)) return "";
-    var n = Math.ceil(total / tank - 1e-9), run = 0, wN = firstW ? Math.ceil(firstW / tank - 1e-9) : 0, cells = [];
-    for (var i = 1; i <= n; i++) { var x = Math.min(tank, total - run); run += x; cells.push('<div class="tk' + (i <= wN ? " w" : "") + '"><i>' + i + (i <= wN ? "W" : "") + "</i><span>" + f2(x) + "</span><b>" + f2(run) + "</b></div>"); }
-    return '<div class="tkh">' + title + ' <span class="sub">· ' + n + " tanks of " + f2(tank) + " m³</span></div><div class=\"tks\">" + cells.join("") + "</div>";
+    // the cement-unit water is counted on its own first (marked W), then the rest in full tanks
+    var w0 = Math.min(firstW || 0, total), run = 0, cells = [], i = 0, x;
+    var cell = function (vol, isW) { i++; run += vol; cells.push('<div class="tk' + (isW ? " w" : "") + '"><i>' + i + (isW ? "W" : "") + "</i><span>" + f2(vol) + "</span><b>" + f2(run) + "</b></div>"); };
+    while (w0 - (run) > 1e-9) { x = Math.min(tank, w0 - run); cell(x, true); }
+    while (total - run > 1e-9) { x = Math.min(tank, total - run); cell(x, false); }
+    return '<div class="tkh">' + title + ' <span class="sub">· ' + i + " tanks of " + f2(tank) + " m³</span></div><div class=\"tks\">" + cells.join("") + "</div>";
   };
   var leadB = lt ? leadBase(m, sl.lead) : null, tailB = sl && sl.tail ? sl.tail.dry : null;
   var spP = P(s.spacerVol), spD = P(s.spacerDead) || 0, spMix = sl ? sl.spMix : null, spLiq = liquidL(s.spacerAdd, spMix);
