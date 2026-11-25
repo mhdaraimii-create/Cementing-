@@ -828,6 +828,12 @@ var PACKS = { cdf1: 20, cfl100: 25, cd200: 25, bentonite: 25 };
 function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[addKey(r.name)] || null; }
 function packTxt(r, a) { var p = packOf(r); return p && a != null && r.unit !== "m3" && r.unit !== "MT" ? " · " + Math.ceil(a / p - 1e-9) + " pk" : ""; }
 // Plain water in a slurry's mix fluid: from the lab water ratio (m³/MT) if given, else mix fluid − liquid additives.
+// Spacer mix water: from the spacer report (water L per m³ of spacer) if given, else mix − liquid additives.
+function spWaterOf(s, mix) {
+  if (mix == null) return null;
+  var r = P(s.spWater); if (r != null && r > 0) return { v: mix * r / 1000, lab: true };
+  return { v: mix - liquidL(s.spacerAdd, mix) / 1000, lab: false };
+}
 function waterOf(o, ratio, liqL) {
   if (!o || o.mix == null) return null;
   var w = P(ratio), fl = o.mix + o.dead, cc = o.mix / o.dry;
@@ -1197,7 +1203,7 @@ function CementPage(root, s) {
     o += grp("Plug results", '<div id="o-plug"></div>', unitSeg());
     o += grp("Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows("Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
-    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + num("Water (spacer report)", "spWater", s, "L/m³", "optional") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
     return o;
   }
@@ -1241,7 +1247,7 @@ function CementPage(root, s) {
     o += grp(two ? "Stage 1 slurry" : lt ? "Tail slurry" : "Cement slurry", '<div class="pad" style="padding-bottom:0" id="o-tv"></div>' + num("Slurry yield", "tailYield", s, "m³/MT") + num("Mix fluid", "tailConc", s, "m³/MT") + num("Dead volume", "tailDead", s, "m³") +
       '<div id="o-tail"></div>' + addRows(two ? "Stage 1 additives" : lt ? "Tail additives" : "Additives", "tailAdd", s.tailAdd, "Dry cement", "var(--tail)"));
     if (two) o += leadG();
-    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
+    o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + num("Water (spacer report)", "spWater", s, "L/m³", "optional") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
     o += grpC("pr", "Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m — the SG shows next to each (kPa/m ÷ 9.81). Static, no friction.</p>' +
       numG("Mud", "mudGr", s) + numG("Spacer", "spGr", s, "9.81") + dflSelect(s) + (dispFluid(s) === "WSW" ? numG("WSW", "wswGr", s, "9.81") : "") +
@@ -1339,7 +1345,8 @@ function CementPage(root, s) {
     $("o-sp").innerHTML = '<p style="padding:12px 0 0;margin:0;color:var(--accent);font-weight:700;font-size:15px">Mix volume = ' + fx(spm) + ' m³ <span style="color:var(--sub);font-weight:400;font-size:13px">(pumped + dead)</span></p>';
     amts("spacerAdd", s.spacerAdd, spm);
     var spLiq = liquidL(s.spacerAdd, spm);
-    if (spm != null) $("o-sp").innerHTML += line("Spacer water", fx(spm - spLiq / 1000) + " m³", spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives" : "");
+    var spw = spWaterOf(s, spm);
+    if (spw) $("o-sp").innerHTML += line("Spacer water", fx(spw.v) + " m³", spw.lab ? "spacer report " + esc(s.spWater) + " L/m³ × mix" : spLiq ? "mix − " + fx(spLiq / 1000, 3) + " liquid additives · solids not counted: enter the report water" : "no liquid additives");
     var hs = $("h-sp"); if (hs) hs.textContent = spm != null ? "mix " + fx(spm) + " m³" : "optional";
     var hp = $("h-pr"); if (hp) { var pr2 = s.jobType === "plug" ? null : pressures(s, m); hp.textContent = pr2 && pr2.st && pr2.st.length ? "Δ " + fi(pr2.st[0].diff) + " kPa" : "optional"; }
     rbar(m, sl);
@@ -1534,7 +1541,7 @@ function programBody(s, m) {
     (lt ? mixBlock("LEAD CEMENT", sl.lead, s.leadAdd, leadB, s.leadWater) : "") +
     mixBlock(lt ? "TAIL CEMENT" : "CEMENT", sl && sl.tail, s.tailAdd, tailB, s.tailWater, batch) +
     (spMix != null ? '<div class="ab"><div class="abh"><span class="gl">Spacer Additives</span> — TO BE MIXED: PE and ME to witness:</div>' +
-      '<div class="ys">Spacer volume: ' + f2(spMix) + " m³" + (spD ? " (including " + f2(spD) + " m³ DV)" : "") + ", Mix Water: " + f2(spMix - spLiq / 1000) + " m³</div>" + addTable(s.spacerAdd, spMix, true) + "</div>" : ""));
+      '<div class="ys">Spacer volume: ' + f2(spMix) + " m³" + (spD ? " (including " + f2(spD) + " m³ DV)" : "") + ", Mix Water: " + f2((spWaterOf(s, spMix) || {}).v) + " m³</div>" + addTable(s.spacerAdd, spMix, true) + "</div>" : ""));
   steps.push(co + " to hold safety meeting on rig floor during circulation.");
   steps.push(co + " R/U cement head and lines then pump " + esc(pgv(s, "flush")) + " m³ of water to flush lines. P/T surface lines to " + fi(P(pgv(s, "lineP"))) + " kPa.");
   steps.push("Rig pump <b>" + f2(spP) + " m³" + (spk ? " (" + fi(spk) + " strokes)" : "") + "</b> of spacer @ " + hv(rate + " m³/min") + ".");
