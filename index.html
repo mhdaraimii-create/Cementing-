@@ -776,6 +776,8 @@ function pressures(s, m) {
   var mud = P(s.mudGr), sp = P(s.spGr) != null ? P(s.spGr) : 9.81, cT = P(s.tailGr), cL = m.hasLead ? P(s.leadGr) : cT;
   if (mud == null || cT == null || (m.hasLead && cL == null)) return null;
   var k = caps(s), liner = s.jobType === "liner", TOP = m.LT || 0, PS = m.PS, sa = (P(s.spAhead) || 0) * 1000;
+  // fluid left inside the casing after displacement: mud, or WSW (water) where that is the practice
+  var gIn = dispFluid(s) === "WSW" ? (P(s.wswGr) || 9.81) : mud;
   var annCap = function (d) { return liner && d < TOP ? k.prevInt - k.ced : PS != null && d < PS ? k.cc : k.oh; };
   var inCap = function (d) { return liner && d < TOP ? k.dp : k.int; };
   var bps = [TOP, PS || 0];
@@ -783,7 +785,7 @@ function pressures(s, m) {
   var stage = function (name, bands, to, below) {
     var toc = bands[0][0], tos = walkUp(toc, sa, bps, annCap);
     var ann = [{ from: 0, to: tos, g: mud }, { from: tos, to: toc, g: sp }].concat(bands.map(function (b) { return { from: b[0], to: b[1], g: b[2], cmt: true }; })).concat(below || []);
-    var tsi = walkUp(to, m.spB, [TOP], inCap), ins = [{ from: 0, to: tsi, g: mud }, { from: tsi, to: to, g: sp }];
+    var tsi = walkUp(to, m.spB, [TOP], inCap), ins = [{ from: 0, to: tsi, g: gIn }, { from: tsi, to: to, g: sp }];
     return { name: name, to: to, ann: ann, pa: hp(ann, to), pi: hp(ins, to), diff: hp(ann, to) - hp(ins, to), tos: tos };
   };
   var st = [], tocA = m.tocDp != null ? m.tocDp : m.TOC;
@@ -791,7 +793,7 @@ function pressures(s, m) {
     var s1 = stage("Stage 1", [[m.TOC1, m.SH, cT]], m.FC);
     st.push(s1, stage("Stage 2", [[m.TOC, m.ST, cL]], m.ST, [{ from: m.ST, to: m.TOC1, g: mud }, { from: m.TOC1, to: m.SH, g: cT, cmt: true }]));
   } else st.push(stage("", m.hasLead ? [[tocA, m.tTop, cL], [m.tTop, m.SH, cT]] : [[tocA, m.SH, cT]], m.FC));
-  var out = { st: st, mud: mud };
+  var out = { st: st, mud: mud, gIn: gIn, wsw: gIn !== mud };
   var gd = P(s.gasDepth), gp = P(s.gasP);
   if (gd != null && gp != null) {
     var mins = st.map(function (x) { return hp(x.ann.map(function (l) { return l.cmt ? { from: l.from, to: l.to, g: 9.81 } : l; }), gd); });
@@ -1235,7 +1237,7 @@ function CementPage(root, s) {
     o += grpC("sp", "Spacer", num("Pumped volume", "spacerVol", s, "m³") + num("Dead volume", "spacerDead", s, "m³") + '<div id="o-sp"></div>' +
       addRows("Spacer additives", "spacerAdd", s.spacerAdd, "Mix vol", "var(--disp)"), '<b id="h-sp" style="font-weight:500"></b>');
     o += grpC("pr", "Pressures", '<p class="note" style="padding-top:12px">Gradients in kPa/m — the SG shows next to each (kPa/m ÷ 9.81). Static, no friction.</p>' +
-      numG("Mud", "mudGr", s) + numG("Spacer", "spGr", s, "9.81") +
+      numG("Mud", "mudGr", s) + numG("Spacer", "spGr", s, "9.81") + dflSelect(s) + (dispFluid(s) === "WSW" ? numG("WSW", "wswGr", s, "9.81") : "") +
       (lt || two ? numG(two ? "Stage 2 cement" : "Lead cement", "leadGr", s) : "") + numG(two ? "Stage 1 cement" : lt ? "Tail cement" : "Cement", "tailGr", s) +
       num("Spacer ahead", "spAhead", s, "m³", "0") +
       '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
@@ -1247,7 +1249,7 @@ function CementPage(root, s) {
       o += grpC("pg", "Cement program", '<p class="note" style="padding-top:12px">Used only by the Cement program sheet. Blank = the value shown.</p>' +
         pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true) +
         pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") +
-        '<label class="r"><span class="l">Displace with</span><select class="chip" data-k="pg.dfl"><option value="">Auto · ' + dispFluid({ csgId: s.csgId }) + '</option><option value="mud"' + (s.pg.dfl === "mud" ? " selected" : "") + '>Mud</option><option value="WSW"' + (s.pg.dfl === "WSW" ? " selected" : "") + ">WSW</option></select></label>" +
+        dflSelect(s) +
         '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + '>On the fly</option></select></label>' +
         pn("Cement unit tank", "tank", "m³") + pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min") +
         '<p class="note" style="padding-bottom:12px">Lot numbers go with each additive above.</p>', '<b style="font-weight:500">sheet settings</b>');
@@ -1268,7 +1270,7 @@ function CementPage(root, s) {
     // The drawing shows up once the well is filled in.
     var pr = pressures(s, m), $pr = $("o-pr");
     if ($pr) $pr.innerHTML = !pr ? '<div class="empty">Enter the mud and cement gradients</div>' : pr.st.map(function (x) {
-      return line("Differential before bump" + (x.name ? " · " + x.name : ""), fi(x.diff) + " kPa", "annulus " + fi(x.pa) + " − inside " + fi(x.pi) + " at " + fi(x.to) + " m");
+      return line("Differential before bump" + (x.name ? " · " + x.name : ""), fi(x.diff) + " kPa", "annulus " + fi(x.pa) + " − inside " + fi(x.pi) + (pr.wsw ? " (WSW)" : "") + " at " + fi(x.to) + " m");
     }).join("") +
       (pr.gas ? line("Gas zone overbalance", fi(pr.gas.min - pr.gas.p) + " kPa", "cement as water " + fi(pr.gas.min) + " − pore " + fi(pr.gas.p) + " (full cement " + fi(pr.gas.hh) + ")", pr.gas.min < pr.gas.p ? "var(--danger,#c0392b)" : "") : "") +
       (pr.shoe ? line("Margin at previous shoe", fi(pr.shoe.fs - pr.shoe.hh) + " kPa", "strength " + fi(pr.shoe.fs) + " − HH " + fi(pr.shoe.hh) + " at " + fi(pr.shoe.d) + " m", pr.shoe.hh > pr.shoe.fs ? "var(--danger,#c0392b)" : "") : "");
@@ -1474,6 +1476,10 @@ function openSheet(body, title) {
 var PG_DEF = { co: "", rig: "", tank: "1.9", rate: "0.5", slow: "0.3", slowLast: "3", flush: "0.5", lineP: "14000", csgP: "10000", csgMin: "10", cls: "Class G" };
 // Displacement fluid: 9⅝″ casing is displaced with WSW, 7″ and the rest with mud (PE practice); can be set per job.
 function dispFluid(s) { var v = s.pg && s.pg.dfl; if (v) return v; var c = byId(CSG, s.csgId); return c && Math.abs(c.od - 9.625) < .01 ? "WSW" : "mud"; }
+function dflSelect(s) {
+  var pg = s.pg || {};
+  return '<label class="r"><span class="l">Displace with</span><select class="chip" data-k="pg.dfl" data-re><option value="">Auto · ' + dispFluid({ csgId: s.csgId }) + '</option><option value="mud"' + (pg.dfl === "mud" ? " selected" : "") + '>Mud</option><option value="WSW"' + (pg.dfl === "WSW" ? " selected" : "") + ">WSW</option></select></label>";
+}
 function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : PG_DEF[k]; }
 function programBody(s, m) {
   // Same order, wording and numbering as the approved PE program; laid out cleanly.
