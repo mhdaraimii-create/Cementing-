@@ -675,11 +675,11 @@ function walkUp(start, V, bps, f) {
   return 0;
 }
 function plugModel(s) {
-  var k = caps(s), SH = P(s.shoe), ex = (P(s.exTailOH) || 0) / 100, c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
+  var k = caps(s), SH = P(s.shoe), ex = (P(s.exTailOH) || 0) / 100, exc = (P(s.exTailCsg) || 0) / 100, c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId);
   if (SH == null || k.int == null) return null;
   var dp = dpOf(s.dpTub), SL = P(s.stgLen) || 0, tb = SL > 0 ? dpOf(s.stgId) : null;
   var sa = (P(s.spAhead) || 0) * 1000, ud = (P(s.underDisp) || 0) * 1000, warn = [], items = [], plugs = [];
-  var wc = function (d) { return d > SH ? (k.full || 0) * (1 + ex) : k.int; };
+  var wc = function (d) { return d > SH ? (k.full || 0) * (1 + ex) : k.int * (1 + exc); };   // excess in the open hole and, if set, inside the casing
   (s.plugs || []).forEach(function (pl, i) {
     var B = P(pl.bot), T = P(pl.top); if (B == null || T == null) return;
     if (T >= B) { warn.push("Plug " + (i + 1) + ": top must be above the bottom."); return; }
@@ -1188,7 +1188,7 @@ function CementPage(root, s) {
   }
   function pnum(label, i, f) { var o = {}; o["plugs." + i + "." + f] = s.plugs[i][f]; return num(label, "plugs." + i + "." + f, o, "m"); }
   function plugForm(o, k, c, h) {
-    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + "</div>");
+    o += grp("Casing at the plugs", csgRows("csgId") + num("Shoe depth", "shoe", s, "m") + num("Excess in casing", "exTailCsg", s, "%", "0") + '<div class="ccrow">' + capCard("Internal capacity", "capInt", s, k.auto.int) + "</div>");
     o += grp("Open hole below shoe", sel("Size", "holeId", s, opt(HOLE), true) + num("Excess", "exTailOH", s, "%", "0") + '<div class="ccrow">' + capCard("Open hole capacity", "capFull", s, k.auto.full) + "</div>" +
       '<p class="note" style="padding-bottom:12px">Only used for plug parts below the shoe.</p>');
     o += grp("Work string", sel("Drill pipe", "dpTub", s, opt(DP), true) + sel("Stinger (tail pipe)", "stgId", s, opt(DP.filter(function (x) { return x.id.indexOf("tbg") === 0; })), true) + num("Stinger length", "stgLen", s, "m", "0 = none") +
