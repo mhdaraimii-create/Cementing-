@@ -1211,7 +1211,7 @@ function CementPage(root, s) {
     var two = s.jobType === "twostage", lt = !two && s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var wl = wellById(s.wellId);
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
-    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button>' + (s.jobType === "casing" ? '<button class="btn sec2 pgbtn" data-act="prog">Cement program</button>' : "") + "</div>";
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button>' + (s.jobType === "casing" ? '<button class="btn sec2 pgbtn" data-act="prog">' + (s.pg && s.pg.genAt ? "✓ " : "") + "Cement program</button>" : "") + "</div>";
     o += '<div id="warnBox"></div>';
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
@@ -1256,17 +1256,6 @@ function CementPage(root, s) {
       '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
       (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + numG("Formation strength", "fsGr", s) : "") +
       '<div id="o-pr"></div>', '<b id="h-pr" style="font-weight:500"></b>');
-    if (s.jobType === "casing") {
-      var pn = function (label, k, unit, txt) { var o2 = {}; o2["pg." + k] = s.pg[k]; var ph = PG_DEF[k] || (k === "co" ? "e.g. contractor name" : k === "rig" ? "e.g. RIG-01" : "");
-        return txt ? '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="pg.' + k + '" value="' + esc(s.pg[k] || "") + '" placeholder="' + esc(ph) + '"></label>' : num(label, "pg." + k, o2, unit, ph); };
-      o += grpC("pg", "Cement program", '<p class="note" style="padding-top:12px">Used only by the Cement program sheet. Blank = the value shown.</p>' +
-        pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true) +
-        pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") +
-        dflSelect(s) +
-        '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + '>On the fly</option></select></label>' +
-        pn("Cement unit tank", "tank", "m³") + pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min") +
-        '<p class="note" style="padding-bottom:12px">Lot numbers go with each additive above.</p>', '<b style="font-weight:500">sheet settings</b>');
-    }
     root.innerHTML = '<div class="page">' + o + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>';
     outs();
   }
@@ -1425,7 +1414,15 @@ function CementPage(root, s) {
     },
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
     pdf: function () { var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; } showSheet(s, m); },
-    prog: function () { var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; } openSheet(programBody(s, m), "Cement program"); },
+    prog: function (i, btn) {
+      var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; }
+      if (!(s.pg && s.pg.genAt)) { location.hash = "prog/" + s.id; return; }
+      menu("", [
+        { label: "Open", fn: function () { openSheet(programBody(s, model(s)), "Cement program"); } },
+        { label: "Download PDF", fn: function () { openSheet(programBody(s, model(s)), "Cement program"); setTimeout(function () { try { window.print(); } catch (x) { toast("Use Share → Print to save as PDF."); } }, 350); } },
+        { label: "Edit", fn: function () { location.hash = "prog/" + s.id; } },
+        { label: "Delete", danger: true, fn: function () { ask("Delete the cement program?", "The program settings for this job are removed. The job itself stays.", "Delete", true, function () { s.pg = {}; touch(s); draw(); }); } }], btn);
+    },
     dup: function () { var c = dupJob(s); location.hash = "job/" + c.id; toast("Duplicated"); },
     del: function () { delJob(s, function () { location.hash = "well/" + s.wellId; }); }
   });
@@ -1495,6 +1492,35 @@ function dflSelect(s) {
   return '<label class="r"><span class="l">Displace with</span><select class="chip" data-k="pg.dfl" data-re><option value="">Auto · ' + dispFluid({ csgId: s.csgId }) + '</option><option value="mud"' + (pg.dfl === "mud" ? " selected" : "") + '>Mud</option><option value="WSW"' + (pg.dfl === "WSW" ? " selected" : "") + ">WSW</option></select></label>";
 }
 function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : PG_DEF[k]; }
+// Cement program settings page: fill in, then Generate CMT Program (PDF sheet).
+function ProgPage(root, s) {
+  if (!s.pg) s.pg = {};
+  function pn(label, k, unit, txt) {
+    var ph = PG_DEF[k] || (k === "co" ? "e.g. contractor name" : k === "rig" ? "e.g. RIG-01" : "");
+    if (txt) return '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="pg.' + k + '" value="' + esc(s.pg[k] || "") + '" placeholder="' + esc(ph) + '"></label>';
+    var o = {}; o["pg." + k] = s.pg[k]; return num(label, "pg." + k, o, unit, ph);
+  }
+  function draw() {
+    var c = byId(CSG, s.csgId);
+    var h = '<div class="page wl"><h1 class="wl-title">Cement program</h1><p class="wl-count">' + esc(jobTitle(s)) + (c ? " · " + c.label + " casing" : "") + "</p>";
+    h += grp("Job", pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true));
+    h += grp("Pumping", pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") + dflSelect(s) +
+      (s.scheme === "leadtail" ? '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + ">On the fly</option></select></label>" : "") +
+      pn("Cement unit tank", "tank", "m³"));
+    h += grp("Lines and tests", pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min"));
+    h += '<p class="note" style="padding:0 6px">Blank = the value shown. Volumes, additives and lot numbers come from the job.</p>';
+    h += '<button class="btn" data-act="gen" style="width:100%;margin-top:18px;min-height:50px;font-size:16px">Generate CMT Program</button></div>';
+    root.innerHTML = h;
+  }
+  bind(root, s, function () { touch(s); }, draw, function () {}, {
+    gen: function () {
+      var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; }
+      s.pg.genAt = Date.now(); touch(s); OPEN_PROG = s.id; location.hash = "job/" + s.id;
+    }
+  });
+  draw();
+}
+var OPEN_PROG = null;   // job id whose program should open right after Generate
 function programBody(s, m) {
   // Same order, wording and numbering as the approved PE program; laid out cleanly.
   var sl = slurries(s, m), w = wellById(s.wellId), c = byId(CSG, s.csgId), lt = !!(sl && sl.lead);
@@ -2059,6 +2085,10 @@ function route() {
   // Play the entrance once per page open; later redraws (typing, toggles) stay still.
   root.classList.add("entering"); clearTimeout(route.t); route.t = setTimeout(function () { root.classList.remove("entering"); }, 1400);
   window.scrollTo(0, 0);
+  if (parts[0] === "prog") { var pj = jobById(parts[1]); if (pj) { var pb = document.createElement("div");
+    (function () { var tp = document.createElement("div"); tp.className = "top"; tp.innerHTML = '<button class="bk"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 2 8l6 6"/></svg><span>' + esc(pj.name || "Job") + "</span></button>";
+      tp.querySelector(".bk").onclick = function () { location.hash = "job/" + pj.id; }; root.appendChild(tp); })();
+    ProgPage(pb, pj); root.appendChild(pb); return; } }
   var j = parts[0] === "job" ? jobById(parts[1]) : null, w = parts[0] === "well" ? wellById(parts[1]) : j ? wellById(j.wellId) : null, body = document.createElement("div");
   var back = function (label, hash, more) {
     var top = document.createElement("div"); top.className = "top";
@@ -2074,6 +2104,7 @@ function route() {
         { label: "Delete job", danger: true, fn: function () { delJob(j, function () { location.hash = w ? "well/" + w.id : "home"; }); } }];
     });
     CementPage(body, j);
+    if (OPEN_PROG === j.id) { OPEN_PROG = null; var mm = model(j); if (mm && mm.items.length) setTimeout(function () { openSheet(programBody(j, mm), "Cement program"); }, 0); }
   }
   else if (w) { back("Wells", "wells"); WellPage(body, w); }
   else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
