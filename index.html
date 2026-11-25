@@ -1100,12 +1100,19 @@ function nextName(wid, type) {
   return p + " " + (n + 1);
 }
 // New job in a well: the latest cased job becomes this one's previous casing (or, for a plug, the casing it sits in).
+// Usual next section after each casing: [next casing OD, hole id]. 20″ → 13⅜″ in 17½″, 13⅜″ → 9⅝″ in 12¼″, 9⅝″ → 7″ in 8½″, 7″ → 4½″ in 6⅛″.
+var NEXT_SEC = { "20": [13.375, "h1712"], "18.625": [13.375, "h16"], "13.375": [9.625, "h1214"], "9.625": [7, "h812"], "7.625": [4.5, "h618"], "7": [4.5, "h618"] };
 function addJob(wid, type) {
   var j = newJob(nextName(wid, type)); j.wellId = wid; j.jobType = type;
   var last = wellJobs(wid).filter(function (x) { return x.jobType !== "plug" && P(x.shoe) != null; }).pop();
   if (last) {
     if (type === "plug") { j.csgId = last.csgId; j.shoe = last.shoe; j.holeId = last.holeId; }
-    else { j.prevOn = true; j.prevId = last.csgId; j.prevShoe = last.shoe; }
+    else {
+      j.prevOn = true; j.prevId = last.csgId; j.prevShoe = last.shoe;
+      // the next section: next casing size down and its usual hole, drilled below the last shoe (all editable)
+      var pc = byId(CSG, last.csgId), nx = pc && NEXT_SEC[String(pc.od)];
+      if (nx) { var nc = csgFor(nx[0]); if (nc) j.csgId = nc.id; j.holeId = nx[1]; }
+    }
     if (last.outStk) j.outStk = last.outStk;
   }
   db.jobs.push(j); var w = wellById(wid); if (w) w.updated = Date.now(); saveDb(); return j;
