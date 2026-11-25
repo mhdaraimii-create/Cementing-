@@ -454,6 +454,7 @@
   #sheet table.tt th, #sheet table.tt td { border:1px solid #9aa39d; padding:1px 2px; text-align:center; width:46px; font-family:var(--mono); font-size:10.5px; }
   @media (max-width:600px) { #sheet table.tt th, #sheet table.tt td { width:auto; min-width:22px; font-size:9px; padding:1px; } }
   #sheet table.tt th { background:#e9ece9; color:#14201a; font-weight:700; font-size:10px; }
+  #sheet .miss { color:#c0201a; background:#fde8e6; border-radius:3px; padding:0 4px; font-weight:800; }
   #sheet .ws { margin-top:12px; font-weight:800; color:#1d3f8f; }
   .wl #wname::placeholder { font-size:14px; }
   .top { display:flex; align-items:center; justify-content:space-between; }
@@ -1475,7 +1476,7 @@ function programBody(s, m) {
   // Same order, wording and numbering as the approved PE program; laid out cleanly.
   var sl = slurries(s, m), w = wellById(s.wellId), c = byId(CSG, s.csgId), lt = !!(sl && sl.lead);
   var co = esc(pgv(s, "co") || "Cement contractor"), rate = esc(pgv(s, "rate")), tank = P(pgv(s, "tank")) || 1.9, cls = esc(pgv(s, "cls"));
-  var f2 = function (v) { return v == null || !isFinite(v) ? "—" : (Math.round(v * 100) / 100).toString(); };
+  var f2 = function (v) { return v == null || !isFinite(v) ? '<span class="miss">—</span>' : (Math.round(v * 100) / 100).toString(); };
   var hv = function (x) { return '<span class="hv">' + x + "</span>"; };             // highlighted value
   var bl = function (x) { return '<span class="bl">' + x + "</span>"; };             // density in blue
   var amt = function (r, base) { var a = addVal(r, base); return a == null ? "—" : f2(a) + " " + (r.unit === "L" ? "L" : r.unit === "m3" ? "m³" : r.unit === "MT" ? "MT" : "kg"); };
@@ -1519,21 +1520,24 @@ function programBody(s, m) {
       '<div class="ys">Spacer volume: ' + f2(spMix) + " m³" + (spD ? " (including " + f2(spD) + " m³ DV)" : "") + ", Mix Water: " + f2(spMix - spLiq / 1000) + " m³</div>" + addTable(s.spacerAdd, spMix, true) + "</div>" : ""));
   steps.push(co + " to hold safety meeting on rig floor during circulation.");
   steps.push(co + " R/U cement head and lines then pump " + esc(pgv(s, "flush")) + " m³ of water to flush lines. P/T surface lines to " + fi(P(pgv(s, "lineP"))) + " kPa.");
-  if (spP) steps.push("Rig pump <b>" + f2(spP) + " m³" + (spk ? " (" + fi(spk) + " strokes)" : "") + "</b> of spacer @ " + hv(rate + " m³/min") + ".");
+  steps.push("Rig pump <b>" + f2(spP) + " m³" + (spk ? " (" + fi(spk) + " strokes)" : "") + "</b> of spacer @ " + hv(rate + " m³/min") + ".");
   steps.push('<span class="rd">Drop bottom plug.</span>');
-  if (lt) steps.push(co + " mix and pump " + hv(f2(sl.lead.V) + " m³") + " lead slurry of <u>" + cls + "</u> cement" + gr("leadGr") +
-    (sl.lead.mix != null ? " mix fluid (" + hv(f2(sl.lead.mix) + " m³") + ")" : "") + " @ " + hv(rate + " m³/min") + "." + tally(sl.lead.mix));
-  if (sl && sl.tail) steps.push(lt ? "Followed by " + hv(f2(sl.tail.V) + " m³") + (batch ? " (batch mixing)" : "") + " tail slurry of <u>" + cls + "</u> cement" + gr("tailGr") + " @ " + hv(rate + " m³/min") + "."
+  var two = s.scheme === "leadtail", L0 = sl && sl.lead, T0 = sl && sl.tail;
+  if (two) steps.push(co + " mix and pump " + hv(f2(L0 ? L0.V : null) + " m³") + " lead slurry of <u>" + cls + "</u> cement" + gr("leadGr") +
+    " mix fluid (" + hv(f2(L0 ? L0.mix : null) + " m³") + ") @ " + hv(rate + " m³/min") + "." + tally(L0 ? L0.mix : null));
+  if (two && !T0) steps.push("Followed by " + hv(f2(null) + " m³") + " tail slurry of <u>" + cls + "</u> cement" + gr("tailGr") + " @ " + hv(rate + " m³/min") + ".");
+  else if (!two && !T0) steps.push(co + " mix and pump " + hv(f2(null) + " m³") + " slurry of <u>" + cls + "</u> cement" + gr("tailGr") + " @ " + hv(rate + " m³/min") + ".");
+  if (T0) steps.push(two ? "Followed by " + hv(f2(sl.tail.V) + " m³") + (batch ? " (batch mixing)" : "") + " tail slurry of <u>" + cls + "</u> cement" + gr("tailGr") + " @ " + hv(rate + " m³/min") + "."
     : co + " mix and pump " + hv(f2(sl.tail.V) + " m³") + " slurry of <u>" + cls + "</u> cement" + gr("tailGr") + (sl.tail.mix != null ? " mix fluid (" + hv(f2(sl.tail.mix) + " m³") + ")" : "") + " @ " + hv(rate + " m³/min") + "." + tally(sl.tail.mix));
   steps.push('<span class="rd">Drop Top PLUG</span> <b>and confirm it is dropped.</b>');
-  if (D != null) {
-    if (uw) steps.push("Start displacement of " + hv(bl(f2(uw) + " m³ of WATER")) + " @ " + hv(rate + " m³/min") + " from cementing unit.");
-    steps.push(co + (uw ? " cont. pumping " : " pumping ") + hv(f2(mud) + " m³") + " of mud to displace @ " + hv(rate + " m³/min") +
+  {
+    steps.push("Start displacement of " + hv(bl(f2(uw || null) + " m³ of WATER")) + " @ " + hv(rate + " m³/min") + " from cementing unit.");
+    steps.push(co + " cont. pumping " + hv(f2(mud) + " m³") + " of mud to displace @ " + hv(rate + " m³/min") +
       (slowV ? ", reduce flowrate to " + hv(esc(pgv(s, "slow")) + " m³/min") + " for the last " + f2(slowV) + " m³ to suspect bumping the plug" : "") +
       ". Total displacement volume is " + f2(D) + " m³." + (m.halfShoe != null ? " " + hv(bl("Half shoe track is " + (m.halfShoe / 1000).toFixed(3) + " m³.")) : "") + tally(D, uw));
   }
   steps.push("Pressure test CSG to " + fi(P(pgv(s, "csgP"))) + " kPa for " + esc(pgv(s, "csgMin")) + " min &amp; observe losses in annulus.");
-  if (P(s.toc) != null && P(s.toc) <= 0) steps.push('<span class="lk">Once the cement is on surface, open SOV and allow cement on surface to fall in the annulus.</span>');
+  steps.push('<span class="lk">' + (P(s.toc) != null && P(s.toc) <= 0 ? "Once the cement is on surface, open SOV and allow cement on surface to fall in the annulus." : "If cement reaches surface, open SOV and allow cement on surface to fall in the annulus.") + "</span>");
   steps.push("Bleed off and check for any back flow.");
   steps.push(co + " provide chart and ASCII.");
   var h = '<div class="cp"><div class="cph"><div class="t1">' + (c ? frac(c.od) : "") + " CSG CEMENTATION PROGRAM</div>" +
