@@ -2028,6 +2028,30 @@ function downloadWells(wells, fname) {
   el.href = url; el.download = fname.replace(/[^A-Za-z0-9._-]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".json"; document.body.appendChild(el); el.click();
   setTimeout(function () { URL.revokeObjectURL(url); el.remove(); }, 500);
 }
+// Example well with a full set of jobs, for learning and demos. It is an ordinary well: open, edit or delete it.
+var DEMO_NAME = "DEMO-WELL";
+function addDemoWell() {
+  var now = Date.now(), D = 864e5, w = { id: uid(), name: DEMO_NAME, created: now - 20 * D, updated: now, ptd: "2600" };
+  var J = function (name, f, ago, done) { var j = Object.assign(newJob(name), { wellId: w.id }, f); j.created = j.updated = now - ago * D; if (done) { j.done = true; j.doneAt = now - (ago - 1) * D; } db.jobs.push(j); return j; };
+  var sp = function () { return [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "CSP-200", factor: "25", unit: "kg" }, { name: "CaCO3", factor: "571.084", unit: "kg" }]; };
+  J("Csg 1", { csgId: "c1338", holeId: "h1712", td: "805", shoe: "800", fc: "786", scheme: "single", toc: "0", exTailOH: "50",
+    tailYield: "1.15", tailConc: "0.70", tailDead: "1", tailGr: "15.2", mudGr: "11.5", spGr: "12.3", unitVol: "1.9", outStk: "13.62", spacerVol: "5", spacerDead: "1", spWater: "768.63",
+    tailAdd: [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "Bentonite", factor: "2", unit: "pct" }, { name: "CFL-100", factor: "0.3", unit: "pct" }], spacerAdd: sp() }, 18, true);
+  J("Csg 2", { csgId: "c958_47", holeId: "h1214", td: "1905", shoe: "1900", fc: "1876", prevOn: true, prevId: "c1338", prevShoe: "800",
+    scheme: "leadtail", toc: "0", tailTop: "1500", exLeadOH: "25", exLeadCsg: "10", exTailOH: "25", exTailCsg: "0",
+    leadYield: "1.736", leadConc: "1.405", leadDead: "2", leadWater: "1.393", tailYield: "0.701", tailConc: "0.375", tailWater: "0.371",
+    mudGr: "12", spGr: "13.4", leadGr: "13.8", tailGr: "19.5", unitVol: "1.9", outStk: "13.62", spacerVol: "7", spacerDead: "1", spWater: "768.63",
+    leadAdd: [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "Bentonite", factor: "3", unit: "pct" }, { name: "CX-1", factor: "10", unit: "L" }, { name: "CFL-100", factor: "0.3", unit: "pct" }, { name: "CSS-1", factor: "0.5", unit: "pct" }],
+    tailAdd: [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "GASCON", factor: "0.7", unit: "pct" }, { name: "CFL-100", factor: "0.4", unit: "pct" }, { name: "CD-200", factor: "0.7", unit: "pct" }, { name: "CX-1", factor: "2", unit: "L" }, { name: "CR-11", factor: "0.15", unit: "pct" }],
+    spacerAdd: sp() }, 12, true);
+  J("Liner 1", { jobType: "liner", csgId: "c7_29", holeId: "h812", td: "2600", shoe: "2595", fc: "2570", top: "1800", prevId: "c958_47", prevShoe: "1900", toc: "1750", exTailOH: "30",
+    dpTub: "dp5p", tailYield: "0.76", tailConc: "0.44", tailGr: "18.6", mudGr: "12", spGr: "13.4", spacerVol: "5", spacerBehind: "1", outStk: "13.62",
+    tailAdd: [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "GASCON", factor: "0.7", unit: "pct" }, { name: "CR-11", factor: "0.15", unit: "pct" }] }, 5, false);
+  J("Plug 1", { jobType: "plug", csgId: "c7_29", shoe: "2595", holeId: "h618", exTailOH: "0", dpTub: "dp35", stgId: "tbg278", stgLen: "200", spAhead: "2", underDisp: "0.3",
+    tailYield: "0.76", tailConc: "0.44", tailGr: "19.5", mudGr: "12", spGr: "13.4", outStk: "13.62", plugs: [{ bot: "2550", top: "2400" }],
+    tailAdd: [{ name: "CDF-1", factor: "2", unit: "L" }, { name: "CR-11", factor: "0.1", unit: "pct" }] }, 1, false);
+  db.wells.push(w); saveDb(); return w;
+}
 function relTime(t) {
   var s = (Date.now() - (t || 0)) / 1000;
   if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago";
@@ -2089,7 +2113,8 @@ function Home(root, wellsMode) {
       [["new", "Newest first"], ["old", "Oldest first"], ["name", "Name A–Z"]].map(function (o) { return '<option value="' + o[0] + '"' + (ws === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
       '</select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></label></div>' +
       (nW > 4 ? '<input class="in wide" id="q" placeholder="Search wells" style="margin-bottom:10px">' : "") +
-      '<div class="wlist" id="list">' + list() + "</div></div></div>";
+      '<div class="wlist" id="list">' + list() + "</div>" +
+      (db.wells.some(function (w) { return w.name === DEMO_NAME; }) ? "" : '<button class="btn ghost" data-a="demo" style="width:100%;margin-top:14px">+ Add demo well <span style="opacity:.7;font-weight:400">· example jobs to explore</span></button>') + "</div></div>";
   } else {
   h = '<div class="page hm"><div class="hm-top"></div>' +
     '<div class="hm-hero"><h1 class="hm-title">Cement Tool</h1><span class="hm-rule"></span>' +
@@ -2133,6 +2158,7 @@ function Home(root, wellsMode) {
     var ab = e.target.closest("[data-a]"), a = ab && ab.tagName !== "INPUT" ? ab.getAttribute("data-a") : null;
     if (a === "create") create();
     if (a === "goWells") { location.hash = "wells"; return; }
+    if (a === "demo") { var dw = addDemoWell(); toast("Demo well added"); location.hash = "well/" + dw.id; return; }
     if (a === "tgBackup") { var bp = root.querySelector("#bkPanel"); root.querySelector("#bkRow").classList.toggle("open", bp.classList.toggle("open")); return; }
     if (a === "install") installHelp();
     if (a === "instHide") { save("installHide", true); var ic = root.querySelector("#instCard"); if (ic) ic.remove(); toast("You can still add it from the browser's Share menu"); }
