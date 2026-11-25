@@ -1247,6 +1247,7 @@ function CementPage(root, s) {
       o += grpC("pg", "Cement program", '<p class="note" style="padding-top:12px">Used only by the Cement program sheet. Blank = the value shown.</p>' +
         pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true) +
         pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") +
+        '<label class="r"><span class="l">Displace with</span><select class="chip" data-k="pg.dfl"><option value="">Auto · ' + dispFluid({ csgId: s.csgId }) + '</option><option value="mud"' + (s.pg.dfl === "mud" ? " selected" : "") + '>Mud</option><option value="WSW"' + (s.pg.dfl === "WSW" ? " selected" : "") + ">WSW</option></select></label>" +
         '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + '>On the fly</option></select></label>' +
         pn("Cement unit tank", "tank", "m³") + pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min") +
         '<p class="note" style="padding-bottom:12px">Lot numbers go with each additive above.</p>', '<b style="font-weight:500">sheet settings</b>');
@@ -1471,6 +1472,8 @@ function openSheet(body, title) {
 /* ───────────────────────── cement program ───────────────────────── */
 // The job's cement program, laid out like the PE's Word program: additives with amounts, then the pumping steps.
 var PG_DEF = { co: "", rig: "", tank: "1.9", rate: "0.5", slow: "0.3", slowLast: "3", flush: "0.5", lineP: "14000", csgP: "10000", csgMin: "10", cls: "Class G" };
+// Displacement fluid: 9⅝″ casing is displaced with WSW, 7″ and the rest with mud (PE practice); can be set per job.
+function dispFluid(s) { var v = s.pg && s.pg.dfl; if (v) return v; var c = byId(CSG, s.csgId); return c && Math.abs(c.od - 9.625) < .01 ? "WSW" : "mud"; }
 function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : PG_DEF[k]; }
 function programBody(s, m) {
   // Same order, wording and numbering as the approved PE program; laid out cleanly.
@@ -1512,6 +1515,7 @@ function programBody(s, m) {
   var spP = P(s.spacerVol), spD = P(s.spacerDead) || 0, spMix = sl ? sl.spMix : null, spLiq = liquidL(s.spacerAdd, spMix);
   var spk = spP && P(s.outStk) ? Math.ceil(spP * 1000 / P(s.outStk) - 1e-9) : null;
   var D = m.dispL != null ? m.dispL / 1000 : null, uw = P(s.unitVol) || 0, mud = D != null ? Math.max(0, D - uw) : null, slowV = P(pgv(s, "slowLast")) || 0;
+  var dfl = dispFluid(s);
   var steps = [];
   steps.push(co + " start mixing additives when casing is on bottom and circulating." +
     (lt ? mixBlock("LEAD CEMENT", sl.lead, s.leadAdd, leadB, s.leadWater) : "") +
@@ -1532,7 +1536,7 @@ function programBody(s, m) {
   steps.push('<span class="rd">Drop Top PLUG</span> <b>and confirm it is dropped.</b>');
   {
     steps.push("Start displacement of " + hv(bl(f2(uw || null) + " m³ of WATER")) + " @ " + hv(rate + " m³/min") + " from cementing unit.");
-    steps.push(co + " cont. pumping " + hv(f2(mud) + " m³") + " of mud to displace @ " + hv(rate + " m³/min") +
+    steps.push(co + " cont. pumping " + hv(f2(mud) + " m³") + " of " + dfl + " to displace @ " + hv(rate + " m³/min") +
       (slowV ? ", reduce flowrate to " + hv(esc(pgv(s, "slow")) + " m³/min") + " for the last " + f2(slowV) + " m³ to suspect bumping the plug" : "") +
       ". Total displacement volume is " + f2(D) + " m³." + (m.halfShoe != null ? " " + hv(bl("Half shoe track is " + (m.halfShoe / 1000).toFixed(3) + " m³.")) : "") + tally(D, uw));
   }
