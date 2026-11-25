@@ -435,6 +435,13 @@
   .wl .grp { border-radius:16px; box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); }
   .wl .btn[data-a="create"] { background:linear-gradient(180deg,#11653a,#0b4f2c); }
   .wl #wname::placeholder { font-size:14px; }
+  .top { display:flex; align-items:center; justify-content:space-between; }
+  .top .bk { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.75); border:1px solid var(--line); border-radius:999px; padding:7px 15px 7px 12px;
+    font:500 15px var(--font, Inter); color:var(--hm-ink); box-shadow:0 1px 2px rgba(60,40,10,.05); max-width:70%; }
+  .top .bk span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top .bk svg { color:#8a7a5a; flex:none; }
+  .top .tmore { width:38px; height:38px; padding:0; border-radius:999px; background:rgba(255,255,255,.75); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--hm-ink); box-shadow:0 1px 2px rgba(60,40,10,.05); }
+  .top .bk:active, .top .tmore:active { background:var(--icbg); }
   @media (max-width:380px) { .wl .r:has(#wname) { flex-wrap:wrap; } .wl #wname { flex-basis:100% !important; } .wl .r:has(#wname) .btn { width:100%; } }
   .pop-ov { position:fixed; inset:0; z-index:9000; }
   .pop { position:fixed; min-width:190px; max-width:260px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px;
@@ -1166,7 +1173,7 @@ function CementPage(root, s) {
     var two = s.jobType === "twostage", lt = !two && s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var wl = wellById(s.wellId);
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
-    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button><button class="btn danger" data-act="del">Delete</button></div>';
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button></div>';
     o += '<div id="warnBox"></div>';
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
@@ -1916,13 +1923,21 @@ function route() {
   root.classList.add("entering"); clearTimeout(route.t); route.t = setTimeout(function () { root.classList.remove("entering"); }, 1400);
   window.scrollTo(0, 0);
   var j = parts[0] === "job" ? jobById(parts[1]) : null, w = parts[0] === "well" ? wellById(parts[1]) : j ? wellById(j.wellId) : null, body = document.createElement("div");
-  var back = function (label, hash) {
+  var back = function (label, hash, more) {
     var top = document.createElement("div"); top.className = "top";
-    top.innerHTML = "<button><b>‹</b><span>" + esc(label) + "</span></button>";
-    top.querySelector("button").onclick = function () { location.hash = hash; };
+    top.innerHTML = '<button class="bk" aria-label="Back to ' + esc(label) + '"><svg width="10" height="16" viewBox="0 0 10 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 2 8l6 6"/></svg><span>' + esc(label) + "</span></button>" +
+      (more ? '<button class="tmore" aria-label="More"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>' : "");
+    top.querySelector(".bk").onclick = function () { location.hash = hash; };
+    if (more) top.querySelector(".tmore").onclick = function () { menu("", more(), this); };
     root.appendChild(top);
   };
-  if (j) { back(w ? w.name : "Home", w ? "well/" + w.id : "home"); CementPage(body, j); }
+  if (j) {
+    back(w ? w.name : "Home", w ? "well/" + w.id : "home", function () {
+      return [{ label: "Duplicate job", fn: function () { var c = dupJob(j); location.hash = "job/" + c.id; toast("Duplicated"); } },
+        { label: "Delete job", danger: true, fn: function () { delJob(j, function () { location.hash = w ? "well/" + w.id : "home"; }); } }];
+    });
+    CementPage(body, j);
+  }
   else if (w) { back("Wells", "wells"); WellPage(body, w); }
   else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
   else if (parts[0] === "calc") { back("Home", "home"); CalcPage(body); }
