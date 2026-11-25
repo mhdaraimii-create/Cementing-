@@ -846,7 +846,7 @@ function grp(title, body, right) {
   return '<div class="sec"><div class="sh">' + title + (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
 }
 function grpC(id, title, body, right) {
-  var shut = !!load("col", {})[id];
+  var cs = load("col", {}), shut = cs[id] == null ? id === "pg" : !!cs[id];   // the program settings start folded
   return '<div class="sec' + (shut ? " shut" : "") + '" data-col="' + id + '"><div class="sh" data-tog="' + id + '" role="button" aria-expanded="' + !shut + '"><span style="flex:1;display:flex;align-items:center;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit">' + title + '<b class="cv">▾</b></span>' +
     (right ? "<span>" + right + "</span>" : "") + '</div><div class="grp">' + body + "</div></div>";
 }
@@ -1139,7 +1139,8 @@ function addRows(title, key, rows, baseLabel, color) {
     var p = key + "." + i + ".";
     var dp = packOf({ name: r.name });
     h += '<div class="add"><div class="rw" style="margin-top:0"><input class="in" style="flex:2.2" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
-      (key === "spacerAdd" ? "" : '<input class="in" style="flex:1" inputmode="decimal" data-k="' + p + 'pack" value="' + esc(r.pack || "") + '" placeholder="pack ' + (dp || "—") + '">') + "</div>" +
+      (key === "spacerAdd" ? "" : '<input class="in" style="flex:1" inputmode="decimal" data-k="' + p + 'pack" value="' + esc(r.pack || "") + '" placeholder="pack ' + (dp || "—") + '">') +
+      '<input class="in" style="flex:1.3" autocomplete="off" data-k="' + p + 'lot" value="' + esc(r.lot || "") + '" placeholder="lot no.">' + "</div>" +
       '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'factor" value="' + esc(r.factor) + '" placeholder="factor">' +
       '<select class="chip" data-k="' + p + 'unit">' + unitsFor(r.unit).map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
@@ -1150,7 +1151,7 @@ function addRows(title, key, rows, baseLabel, color) {
 
 /* ───────────────────────── cement page ───────────────────────── */
 function CementPage(root, s) {
-  CUR_JOB = s;
+  CUR_JOB = s; if (!s.pg) s.pg = {};
   function persist() { touch(s); }
   if (!s.plugs || !s.plugs.length) s.plugs = [{ bot: "", top: "" }];
   // Older screens showed the lead excess on single-slurry jobs too; move a value typed there.
@@ -1188,7 +1189,7 @@ function CementPage(root, s) {
     var two = s.jobType === "twostage", lt = !two && s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var wl = wellById(s.wellId);
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
-    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button></div>';
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button>' + (s.jobType === "casing" ? '<button class="btn sec2 pgbtn" data-act="prog">Cement program</button>' : "") + "</div>";
     o += '<div id="warnBox"></div>';
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
@@ -1233,6 +1234,15 @@ function CementPage(root, s) {
       '<div class="tag" style="color:var(--ink)">Gas zone (optional)</div>' + num("Depth", "gasDepth", s, "m") + num("Pore pressure", "gasP", s, "kPa") +
       (prevOn ? '<div class="tag" style="color:var(--ink)">Previous shoe (optional)</div>' + numG("Formation strength", "fsGr", s) : "") +
       '<div id="o-pr"></div>', '<b id="h-pr" style="font-weight:500"></b>');
+    if (s.jobType === "casing") {
+      var pn = function (label, k, unit, txt) { var o2 = {}; o2["pg." + k] = s.pg[k]; var ph = PG_DEF[k] || (k === "co" ? "e.g. contractor name" : k === "rig" ? "e.g. RIG-01" : "");
+        return txt ? '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="pg.' + k + '" value="' + esc(s.pg[k] || "") + '" placeholder="' + esc(ph) + '"></label>' : num(label, "pg." + k, o2, unit, ph); };
+      o += grpC("pg", "Cement program", '<p class="note" style="padding-top:12px">Used only by the Cement program sheet. Blank = the value shown.</p>' +
+        pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true) +
+        pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") +
+        pn("Cement unit tank", "tank", "m³") + pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min") +
+        '<p class="note" style="padding-bottom:12px">Lot numbers go with each additive above.</p>', '<b style="font-weight:500">sheet settings</b>');
+    }
     root.innerHTML = '<div class="page">' + o + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>';
     outs();
   }
@@ -1390,6 +1400,7 @@ function CementPage(root, s) {
     },
     delAdd: function (path) { var p = path.split("."); s[p[0]].splice(+p[1], 1); persist(); draw(); },
     pdf: function () { var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; } showSheet(s, m); },
+    prog: function () { var m = model(s); if (!m || !m.items.length) { toast("Enter the job data first."); return; } openSheet(programBody(s, m), "Cement program"); },
     dup: function () { var c = dupJob(s); location.hash = "job/" + c.id; toast("Duplicated"); },
     del: function () { delJob(s, function () { location.hash = "well/" + s.wellId; }); }
   });
@@ -1518,7 +1529,8 @@ function programBody(s, m) {
     (spMix != null ? addBlock("Spacer", "#12233d", null, s.spacerAdd, spMix, null, { mix: spMix, dead: spD, water: spMix - spLiq / 1000 }) : "") + "</table>";
   body += '<h2>2 · Pumping procedure <span class="sub" style="font-size:8.5px">' + coS + (rate ? " · rate " + f2(rate) + " m³/min unless noted" : "") + '</span></h2>' +
     '<table class="pgs"><tr><th>#</th><th>Step</th><th style="text-align:right">m³</th><th style="text-align:right">Time</th><th>Notes</th></tr>' +
-    st.map(function (x, i) { return "<tr><td>" + (i + 1) + "</td><td>" + x[0] + '</td><td class="rv">' + (x[1] != null ? f2(x[1]) : "") + '</td><td class="rv">' + mins(x[1], x[2]) + '</td><td class="nt">' + x[3] + "</td></tr>"; }).join("") +
+    st.map(function (x, i) { var nt = String(x[3] || "").split(" · ").filter(function (q) { return q.trim(); }).join(" · ");
+      return "<tr><td>" + (i + 1) + "</td><td>" + x[0] + '</td><td class="rv">' + (x[1] != null ? f2(x[1]) : "") + '</td><td class="rv">' + mins(x[1], x[2]) + '</td><td class="nt">' + nt + "</td></tr>"; }).join("") +
     (D != null ? '<tr class="totd"><td></td><td>TOTAL DISPLACEMENT' + (m.halfShoe != null ? " · ½ shoe track " + (m.halfShoe / 1000).toFixed(3) + " m³" : "") + '</td><td class="rv">' + f2(D) + '</td><td></td><td>' + (sk ? fi(sk.stk) + " rig stk" : "") + "</td></tr>" : "") + "</table>";
   var mixT = lt ? sl.lead.mix : sl && sl.tail ? sl.tail.mix : null;
   if (mixT || D) body += "<h2>3 · Tank tally <span class=\"sub\" style=\"font-size:8.5px\">cement unit tanks of " + f2(tank) + " m³ · volume per tank and running total</span></h2>" +
