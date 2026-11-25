@@ -434,6 +434,19 @@
   .wl-count { font-size:15.5px; color:var(--sub); margin:0; }
   .wl .grp { border-radius:16px; box-shadow:0 1px 2px rgba(60,40,10,.04), 0 6px 18px rgba(60,40,10,.05); }
   .wl .btn[data-a="create"] { background:linear-gradient(180deg,#11653a,#0b4f2c); }
+  /* cement program (Word-like) */
+  .pg { font-family:Calibri, Carlito, "Segoe UI", Arial, sans-serif; color:#000; font-size:14.5px; line-height:1.45; }
+  .pg-h1 { text-align:right; color:#1f3c88; font-weight:700; font-size:20px; }
+  .pg-h2 { text-align:right; color:#c00000; font-weight:700; font-size:17px; }
+  .pg-h3 { text-align:right; color:#1f3c88; font-weight:700; font-size:16px; margin-bottom:8px; }
+  .pg-steps { padding-left:22px; margin:0; } .pg-steps > li { margin:8px 0; padding-left:4px; }
+  .pg-sec { margin:12px 0 4px; font-weight:700; } .pg-g { background:#3ddc4e; padding:0 3px; }
+  .pg-y { display:inline-block; background:#ffff00; font-weight:700; margin:2px 0 4px; padding:0 3px; }
+  .pg-r { color:#d00000; font-weight:700; text-align:right; margin:3px 0 8px; }
+  .pg-t { width:100%; border-collapse:collapse; table-layout:fixed; } .pg-t td { border:1px solid #000; padding:3px 8px; overflow-wrap:anywhere; } .pg-t td:first-child { width:30%; } .pg-t td:nth-child(2), .pg-t td:nth-child(3) { width:22%; }
+  .pg-tk { border-collapse:collapse; margin:6px 0 2px; font-size:13px; table-layout:fixed; width:auto !important; } .pg-tk + .pg-tk { margin-top:4px; } .pg-tk th, .pg-tk td { border:1px solid #000; padding:2px 4px; text-align:center; width:52px; } .pg-tk th { background:#f2f2f2; }
+  .pg-none { color:#777; font-style:italic; margin:2px 0; }
+  .pg-end { margin-top:14px; font-weight:700; color:#1f3c88; } .pg-foot { margin-top:14px; font-size:11px; color:#777; border-top:1px solid #ccc; padding-top:6px; }
   .wl #wname::placeholder { font-size:14px; }
   .top { display:flex; align-items:center; justify-content:space-between; }
   .top .bk { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.75); border:1px solid var(--line); border-radius:999px; padding:7px 15px 7px 12px;
@@ -1433,6 +1446,75 @@ function openSheet(body, title) {
     if (a === "print") { try { window.print(); } catch (x) { toast("Use Share → Print to save as PDF."); } }
   };
   document.body.classList.add("sheet"); window.scrollTo(0, 0);
+}
+/* ───────────────────────── cement program ───────────────────────── */
+// The job's cement program, laid out like the PE's Word program: additives with amounts, then the pumping steps.
+var PG_DEF = { co: "", rig: "", tank: "1.9", rate: "0.5", slow: "0.3", slowLast: "3", flush: "0.5", lineP: "14000", csgP: "10000", csgMin: "10", cls: "Class G" };
+function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : PG_DEF[k]; }
+function programBody(s, m) {
+  var sl = slurries(s, m), w = wellById(s.wellId), c = byId(CSG, s.csgId), lt = !!(sl && sl.lead);
+  var co = esc(pgv(s, "co") || "Cement contractor"), rate = esc(pgv(s, "rate")), tank = P(pgv(s, "tank")) || 1.9;
+  var f2 = function (v) { return v == null ? "—" : (Math.round(v * 100) / 100).toString(); };
+  var amt = function (r, base) { var a = addVal(r, base); return a == null ? "—" : (r.unit === "L" ? f2(a) + " L" : r.unit === "m3" ? f2(a) + " m³" : r.unit === "MT" ? f2(a) + " MT" : f2(a) + " kg"); };
+  var conc = function (r, sp) { return esc(r.factor || "—") + " " + (r.unit === "pct" ? "% BWOC" : r.unit === "L" ? (sp ? "L/m³" : "L/MT") : r.unit === "kg" ? (sp ? "kg/m³" : "kg/MT") : r.unit === "m3" ? "m³" : "MT"); };
+  var addTable = function (rows, base, sp) {
+    rows = (rows || []).filter(function (r) { return r.name; });
+    if (!rows.length) return '<p class="pg-none">No additives entered.</p>';
+    return '<table class="pg-t">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + "</td><td>" + esc(r.lot || "") + "</td></tr>"; }).join("") + "</table>";
+  };
+  var gr = function (k) { var g = P(s[k]); return g ? f2(g) + " kPa/m (" + (g / 9.81).toFixed(2) + " SG)" : ""; };
+  var tanks = function (total, firstW) {      // cement-unit tank tally: per tank and running total
+    if (!(total > 0)) return "";
+    var n = Math.ceil(total / tank - 1e-9), h = [], v = [], cu = [], run = 0, wN = firstW ? Math.ceil(firstW / tank - 1e-9) : 0;
+    for (var i = 1; i <= n; i++) { var x = Math.min(tank, total - run); run += x; h.push(i + (i <= wN ? "W" : "")); v.push(f2(x)); cu.push(f2(run)); }
+    var out = "";
+    for (var a = 0; a < n; a += 12) {        // 12 tanks per row so the table never runs off the page
+      var sl2 = function (arr) { return arr.slice(a, a + 12); };
+      out += '<table class="pg-tk"><tr>' + sl2(h).map(function (x) { return "<th>" + x + "</th>"; }).join("") + "</tr><tr>" + sl2(v).map(function (x) { return "<td>" + x + "</td>"; }).join("") + "</tr><tr>" + sl2(cu).map(function (x) { return "<td><b>" + x + "</b></td>"; }).join("") + "</tr></table>";
+    }
+    return out;
+  };
+  var block = function (label, o, rows, base, ratio, dead) {
+    if (!o) return "";
+    var wv = waterOf(o, ratio, liquidL(rows, base));
+    return '<div class="pg-sec"><span class="pg-g">' + label + '</span> Additives — TO BE MIXED: PE and ME to witness</div>' +
+      '<div class="pg-y">Slurry: ' + f2(o.V) + " m³" + (wv ? ", Mix water: " + f2(wv.v) + " m³" + (o.dead ? " (including " + f2(o.dead) + " m³ dead volume)" : "") : "") + "</div>" +
+      addTable(rows, base) + (o.mix != null ? '<div class="pg-r">MIX FLUID = ' + f2(o.mix) + " m³" + (o.dead ? " without dead volume" : "") + "</div>" : "");
+  };
+  var leadB = sl && sl.lead ? leadBase(m, sl.lead) : null, tailB = sl && sl.tail ? sl.tail.dry : null;
+  var spP = P(s.spacerVol), spD = P(s.spacerDead) || 0, spMix = sl ? sl.spMix : null, spLiq = liquidL(s.spacerAdd, spMix);
+  var h = '<div class="pg">';
+  h += '<div class="pg-h1">' + (c ? frac(c.od) : "") + " CSG CEMENTATION PROGRAM</div>";
+  h += '<div class="pg-h2">' + esc(w ? w.name : "") + " &nbsp; " + new Date().toLocaleDateString("en-GB") + "</div>";
+  h += '<div class="pg-h3">SAFETY FIRST</div><ol class="pg-steps">';
+  h += "<li>" + co + " start mixing additives when casing is on bottom and circulating." +
+    (lt ? block("LEAD CEMENT", sl.lead, s.leadAdd, leadB, s.leadWater) : "") +
+    block(lt ? "TAIL CEMENT" : "CEMENT", sl && sl.tail, s.tailAdd, tailB, s.tailWater) +
+    (spMix != null ? '<div class="pg-sec"><span class="pg-g">Spacer</span> Additives — TO BE MIXED: PE and ME to witness</div>' +
+      '<div class="pg-y">Spacer volume: ' + f2(spMix) + " m³" + (spD ? " (including " + f2(spD) + " m³ DV)" : "") + ", Mix water: " + f2(spMix - spLiq / 1000) + " m³</div>" + addTable(s.spacerAdd, spMix, true) : "") + "</li>";
+  h += "<li>" + co + " to hold safety meeting on rig floor during circulation.</li>";
+  h += "<li>" + co + " R/U cement head and lines, then pump " + esc(pgv(s, "flush")) + " m³ of water to flush lines. P/T surface lines to " + fi(P(pgv(s, "lineP"))) + " kPa.</li>";
+  if (spP) { var spk = P(s.outStk) ? Math.ceil(spP * 1000 / P(s.outStk) - 1e-9) : null;
+    h += "<li>Rig pump " + f2(spP) + " m³" + (spk ? " (" + fi(spk) + " strokes)" : "") + " of spacer @ " + rate + " m³/min." + (gr("spGr") ? " Spacer " + gr("spGr") + "." : "") + "</li>"; }
+  h += "<li>Drop bottom plug.</li>";
+  if (lt) h += "<li>" + co + " mix and pump " + f2(sl.lead.V) + " m³ lead slurry of " + esc(pgv(s, "cls")) + " cement" + (gr("leadGr") ? " " + gr("leadGr") : "") +
+    (sl.lead.mix != null ? ", mix fluid (" + f2(sl.lead.mix) + " m³)" : "") + " @ " + rate + " m³/min." + tanks(sl.lead.mix) + "</li>";
+  if (sl && sl.tail) h += "<li>" + (lt ? "Followed by " : co + " mix and pump ") + f2(sl.tail.V) + " m³ " + (lt ? "tail " : "") + "slurry of " + esc(pgv(s, "cls")) + " cement" + (gr("tailGr") ? " " + gr("tailGr") : "") +
+    (!lt && sl.tail.mix != null ? ", mix fluid (" + f2(sl.tail.mix) + " m³)" : "") + " @ " + rate + " m³/min." + (!lt ? tanks(sl.tail.mix) : "") + "</li>";
+  h += "<li>Drop top plug and confirm it is dropped.</li>";
+  if (m.dispL != null) {
+    var D = m.dispL / 1000, uw = P(s.unitVol) || 0, mud = Math.max(0, D - uw), sk = strokesOf(s, m), sl3 = P(pgv(s, "slowLast")) || 0;
+    if (uw) h += "<li>Start displacement of " + f2(uw) + " m³ of WATER @ " + rate + " m³/min from cementing unit.</li>";
+    h += "<li>" + (uw ? co + " continue pumping " : "Displace with ") + f2(mud) + " m³ of mud" + (sk ? " (" + fi(sk.stk) + " strokes @ " + f2(sk.po) + " L/stk)" : "") + " @ " + rate + " m³/min" +
+      (sl3 ? ", reduce flowrate to " + esc(pgv(s, "slow")) + " m³/min for the last " + f2(sl3) + " m³ to bump the plug" : "") + ". Total displacement volume is <b>" + f2(D) + " m³</b>." +
+      (m.halfShoe != null ? " Half shoe track is " + (m.halfShoe / 1000).toFixed(3) + " m³." : "") + tanks(D, uw) + "</li>";
+  }
+  h += "<li>Pressure test CSG to " + fi(P(pgv(s, "csgP"))) + " kPa for " + esc(pgv(s, "csgMin")) + " min and observe losses in annulus.</li>";
+  h += "<li>Bleed off and check for any back flow.</li>";
+  h += "<li>" + co + " provide chart and ASCII.</li></ol>";
+  h += '<div class="pg-end">Work safe…' + (pgv(s, "rig") ? " " + esc(pgv(s, "rig")) : "") + "</div>";
+  h += '<div class="pg-foot">Cement Tool · from the job data · check against the approved program before use.</div></div>';
+  return h;
 }
 function sheetBody(s, m) {
   var sl = slurries(s, m);
