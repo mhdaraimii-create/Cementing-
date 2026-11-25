@@ -454,6 +454,14 @@
   #sheet table.tt th, #sheet table.tt td { border:1px solid #9aa39d; padding:1px 2px; text-align:center; width:46px; font-family:var(--mono); font-size:10.5px; }
   @media (max-width:600px) { #sheet table.tt th, #sheet table.tt td { width:auto; min-width:22px; font-size:9px; padding:1px; } }
   #sheet table.tt th { background:#e9ece9; color:#14201a; font-weight:700; font-size:10px; }
+  #sheet .pgi { text-align:center; color:#444; margin:0 0 6px; }
+  #sheet .plh { margin:14px 0 4px; font-weight:800; font-size:13px; color:#0e7a3c; } #sheet .plh span { font-weight:600; color:#14201a; font-size:11.5px; }
+  #sheet table.pst { width:100%; border-collapse:collapse; font-size:11px; }
+  #sheet table.pst th { background:#7a1f1f; color:#fff; font-size:9.5px; text-align:center; padding:3px 4px; }
+  #sheet table.pst td { border:1px solid #c9cfca; padding:3px 5px; } #sheet table.pst td:first-child { text-align:center; width:20px; font-weight:700; }
+  #sheet table.pst tr.rd td { color:#c0201a; font-style:italic; font-weight:700; }
+  #sheet table.pst tr.ud td { text-align:center; background:#f4f6f4; font-weight:700; }
+  #sheet table.pst tr.tt2 td { background:#cfe8d3; font-weight:800; }
   #sheet .miss { color:#c0201a; background:#fde8e6; border-radius:3px; padding:0 4px; font-weight:800; }
   #sheet .ws { margin-top:12px; font-weight:800; color:#1d3f8f; }
   .wl #wname::placeholder { font-size:14px; }
@@ -1218,7 +1226,7 @@ function CementPage(root, s) {
     var two = s.jobType === "twostage", lt = !two && s.scheme === "leadtail", liner = s.jobType === "liner", prevOn = hasPrev(s), k = caps(s), c = byId(CSG, s.csgId), h = byId(HOLE, s.holeId), pc = byId(CSG, s.prevId);
     var wl = wellById(s.wellId);
     var o = '<h1 class="title" id="o-title">' + esc(jobTitle(s)) + '</h1><p class="lede">' + esc(wl ? wl.name : "") + " · " + TYPE_NAMES[s.jobType] + " · " + when(s.created) + "</p>";
-    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button>' + (s.jobType === "casing" ? '<button class="btn sec2 pgbtn" data-act="prog">' + (s.pg && s.pg.genAt ? "✓ " : "") + "Cement program</button>" : "") + "</div>";
+    o += '<div class="bar2"><button class="btn" data-act="pdf">PDF sheet</button>' + (s.jobType === "casing" || s.jobType === "plug" ? '<button class="btn sec2 pgbtn" data-act="prog">' + (s.pg && s.pg.genAt ? "✓ " : "") + "Cement program</button>" : "") + "</div>";
     o += '<div id="warnBox"></div>';
     if (s.jobType === "plug") { root.innerHTML = '<div class="page">' + plugForm(o, k, c, h) + '</div><div class="rbar" id="rbar" role="button" aria-label="Go to results" style="display:none"></div>'; outs(); return; }
     // No previous casing yet (first section of the well): a single small button instead of a whole section.
@@ -1491,6 +1499,7 @@ function openSheet(body, title) {
 }
 /* ───────────────────────── cement program ───────────────────────── */
 // The job's cement program, laid out like the PE's Word program: additives with amounts, then the pumping steps.
+var PG_PLUG = { rSa: "700", rCem: "600", rSb: "400", rDisp: "400", batch: "30", pooh: "10", circ: "40" };
 var PG_DEF = { co: "", rig: "", tank: "1.9", rate: "0.5", slow: "0.3", slowLast: "3", flush: "0.5", lineP: "14000", csgP: "10000", csgMin: "10", cls: "Class G" };
 // Displacement fluid: 9⅝″ casing is displaced with WSW, 7″ and the rest with mud (PE practice); can be set per job.
 function dispFluid(s) { var v = s.pg && s.pg.dfl; if (v) return v; var c = byId(CSG, s.csgId); return c && Math.abs(c.od - 9.625) < .01 ? "WSW" : "mud"; }
@@ -1498,12 +1507,12 @@ function dflSelect(s) {
   var pg = s.pg || {};
   return '<label class="r"><span class="l">Displace with</span><select class="chip" data-k="pg.dfl" data-re><option value="">Auto · ' + dispFluid({ csgId: s.csgId }) + '</option><option value="mud"' + (pg.dfl === "mud" ? " selected" : "") + '>Mud</option><option value="WSW"' + (pg.dfl === "WSW" ? " selected" : "") + ">WSW</option></select></label>";
 }
-function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : PG_DEF[k]; }
+function pgv(s, k) { var v = s.pg && s.pg[k]; return v != null && v !== "" ? v : (PG_DEF[k] != null ? PG_DEF[k] : PG_PLUG[k]); }
 // Cement program settings page: fill in, then Generate CMT Program (PDF sheet).
 function ProgPage(root, s) {
   if (!s.pg) s.pg = {};
   function pn(label, k, unit, txt) {
-    var ph = PG_DEF[k] || (k === "co" ? "e.g. contractor name" : k === "rig" ? "e.g. RIG-01" : "");
+    var ph = PG_DEF[k] || PG_PLUG[k] || (k === "co" ? "e.g. contractor name" : k === "rig" ? "e.g. RIG-01" : "");
     if (txt) return '<label class="r"><span class="l">' + label + '</span><input class="in" autocomplete="off" data-k="pg.' + k + '" value="' + esc(s.pg[k] || "") + '" placeholder="' + esc(ph) + '"></label>';
     var o = {}; o["pg." + k] = s.pg[k]; return num(label, "pg." + k, o, unit, ph);
   }
@@ -1511,6 +1520,13 @@ function ProgPage(root, s) {
     var c = byId(CSG, s.csgId);
     var h = '<div class="page wl"><h1 class="wl-title">Cement program</h1><p class="wl-count">' + esc(jobTitle(s)) + (c ? " · " + c.label + " casing" : "") + "</p>";
     h += grp("Job", pn("Cement contractor", "co", "", true) + pn("Rig", "rig", "", true) + pn("Cement", "cls", "", true));
+    if (s.jobType === "plug") {
+      h += grp("Pumping rates", pn("Spacer ahead", "rSa", "L/min") + pn("Cement", "rCem", "L/min") + pn("Spacer behind", "rSb", "L/min") + pn("Displacement", "rDisp", "L/min"));
+      h += grp("Times and depths", pn("Batch mixing", "batch", "min") + pn("POOH above TOC", "pooh", "m") + pn("Circulate bottoms up", "circ", "min"));
+      h += '<p class="note" style="padding:0 6px">Blank = the value shown. Plug depths, volumes, spacer, under-displacement and additives come from the job.</p>';
+      h += '<button class="btn" data-act="gen" style="width:100%;margin-top:18px;min-height:50px;font-size:16px">Generate CMT Program</button></div>';
+      root.innerHTML = h; return;
+    }
     h += grp("Pumping", pn("Pump rate", "rate", "m³/min") + pn("Slow rate to bump", "slow", "m³/min") + pn("Slow for the last", "slowLast", "m³") + dflSelect(s) +
       (s.scheme === "leadtail" ? '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + ">On the fly</option></select></label>" : "") +
       pn("Cement unit tank", "tank", "m³"));
@@ -1528,7 +1544,72 @@ function ProgPage(root, s) {
   draw();
 }
 var OPEN_PROG = null;   // job id whose program should open right after Generate
+// Cement plug program, in the order of the approved plug proposals: general steps, then one pumping table per plug.
+function plugProgramBody(s, m) {
+  var sl = slurries(s, m), w = wellById(s.wellId), c = byId(CSG, s.csgId), h0 = byId(HOLE, s.holeId);
+  var co = esc(pgv(s, "co") || "Cement contractor"), cls = esc(pgv(s, "cls"));
+  var f2 = function (v) { return v == null || !isFinite(v) ? '<span class="miss">—</span>' : (Math.round(v * 100) / 100).toString(); };
+  var hv = function (x) { return '<span class="hv">' + x + "</span>"; };
+  var g = function (k, d) { var x = P(s[k]); return x != null ? x : d; };
+  var dSp = g("spGr", 9.81), dCem = g("tailGr", null), dMud = g("mudGr", null);
+  var R = { sa: P(pgv(s, "rSa")), cem: P(pgv(s, "rCem")), sb: P(pgv(s, "rSb")), disp: P(pgv(s, "rDisp")) };
+  var mins = function (vm3, lpm) { return vm3 != null && lpm ? Math.round(vm3 * 1000 / lpm) : null; };
+  var amt = function (r, base) { var a = addVal(r, base); return a == null ? "—" : (Math.round(a * 100) / 100) + " " + (r.unit === "L" ? "L" : r.unit === "m3" ? "m³" : r.unit === "MT" ? "MT" : "kg"); };
+  var conc = function (r, sp) { return esc(r.factor || "—") + " " + (r.unit === "pct" ? "% BWOC" : r.unit === "L" ? (sp ? "L/m³" : "L/MT") : r.unit === "kg" ? (sp ? "kg/m³" : "kg/MT") : r.unit === "m3" ? "m³" : "MT"); };
+  var addTable = function (rows, base, sp) {
+    rows = (rows || []).filter(function (r) { return r.name; });
+    if (!rows.length) return '<p class="none">No additives entered.</p>';
+    return '<table class="at">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + '</td><td class="lot">' + esc(r.lot || "") + "</td></tr>"; }).join("") + "</table>";
+  };
+  var o = sl && sl.tail, base = o ? o.dry : null, wv = o ? waterOf(o, s.tailWater, liquidL(s.tailAdd, base)) : null;
+  var spMix = m.sa ? m.sa / 1000 * m.plugs.length + m.plugs.reduce(function (a, q) { return a + q.spB / 1000; }, 0) : null;
+  var spw = spMix != null ? spWaterOf(s, spMix) : null;
+  var first = m.plugs[0];
+  var h = '<div class="cp"><div class="cph"><div class="t1">CEMENT PLUG' + (m.plugs.length > 1 ? "S" : "") + " PROGRAM</div>" +
+    '<div class="t2"><span>' + esc(w ? w.name : "") + "</span> &nbsp; " + new Date().toLocaleDateString("en-GB") + '</div><div class="t3">SAFETY FIRST</div></div>';
+  h += '<p class="pgi">' + m.plugs.length + " plug" + (m.plugs.length > 1 ? "s" : "") + " · " + (c ? c.label + " shoe @ " + de(m.SH) + " m" : "") + (h0 ? " · " + h0.label + " open hole" : "") +
+    " · excess OH " + esc(s.exTailOH || 0) + "% / casing " + esc(s.exTailCsg || 0) + "%</p>";
+  // 1. additives
+  h += '<ol class="cps"><li>' + co + " start mixing additives." +
+    (o ? '<div class="ab"><div class="abh"><span class="gl">CEMENT</span> Additives — TO BE MIXED: PE and ME to witness:</div>' +
+      '<div class="ys">Slurry: ' + f2(o.V) + " m³ (all plugs)" + (wv ? ", Mix Water: " + f2(wv.v) + " m³" + (o.dead ? " (including " + f2(o.dead) + " m³ dead volume)" : "") : "") + "</div>" +
+      addTable(s.tailAdd, base) + (o.mix != null ? '<div class="mf">MIX FLUID = ' + f2(o.mix) + " m³</div>" : "") + "</div>" : '<p class="none">Enter the slurry yield to get the cement design.</p>') +
+    (spMix ? '<div class="ab"><div class="abh"><span class="gl">Spacer Additives</span> — TO BE MIXED: PE and ME to witness:</div>' +
+      '<div class="ys">Spacer volume: ' + f2(spMix) + " m³ (ahead + behind, all plugs)" + (spw ? ", Mix Water: " + f2(spw.v) + " m³" : "") + "</div>" + addTable(s.spacerAdd, spMix, true) + "</div>" : "") + "</li>";
+  // general steps (as in the proposal)
+  ["RIH with stinger to " + hv(f2(first ? first.B : null) + " m") + ".", "Complete R/U of pumping line at rig floor and properly secure.",
+    "Hold pre-job safety meeting; all personnel to participate and discuss the job procedure.", "Cross check all cementing calculations on site between DSV and cement supervisor.",
+    "Flush discharge line using fresh / location water.", "Pressure test the cement lines: limit from the circulating pressure at maximum rate plus a safety margin (500 psi); check for any leak.",
+    "<b>Circulate two bottoms up to cool down the hole to BHCT.</b> Check for losses and inform town.", "Proceed with the cement job as per the schedule below."].forEach(function (x) { h += "<li>" + x + "</li>"; });
+  h += "</ol>";
+  // one table per plug
+  var pooh = P(pgv(s, "pooh")) || 0, bt = P(pgv(s, "batch")) || 0, circ = P(pgv(s, "circ")) || 0;
+  m.plugs.forEach(function (q, i) {
+    var rows = [], tot = 0, add = function (ev, d, v, r, t, cls2) { rows.push([ev, d, v, r, t, cls2]); if (t) tot += t; };
+    add("Pump spacer ahead of cement", dSp, m.sa / 1000, R.sa, mins(m.sa / 1000, R.sa));
+    add("Batch mixer cement slurry", dCem, q.Vc / 1000, null, bt, "rd");
+    add("Pump cement slurry (already batch mixed)", dCem, q.Vc / 1000, R.cem, mins(q.Vc / 1000, R.cem));
+    add("Pump spacer behind the cement", dSp, q.spB / 1000, R.sb, mins(q.spB / 1000, R.sb));
+    add("Start displacement with cement unit by mud", dMud, q.pump / 1000, R.disp, mins(q.pump / 1000, R.disp));
+    var rowsH = rows.map(function (r, k) { return '<tr' + (r[5] ? ' class="' + r[5] + '"' : "") + "><td>" + (k + 1) + "</td><td>" + r[0] + '</td><td class="rv">' + (r[1] != null ? f2(r[1]) : "") + '</td><td class="rv">' + f2(r[2]) + '</td><td class="rv">' + (r[3] || "") + '</td><td class="rv">' + (r[4] != null ? r[4] : "") + "</td></tr>"; }).join("");
+    var n = rows.length;
+    var extra = [["Check the surface pressure and align the cement line to the bleed off to the displacement tanks in the cementing unit to check the U-tube effect", 5],
+      ["Disconnect surface lines from string", 5],
+      ['<span class="hv">POOH to ' + f2(q.T - pooh) + " m (" + pooh + " m above planned top of cement)</span>, POOH stands within 35 minutes", 35],
+      ["Direct circulation with mud, one bottoms up until confirmed clean return", circ]];
+    extra.forEach(function (x) { tot += x[1]; });
+    h += '<div class="plh">Plug #' + q.n + ' <span>· ' + de(q.B) + " → " + de(q.T) + " m (" + fx(q.B - q.T, 0) + " m) · RIH stinger to " + de(q.B) + " m</span></div>" +
+      '<table class="pst"><tr><th>#</th><th>Event</th><th>Density<br>kPa/m</th><th>Volume<br>m³</th><th>Rate<br>L/min</th><th>Time<br>min</th></tr>' + rowsH +
+      '<tr class="ud"><td></td><td colspan=5>Under displacement by ' + f2(m.ud / 1000) + " m³ · TOC with string in " + fi(q.tocIn) + " m</td></tr>" +
+      extra.map(function (x, k) { return "<tr><td>" + (n + k + 1) + '</td><td colspan=4>' + x[0] + '</td><td class="rv">' + x[1] + "</td></tr>"; }).join("") +
+      '<tr class="tt2"><td></td><td colspan=4>Total job duration</td><td class="rv">' + tot + " min · " + Math.floor(tot / 60) + ":" + String(tot % 60).padStart(2, "0") + "</td></tr></table>";
+  });
+  h += '<div class="ws">Work safe…' + (pgv(s, "rig") ? " " + esc(pgv(s, "rig")) : "") + "</div></div>";
+  h += '<p class="fn"><b>Cement Tool · Created by ' + OWNER.name + "</b> · " + OWNER.id + " · generated from the job data · check against the approved cement program before execution.</p>";
+  return h;
+}
 function programBody(s, m) {
+  if (s.jobType === "plug") return plugProgramBody(s, m);
   // Same order, wording and numbering as the approved PE program; laid out cleanly.
   var sl = slurries(s, m), w = wellById(s.wellId), c = byId(CSG, s.csgId), lt = !!(sl && sl.lead);
   var co = esc(pgv(s, "co") || "Cement contractor"), rate = esc(pgv(s, "rate")), tank = P(pgv(s, "tank")) || 1.9, cls = esc(pgv(s, "cls"));
