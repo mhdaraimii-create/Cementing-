@@ -841,7 +841,7 @@ function addVal(r, base) {
 // Pack sizes (drum/sack) in the additive's own unit; editable per row.
 var PACKS = { cdf1: 20, cfl100: 25, cd200: 25, bentonite: 25 };
 function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[addKey(r.name)] || null; }
-function packTxt(r, a) { var p = packOf(r); return p && a != null && r.unit !== "m3" && r.unit !== "MT" ? " · " + Math.ceil(a / p - 1e-9) + " pk" : ""; }
+function packTxt(r, a) { return ""; }   // pack counts removed from the screens
 // Plain water in a slurry's mix fluid: from the lab water ratio (m³/MT) if given, else mix fluid − liquid additives.
 // Spacer mix water: from the spacer report (water L per m³ of spacer) if given, else mix − liquid additives.
 function spWaterOf(s, mix) {
@@ -1176,8 +1176,7 @@ function addRows(title, key, rows, baseLabel, color) {
     var p = key + "." + i + ".";
     var dp = packOf({ name: r.name });
     h += '<div class="add"><div class="rw" style="margin-top:0"><input class="in" style="flex:2.2" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
-      (key === "spacerAdd" ? "" : '<input class="in" style="flex:1" inputmode="decimal" data-k="' + p + 'pack" value="' + esc(r.pack || "") + '" placeholder="pack ' + (dp || "—") + '">') +
-      '<input class="in" style="flex:1.3" autocomplete="off" data-k="' + p + 'lot" value="' + esc(r.lot || "") + '" placeholder="lot no.">' + "</div>" +
+      "</div>" +
       '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'factor" value="' + esc(r.factor) + '" placeholder="factor">' +
       '<select class="chip" data-k="' + p + 'unit">' + unitsFor(r.unit).map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
@@ -1531,7 +1530,7 @@ function ProgPage(root, s) {
       (s.scheme === "leadtail" ? '<label class="r"><span class="l">Tail mixing</span><select class="chip" data-k="pg.batch"><option value="">Batch mixer</option><option value="no"' + (s.pg.batch === "no" ? " selected" : "") + ">On the fly</option></select></label>" : "") +
       pn("Cement unit tank", "tank", "m³"));
     h += grp("Lines and tests", pn("Line flush", "flush", "m³") + pn("P/T surface lines", "lineP", "kPa") + pn("P/T casing", "csgP", "kPa") + pn("P/T casing hold", "csgMin", "min"));
-    h += '<p class="note" style="padding:0 6px">Blank = the value shown. Volumes, additives and lot numbers come from the job.</p>';
+    h += '<p class="note" style="padding:0 6px">Blank = the value shown. Volumes and additives come from the job.</p>';
     h += '<button class="btn" data-act="gen" style="width:100%;margin-top:18px;min-height:50px;font-size:16px">Generate CMT Program</button></div>';
     root.innerHTML = h;
   }
@@ -1559,7 +1558,8 @@ function plugProgramBody(s, m) {
   var addTable = function (rows, base, sp) {
     rows = (rows || []).filter(function (r) { return r.name; });
     if (!rows.length) return '<p class="none">No additives entered.</p>';
-    return '<table class="at">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + '</td><td class="lot">' + esc(r.lot || "") + "</td></tr>"; }).join("") + "</table>";
+    var lots = rows.some(function (r) { return r.lot; });
+    return '<table class="at">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + "</td>" + (lots ? '<td class="lot">' + esc(r.lot || "") + "</td>" : "") + "</tr>"; }).join("") + "</table>";
   };
   var o = sl && sl.tail, base = o ? o.dry : null, wv = o ? waterOf(o, s.tailWater, liquidL(s.tailAdd, base)) : null;
   var spMix = m.sa ? m.sa / 1000 * m.plugs.length + m.plugs.reduce(function (a, q) { return a + q.spB / 1000; }, 0) : null;
@@ -1622,7 +1622,8 @@ function programBody(s, m) {
   var addTable = function (rows, base, sp) {
     rows = (rows || []).filter(function (r) { return r.name; });
     if (!rows.length) return '<p class="none">No additives entered.</p>';
-    return '<table class="at">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + '</td><td class="lot">' + esc(r.lot || "") + "</td></tr>"; }).join("") + "</table>";
+    var lots = rows.some(function (r) { return r.lot; });
+    return '<table class="at">' + rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td><td>" + conc(r, sp) + "</td><td>" + amt(r, base) + "</td>" + (lots ? '<td class="lot">' + esc(r.lot || "") + "</td>" : "") + "</tr>"; }).join("") + "</table>";
   };
   var mixBlock = function (label, o, rows, base, ratio, batch) {
     if (!o) return "";
