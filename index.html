@@ -464,6 +464,13 @@
   .top .bk svg { color:#8a7a5a; flex:none; }
   .top .tmore { width:38px; height:38px; padding:0; border-radius:999px; background:rgba(255,255,255,.75); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--hm-ink); box-shadow:0 1px 2px rgba(60,40,10,.05); }
   .top .bk:active, .top .tmore:active { background:var(--icbg); }
+  /* soft buttons, same family as the top bar */
+  .btn { border-radius:999px; min-height:42px; padding:9px 18px; font-weight:600; font-size:15px; box-shadow:0 1px 2px rgba(60,40,10,.06), 0 4px 12px rgba(14,90,45,.12); transition:transform .12s var(--ease), background .15s; }
+  .btn:active { transform:scale(.98); }
+  .btn.sec2, .lt .btn.sec2 { background:rgba(255,255,255,.8); border:1px solid var(--line); color:var(--hm-ink); box-shadow:0 1px 2px rgba(60,40,10,.05); }
+  .btn.danger { border-radius:999px; }
+  .btn.ghost { border-radius:14px; box-shadow:none; }
+  .hm-bk .btn, .wl .r .btn { min-height:42px; }
   @media (max-width:380px) { .wl .r:has(#wname) { flex-wrap:wrap; } .wl #wname { flex-basis:100% !important; } .wl .r:has(#wname) .btn { width:100%; } }
   .pop-ov { position:fixed; inset:0; z-index:9000; }
   .pop { position:fixed; min-width:190px; max-width:260px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px;
@@ -507,7 +514,7 @@
   .jcard { gap:12px; padding:13px 6px 13px 13px; }
   .jcard .wav { width:46px; height:46px; font-size:18px; border-radius:12px; }
   .jcard.dn .wav { background:var(--good-bg); color:var(--good); }
-  .jcard { align-items:flex-start; } .jcard .wav { margin-top:2px; } .jcard .more { align-self:center; }
+  .jcard { align-items:center; } .jcard .more { align-self:center; } .jcard .jdone { align-self:center; }
   .jfoot { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; } .jfoot .wdt { white-space:nowrap; }
   .jdone { flex:none; border-radius:999px; min-height:34px; padding:0 13px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
     border:1px solid var(--fieldb); background:var(--card); color:var(--hm-ink); white-space:nowrap; }
@@ -1748,12 +1755,12 @@ function WellPage(root, w) {
     var h = '<div class="page wl"><h1 class="wl-title">' + esc(w.name) + '</h1><p class="wl-count">' + J.length + " job" + (J.length === 1 ? "" : "s") + " · created " + when(w.created) + "</p>";
     if (J.length) h += '<div class="wchips" style="margin:14px 0 4px">' + J.map(function (j) {
       return '<button class="wchip' + (j.done ? " d" : "") + '" data-go="job/' + j.id + '" style="border:0;cursor:pointer">' + esc(jobTitle(j)) + "</button>"; }).join("") + "</div>";
-    h += '<div class="bar2" style="margin-top:14px"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button><button class="btn sec2" data-a="more" aria-label="More">⋯</button></div>';
+    h += '<div class="bar2" style="margin-top:14px"><button class="btn" data-a="new">+ New job</button><button class="btn sec2" data-a="pdf">Well PDF</button></div>';
     h += '<div class="sec"><div class="sh">Jobs<span>oldest first</span></div><div class="wlist">' + (J.length ? J.map(function (j) {
       return '<div class="wcard jcard' + (j.done ? " dn" : "") + '" role="button" data-go="job/' + j.id + '"><span class="wav">' + { casing: "C", liner: "L", twostage: "2", plug: "P" }[j.jobType] + '</span><span class="wdiv"></span>' +
         '<span class="wtx"><span class="wnm">' + esc(jobTitle(j)) + "</span>" +
-        '<span class="jfoot"><span class="wdt">' + cal + shortDate(j.done ? (j.doneAt || j.updated) : j.created) + "</span>" +
-        '<button class="jdone' + (j.done ? " on" : "") + '" data-done="' + j.id + '">' + (j.done ? "✓ Done" : "Mark done") + "</button></span></span>" +
+        '<span class="wdt">' + cal + shortDate(j.done ? (j.doneAt || j.updated) : j.created) + "</span></span>" +
+        '<button class="jdone' + (j.done ? " on" : "") + '" data-done="' + j.id + '">' + (j.done ? "✓ Done" : "Mark done") + "</button>" +
         '<span class="more" role="button" aria-label="More" data-more="job:' + j.id + '">⋯</span></div>';
     }).join("") : '<div class="empty">No jobs yet. Tap “+ New job”.</div>') + "</div></div>";
     h += '<div class="sec"><div class="sh">Well status</div><div class="grp"><label class="r"><span class="l">Planned TD <i>· m</i></span><input class="in" inputmode="decimal" autocomplete="off" data-wptd value="' + esc(w.ptd || "") + '" placeholder="from the well program"></label>' +
@@ -1964,7 +1971,7 @@ function Home(root, wellsMode) {
       return '<div class="wcard wa" role="button" data-go="well/' + w.id + '"><div class="wtop"><span class="wav">' + esc(ini) + '</span>' +
         '<span class="wtx"><span class="wnm">' + esc(w.name) + '</span><span class="wrel">Updated ' + relTime(w.updated || w.created) + "</span></span>" +
         '<span class="more" role="button" aria-label="More" data-more="well:' + w.id + '">⋯</span><span class="ch">›</span></div>' +
-        '<div class="wchips">' + chips + "</div>" + bar + "</div>";
+        bar + "</div>";
     }).join("");
   }
   var tp = themePref(), nW = db.wells.length;
@@ -2106,7 +2113,13 @@ function route() {
     CementPage(body, j);
     if (OPEN_PROG === j.id) { OPEN_PROG = null; var mm = model(j); if (mm && mm.items.length) setTimeout(function () { openSheet(programBody(j, mm), "Cement program"); }, 0); }
   }
-  else if (w) { back("Wells", "wells"); WellPage(body, w); }
+  else if (w) {
+    back("Wells", "wells", function () {
+      return [{ label: "Rename well", fn: function () { renameWell(w); } }, { label: "Download a copy", fn: function () { downloadWells([w], w.name); } },
+        { label: "Delete well", danger: true, fn: function () { delWell(w, function () { location.hash = "wells"; }); } }];
+    });
+    WellPage(body, w);
+  }
   else if (parts[0] === "wells") { back("Home", "home"); Home(body, true); }
   else if (parts[0] === "calc") { back("Home", "home"); CalcPage(body); }
   else if (parts[0] === "table") { back("Home", "home"); TablePage(body); }
