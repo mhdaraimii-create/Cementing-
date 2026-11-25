@@ -401,6 +401,8 @@
   .hm-ic { width:40px; height:40px; flex:none; border-radius:11px; background:var(--icbg); display:flex; align-items:center; justify-content:center; color:var(--icink); transition:transform .15s var(--ease); }
   .hm-ic svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
   .hm-row:first-child .hm-ic, .hm-row[data-go] .hm-ic { color:var(--accent); }
+  .pchip[data-act="addPre"] { min-height:30px; padding:4px 10px; font-size:13.5px; border-radius:999px; }
+  .pchips:has([data-act="addPre"]) { gap:6px; }
   .pchip.on { background:var(--accent); border-color:var(--accent); color:var(--onacc); }
   .hm-tx { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
   .hm-nm { font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:-.01em; color:var(--hm-ink); }
@@ -1095,8 +1097,11 @@ var CUR_JOB = null;   // the job on screen, so the chips can follow its slurry s
 function addKey(name) { var k = (name || "").replace(/[^a-z0-9]/gi, "").toLowerCase(); return k === "cdf" ? "cdf1" : k === "fl45cfl100" || k === "fl45" ? "cfl100" : k; }
 function chipList(key, rows) {
   var j = CUR_JOB || {}, lt = j.scheme === "leadtail" && j.jobType !== "twostage" && j.jobType !== "plug";
-  var list = key === "spacerAdd" ? ADD_SPACER : lt ? (key === "leadAdd" ? ADD_LEAD : ADD_TAIL) :
-    ADD_LEAD.concat(ADD_TAIL).filter(function (p, i, a) { return a.findIndex(function (q) { return q.name === p.name; }) === i; });
+  var all = ADD_LEAD.concat(ADD_TAIL);
+  // The spacer gets every product too; there it is per m³ of mix, so a % BWOC product becomes kg/m³.
+  var list = key === "spacerAdd" ? ADD_SPACER.concat(all.map(function (p) { return { name: p.name, unit: p.unit === "pct" ? "kg" : p.unit }; })) :
+    lt ? (key === "leadAdd" ? ADD_LEAD : ADD_TAIL) : all;
+  list = list.filter(function (p, i, a) { return a.findIndex(function (q) { return q.name === p.name; }) === i; });
   var have = {};
   rows.forEach(function (r) { have[addKey(r.name)] = 1; });
   return list.filter(function (p) { return !have[addKey(p.name)]; }).map(function (p) { return { name: p.name, d: { unit: p.unit, factor: "" } }; });
