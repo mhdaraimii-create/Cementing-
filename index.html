@@ -791,8 +791,8 @@ function addVal(r, base) {
   var raw = base * f; return r.unit === "MT" || r.unit === "m3" ? raw / 1000 : raw;
 }
 // Pack sizes (drum/sack) in the additive's own unit; editable per row.
-var PACKS = { cdf: 20, cfl100: 25, cd200: 25, bentonite: 25 };
-function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[(r.name || "").replace(/[\s-]/g, "").toLowerCase()] || null; }
+var PACKS = { cdf1: 20, cfl100: 25, cd200: 25, bentonite: 25 };
+function packOf(r) { var p = P(r.pack); return p != null && p > 0 ? p : PACKS[addKey(r.name)] || null; }
 function packTxt(r, a) { var p = packOf(r); return p && a != null && r.unit !== "m3" && r.unit !== "MT" ? " · " + Math.ceil(a / p - 1e-9) + " pk" : ""; }
 // Plain water in a slurry's mix fluid: from the lab water ratio (m³/MT) if given, else mix fluid − liquid additives.
 function waterOf(o, ratio, liqL) {
@@ -1086,16 +1086,24 @@ function summary(j) {
 }
 
 /* ───────────────────────── additives ───────────────────────── */
-// One-tap additives for the slurries: the products used on the rig.
-var PRESETS = [{ name: "CDF", unit: "L" }, { name: "CFL100", unit: "pct" }, { name: "CD200", unit: "pct" }, { name: "Bentonite", unit: "pct" }];
+// One-tap additives: the products in the cement programs, with the unit the program uses.
+// Lead and tail get their usual products; a single slurry, a two-stage job or a plug gets all of them.
+var ADD_LEAD = [{ name: "CDF-1", unit: "L" }, { name: "Bentonite", unit: "pct" }, { name: "CX-1", unit: "L" }, { name: "CFL-100", unit: "pct" }, { name: "CSS-1", unit: "pct" }];
+var ADD_TAIL = [{ name: "CDF-1", unit: "L" }, { name: "GASCON", unit: "pct" }, { name: "CFL-100", unit: "pct" }, { name: "CD-200", unit: "pct" }, { name: "CX-1", unit: "L" }, { name: "CR-11", unit: "pct" }];
+var ADD_SPACER = [{ name: "CDF-1", unit: "L" }, { name: "CSP-200", unit: "kg" }, { name: "CaCO3", unit: "kg" }];
+var CUR_JOB = null;   // the job on screen, so the chips can follow its slurry scheme
+function addKey(name) { var k = (name || "").replace(/[^a-z0-9]/gi, "").toLowerCase(); return k === "cdf" ? "cdf1" : k === "fl45cfl100" || k === "fl45" ? "cfl100" : k; }
 function chipList(key, rows) {
-  if (key === "spacerAdd") return [];
+  var j = CUR_JOB || {}, lt = j.scheme === "leadtail" && j.jobType !== "twostage" && j.jobType !== "plug";
+  var list = key === "spacerAdd" ? ADD_SPACER : lt ? (key === "leadAdd" ? ADD_LEAD : ADD_TAIL) :
+    ADD_LEAD.concat(ADD_TAIL).filter(function (p, i, a) { return a.findIndex(function (q) { return q.name === p.name; }) === i; });
   var have = {};
-  rows.forEach(function (r) { have[(r.name || "").trim().toLowerCase()] = 1; });
-  return PRESETS.filter(function (p) { return !have[p.name.toLowerCase()]; }).map(function (p) { return { name: p.name, d: { unit: p.unit, factor: "" } }; });
+  rows.forEach(function (r) { have[addKey(r.name)] = 1; });
+  return list.filter(function (p) { return !have[addKey(p.name)]; }).map(function (p) { return { name: p.name, d: { unit: p.unit, factor: "" } }; });
 }
 function addRows(title, key, rows, baseLabel, color) {
-  var units = [["kg", "kg/MT"], ["L", "L/MT"], ["pct", "% BWOC"], ["m3", "m³"], ["MT", "MT"]];
+  var units = key === "spacerAdd" ? [["kg", "kg/m³"], ["L", "L/m³"]] : [["kg", "kg/MT"], ["L", "L/MT"], ["pct", "% BWOC"], ["m3", "m³"], ["MT", "MT"]];
+  var unitsFor = function (u) { return units.some(function (x) { return x[0] === u; }) ? units : units.concat([[u, { pct: "% BWOC", m3: "m³", MT: "MT" }[u] || u]]); };
   var h = '<div class="tag plain" style="color:var(--ink)">' + title + ' <span style="font-weight:500;color:var(--sub)" data-base="' + key + '">· × ' + baseLabel + "</span></div>";
   var chips = chipList(key, rows);
   if (chips.length) h += '<div class="pchips">' + chips.map(function (c) { return '<button class="pchip" data-act="addPre" data-i="' + esc(key + "|" + c.name) + '">+ ' + esc(c.name) + "</button>"; }).join("") + "</div>";
@@ -1106,7 +1114,7 @@ function addRows(title, key, rows, baseLabel, color) {
     h += '<div class="add"><div class="rw" style="margin-top:0"><input class="in" style="flex:2.2" data-k="' + p + 'name" value="' + esc(r.name) + '" placeholder="name">' +
       (key === "spacerAdd" ? "" : '<input class="in" style="flex:1" inputmode="decimal" data-k="' + p + 'pack" value="' + esc(r.pack || "") + '" placeholder="pack ' + (dp || "—") + '">') + "</div>" +
       '<div class="rw"><input class="in" inputmode="decimal" data-k="' + p + 'factor" value="' + esc(r.factor) + '" placeholder="factor">' +
-      '<select class="chip" data-k="' + p + 'unit">' + units.map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
+      '<select class="chip" data-k="' + p + 'unit">' + unitsFor(r.unit).map(function (u) { return '<option value="' + u[0] + '"' + (r.unit === u[0] ? " selected" : "") + ">" + u[1] + "</option>"; }).join("") + "</select>" +
       '<span class="amt" data-out="' + key + "." + i + '" style="color:' + color + '">—</span>' +
       '<button class="x" data-act="delAdd" data-i="' + key + "." + i + '">✕</button></div></div>';
   });
@@ -1115,6 +1123,7 @@ function addRows(title, key, rows, baseLabel, color) {
 
 /* ───────────────────────── cement page ───────────────────────── */
 function CementPage(root, s) {
+  CUR_JOB = s;
   function persist() { touch(s); }
   if (!s.plugs || !s.plugs.length) s.plugs = [{ bot: "", top: "" }];
   // Older screens showed the lead excess on single-slurry jobs too; move a value typed there.
